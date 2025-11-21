@@ -1,5 +1,7 @@
 package com.yourfault.system;
 
+import com.yourfault.Main;
+import com.yourfault.listener.WeaponSelectionListener;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 
@@ -12,14 +14,19 @@ public class Player
     private float MAX_MANA = 100f;
     private float HEALTH;
     private float MANA;
+    public float DEFENSE;
+    public WeaponSelectionListener.WeaponType SELECTED_WEAPON = null;
 
-    public Player(org.bukkit.entity.Player minecraftplayer, float MaxHealth, float MaxMana)
+    public Player(org.bukkit.entity.Player minecraftplayer, float MaxHealth, float MaxMana, float Defense, WeaponSelectionListener.WeaponType selectedWeapon)
     {
         this.MINECRAFT_PLAYER = minecraftplayer;
         this.MAX_HEALTH = MaxHealth;
         this.MAX_MANA = MaxMana;
         this.HEALTH = MaxHealth;
         this.MANA = MaxMana;
+        this.DEFENSE = Defense;
+        this.SELECTED_WEAPON = selectedWeapon;
+
 
     }
     public void DisplayStatToPlayer()
@@ -28,7 +35,13 @@ public class Player
         MINECRAFT_PLAYER.spigot().sendMessage(ChatMessageType.ACTION_BAR,new TextComponent(message));
 
     }
+    public void ChangeMana(float amount)
+    {
+        MANA += amount;
+        if(MANA > MAX_MANA) MANA = MAX_MANA;
+        if(MANA < 0) MANA = 0;
 
+    }
     public float GetHealth_Ratio()
     {
         return (HEALTH / MAX_HEALTH);
