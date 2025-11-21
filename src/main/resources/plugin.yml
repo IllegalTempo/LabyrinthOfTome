@@ -2,3 +2,6 @@ name: LabyrinthOfTome
 main: com.yourfault.Main
 version: 1.0
 api-version: 1.21
+commands:
+  startgame:
+    description: Starts the game for debugging
