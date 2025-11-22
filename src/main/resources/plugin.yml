@@ -8,6 +8,11 @@ commands:
     usage: /startgame
     permissions:
       labyrinthoftome.admin: true
+  endgame:
+    description: Ends the current game session
+    usage: /endgame
+    permissions:
+      labyrinthoftome.admin: true
   get:
     description: Gives the player a special item
     usage: /get <item>

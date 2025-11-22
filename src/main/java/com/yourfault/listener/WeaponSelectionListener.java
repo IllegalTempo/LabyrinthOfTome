@@ -2,9 +2,7 @@ package com.yourfault.listener;
 
 import com.yourfault.Items.weapons;
 import com.yourfault.handler.WeaponSelectionHandler;
-import com.yourfault.system.Game;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -30,18 +28,17 @@ public class WeaponSelectionListener implements Listener {
     private final WeaponSelectionHandler weaponSelectionHandler;
     private static final String GUI_TITLE = "Select your default weapon";
     private final JavaPlugin plugin;
-    private final Game game;
     private final NamespacedKey weaponKey;
     private final Set<UUID> pendingSelection = new HashSet<>();
 
-    public WeaponSelectionListener(JavaPlugin plugin, Game game, WeaponSelectionHandler weaponSelectionHandler) {
+    public WeaponSelectionListener(JavaPlugin plugin, WeaponSelectionHandler weaponSelectionHandler) {
         this.plugin = plugin;
-        this.game = game;
         this.weaponSelectionHandler = weaponSelectionHandler;
         this.weaponKey = new NamespacedKey(plugin, "weapon_option");
     }
 
     public void openSelection(Player player) {
+        if (player == null || !player.isOnline()) return;
         pendingSelection.add(player.getUniqueId());
         player.openInventory(buildInventory());
     }
@@ -69,6 +66,10 @@ public class WeaponSelectionListener implements Listener {
         }
     }
 
+    private boolean shouldForceSelection(Player player) {
+        return !weaponSelectionHandler.hasSelectedWeapon(player.getUniqueId());
+    }
+
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
         if (!isSelectionInventory(event.getView())) return;
@@ -79,10 +80,12 @@ public class WeaponSelectionListener implements Listener {
         if (weaponType == null) return;
         Player player = (Player) event.getWhoClicked();
         UUID uuid = player.getUniqueId();
-        if (!pendingSelection.contains(uuid)) return;
-        pendingSelection.remove(uuid);
+        if (!pendingSelection.remove(uuid)) return;
         player.closeInventory();
         weaponSelectionHandler.handleWeaponSelection(player, weaponType);
+        if (shouldForceSelection(player)) {
+            openSelection(player);
+        }
     }
 
     @EventHandler
@@ -94,14 +97,24 @@ public class WeaponSelectionListener implements Listener {
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
         if (!isSelectionInventory(event.getView())) return;
-        UUID uuid = event.getPlayer().getUniqueId();
-        if (!pendingSelection.contains(uuid)) return;
+        Player player = (Player) event.getPlayer();
+        UUID uuid = player.getUniqueId();
+        if (weaponSelectionHandler.hasSelectedWeapon(uuid)) {
+            pendingSelection.remove(uuid);
+            return;
+        }
+        pendingSelection.add(uuid);
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            if (!pendingSelection.contains(uuid)) return;
-            Player player = Bukkit.getPlayer(uuid);
-            if (player != null && player.isOnline()) {
-                player.openInventory(buildInventory());
+            Player refreshed = Bukkit.getPlayer(uuid);
+            if (refreshed == null || !refreshed.isOnline()) {
+                pendingSelection.remove(uuid);
+                return;
             }
+            if (weaponSelectionHandler.hasSelectedWeapon(uuid)) {
+                pendingSelection.remove(uuid);
+                return;
+            }
+            openSelection(refreshed);
         }, 5L);
     }
 

@@ -1,11 +1,14 @@
 package com.yourfault.system;
 
-import com.yourfault.Main;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.Set;
+
 import com.yourfault.listener.WeaponSelectionListener;
+import com.yourfault.perk.PerkType;
+
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
-
-import java.util.UUID;
 
 public class Player
 {
@@ -16,6 +19,7 @@ public class Player
     private float MANA;
     public float DEFENSE;
     public WeaponSelectionListener.WeaponType SELECTED_WEAPON = null;
+    private final EnumSet<PerkType> perks = EnumSet.noneOf(PerkType.class);
 
     public Player(org.bukkit.entity.Player minecraftplayer, float MaxHealth, float MaxMana, float Defense, WeaponSelectionListener.WeaponType selectedWeapon)
     {
@@ -26,8 +30,6 @@ public class Player
         this.MANA = MaxMana;
         this.DEFENSE = Defense;
         this.SELECTED_WEAPON = selectedWeapon;
-
-
     }
     public void DisplayStatToPlayer()
     {
@@ -58,8 +60,28 @@ public class Player
     {
         return MANA;
     }
+    public boolean addPerk(PerkType perk) {
+        return perks.add(perk);
+    }
 
+    public boolean hasPerk(PerkType perk) {
+        return perks.contains(perk);
+    }
 
+    public Set<PerkType> getPerks() {
+        return Collections.unmodifiableSet(perks);
+    }
 
+    public void clearPerks() {
+        perks.clear();
+    }
+
+    public void setMinecraftPlayer(org.bukkit.entity.Player minecraftPlayer) {
+        this.MINECRAFT_PLAYER = minecraftPlayer;
+    }
+
+    public org.bukkit.entity.Player getMinecraftPlayer() {
+        return MINECRAFT_PLAYER;
+    }
 
 }
