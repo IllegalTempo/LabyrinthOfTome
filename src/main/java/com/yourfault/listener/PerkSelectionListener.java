@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import com.yourfault.Main;
+import com.yourfault.system.GeneralPlayer.GamePlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -26,7 +28,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.yourfault.handler.PerkSelectionHandler;
 import com.yourfault.perk.PerkType;
 
 public class PerkSelectionListener implements Listener {
@@ -34,25 +35,23 @@ public class PerkSelectionListener implements Listener {
     private static final String GUI_TITLE = "Select your perk";
 
     private final JavaPlugin plugin;
-    private final PerkSelectionHandler perkSelectionHandler;
     private final NamespacedKey perkKey;
     private final NamespacedKey selectorKey;
     private final ItemStack selectorItem;
     private final Set<UUID> pendingSelection = new HashSet<>();
 
-    public PerkSelectionListener(JavaPlugin plugin, PerkSelectionHandler perkSelectionHandler) {
+    public PerkSelectionListener(JavaPlugin plugin) {
         this.plugin = plugin;
-        this.perkSelectionHandler = perkSelectionHandler;
         this.perkKey = new NamespacedKey(plugin, "perk_option");
         this.selectorKey = new NamespacedKey(plugin, "perk_selector_item");
         this.selectorItem = buildSelectorItem();
     }
 
-    public void preparePlayer(Player player) {
-        perkSelectionHandler.preparePerkSlots(player);
+    public void preparePlayer(GamePlayer player) {
+        player.PLAYER_PERKS.preparePerkSlots();
         ItemStack selector = selectorItem.clone();
         selector.setAmount(1);
-        player.getInventory().setItem(SELECTOR_SLOT, selector);
+        player.getMinecraftPlayer().getInventory().setItem(SELECTOR_SLOT, selector);
     }
 
     private ItemStack buildSelectorItem() {
@@ -123,7 +122,8 @@ public class PerkSelectionListener implements Listener {
         PerkType perkType = resolvePerkType(clicked);
         if (perkType == null) return;
         Player player = (Player) event.getWhoClicked();
-        boolean applied = perkSelectionHandler.applyPerkSelection(player, perkType);
+        GamePlayer gamePlayer = Main.game.GetPlayer(player);
+        boolean applied = gamePlayer.PLAYER_PERKS.applyPerkSelection(perkType);
         if (applied) {
             player.sendMessage(ChatColor.GREEN + perkType.displayName() + ChatColor.GRAY + " perk equipped!");
         } else {
