@@ -1,9 +1,11 @@
 package com.yourfault.system;
 
 import com.yourfault.Main;
+import com.yourfault.handler.WeaponSelectionHandler;
 import com.yourfault.listener.WeaponSelectionListener;
 import com.yourfault.weapon.General.Projectile;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -23,14 +25,22 @@ public class Game {
     private JavaPlugin plugin;
     private BukkitRunnable StatDisplayTask;
     public Vector Gravity = new Vector(0,-0.5,0);
-    private HashMap<UUID,Player> PLAYER_LIST = new HashMap<>();
+    public HashMap<UUID,Player> PLAYER_LIST = new HashMap<>();
     public HashMap<UUID,Projectile> PROJECTILE_LIST = new HashMap<>();
     public HashMap<UUID,Enemy> ENEMY_LIST = new HashMap<>();
+    private WeaponSelectionListener weaponSelectionListener;
     public void StartGame()
     {
+        PLAYER_LIST.clear();
         Main.world.getPlayers().forEach(player -> {
-            PLAYER_LIST.put(player.getUniqueId(),new Player(player,100f,100f,100f, WeaponSelectionListener.WeaponType.Excalibur));
-            player.sendTitle("§aGame Started","§7Wow!",10,70,20);
+            player.sendTitle("§aGame Started","§7Select your default weapon!",10,70,20);
+            if (weaponSelectionListener != null) {
+                Bukkit.getScheduler().runTaskLater(Main.plugin, () -> {
+                    if (!PLAYER_LIST.containsKey(player.getUniqueId())) {
+                        weaponSelectionListener.openSelection(player);
+                    }
+                }, 70L);
+            }
         });
         DisplayPlayerStat();
     }
@@ -53,4 +63,12 @@ public class Game {
         StatDisplayTask.runTaskTimer(Main.plugin, 0L, 1L);
     }
 
+    private WeaponSelectionHandler weaponSelectionHandler;
+    public void setWeaponSelectionHandler(WeaponSelectionHandler h) {
+        this.weaponSelectionHandler = h;
+    }
+
+    public void setWeaponSelectionListener(WeaponSelectionListener weaponSelectionListener) {
+        this.weaponSelectionListener = weaponSelectionListener;
+    }
 }

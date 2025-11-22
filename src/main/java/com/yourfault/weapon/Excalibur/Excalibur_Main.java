@@ -15,6 +15,7 @@ public class Excalibur_Main implements Listener {
         if(e.getAction() == Action.RIGHT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_AIR)
         {
             Player player = Main.game.GetPlayer(e.getPlayer().getUniqueId());
+            if (player == null) return;
             WeaponSelectionListener.WeaponType selectedWeapon = player.SELECTED_WEAPON;
             if(selectedWeapon != WeaponSelectionListener.WeaponType.Excalibur) return;
             if(e.getPlayer().getInventory().getItemInMainHand().getItemMeta() == null) return;
