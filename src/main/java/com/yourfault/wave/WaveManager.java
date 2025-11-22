@@ -1,0 +1,223 @@
+package com.yourfault.wave;
+
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.UUID;
+
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.World;
+import org.bukkit.entity.LivingEntity;
+
+import com.yourfault.Main;
+import com.yourfault.system.Game;
+
+public class WaveManager {
+    private final Game game;
+    private final Random random = new Random();
+    private final List<UUID> activeWaveEnemyIds = new ArrayList<>();
+    private final List<WaveEnemyInstance> lastSpawnedEnemies = new ArrayList<>();
+
+    private WaveDifficulty difficulty = WaveDifficulty.MEDIUM;
+    private int currentWave = 0;
+    private boolean active = false;
+
+    public WaveManager(Game game) {
+        this.game = game;
+    }
+
+    public void initializeSession(WaveDifficulty difficulty) {
+        this.difficulty = difficulty;
+        this.currentWave = 0;
+        this.active = true;
+    }
+
+    public int getCurrentWave() {
+        return currentWave;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void stop() {
+        this.active = false;
+        activeWaveEnemyIds.clear();
+        lastSpawnedEnemies.clear();
+    }
+
+    public void triggerNextWave() {
+        if (!active) {
+            Bukkit.broadcastMessage(ChatColor.RED + "Wave manager is not active.");
+            return;
+        }
+        int playersReady = game.PLAYER_LIST.size();
+        if (playersReady == 0) {
+            Bukkit.broadcastMessage(ChatColor.RED + "No players have joined the game. Wave cancelled.");
+            return;
+        }
+        currentWave++;
+        activeWaveEnemyIds.clear();
+        lastSpawnedEnemies.clear();
+        WaveContext context = buildWaveContext(playersReady);
+        Bukkit.broadcastMessage(ChatColor.AQUA + "Wave " + currentWave + " incoming! Weight budget: " + String.format("%.1f", context.totalWeightBudget()));
+        List<WaveEnemyType> composition = planComposition(context);
+        spawnWave(composition, context);
+    }
+
+    private WaveContext buildWaveContext(int playerCount) {
+        double baseWeight = 10 + (currentWave * 2.0);
+        double exponential = baseWeight * Math.pow(1.1, currentWave / 5.0);
+        double playerScaling = 1 + (playerCount * 0.2);
+        double totalWeight = (baseWeight + exponential) * playerScaling + difficulty.modeBonus();
+        return new WaveContext(currentWave, playerCount, difficulty, baseWeight, exponential, totalWeight);
+    }
+
+    private List<WaveEnemyType> planComposition(WaveContext context) {
+        double remaining = context.totalWeightBudget();
+        double maxPerType = context.totalWeightBudget() * 0.5;
+        Map<WaveEnemyType, Double> weightUsed = new EnumMap<>(WaveEnemyType.class);
+        List<WaveEnemyType> result = new ArrayList<>();
+
+        if (context.waveNumber() % 10 == 0) {
+            result.add(WaveEnemyType.BOSS);
+            double bossWeight = WaveEnemyType.BOSS.weight();
+            weightUsed.put(WaveEnemyType.BOSS, bossWeight);
+            remaining = Math.max(0, remaining - bossWeight);
+        }
+
+        while (remaining >= getCheapestWeight()) {
+            List<WaveEnemyType> candidates = new ArrayList<>();
+            for (WaveEnemyType type : getAffordableTypes(context, remaining)) {
+                if (weightUsed.getOrDefault(type, 0.0) + type.weight() <= maxPerType) {
+                    candidates.add(type);
+                }
+            }
+            if (candidates.isEmpty()) {
+                break;
+            }
+            WaveEnemyType choice = chooseRandomType(candidates);
+            result.add(choice);
+            weightUsed.merge(choice, choice.weight(), Double::sum);
+            remaining -= choice.weight();
+        }
+
+        return result;
+    }
+
+    private double getCheapestWeight() {
+        double min = Double.MAX_VALUE;
+        for (WaveEnemyType type : WaveEnemyType.values()) {
+            min = Math.min(min, type.weight());
+        }
+        return min == Double.MAX_VALUE ? 1.0 : min;
+    }
+
+    private List<WaveEnemyType> getAffordableTypes(WaveContext context, double remaining) {
+        int allowedTier = Math.max(1, (context.waveNumber() / 5) + 1);
+        List<WaveEnemyType> list = new ArrayList<>();
+        for (WaveEnemyType type : WaveEnemyType.values()) {
+            if (type.weight() > remaining) continue;
+            if (context.waveNumber() < type.minWave()) continue;
+            if (type.tier() > allowedTier && !type.isBoss()) continue;
+            if (type.isBoss() && context.waveNumber() % 10 != 0) continue;
+            list.add(type);
+        }
+        return list;
+    }
+
+    private WaveEnemyType chooseRandomType(List<WaveEnemyType> candidates) {
+        double totalBias = candidates.stream().mapToDouble(WaveEnemyType::spawnBias).sum();
+        double roll = random.nextDouble() * totalBias;
+        double cumulative = 0.0;
+        for (WaveEnemyType candidate : candidates) {
+            cumulative += candidate.spawnBias();
+            if (roll <= cumulative) {
+                return candidate;
+            }
+        }
+        return candidates.get(candidates.size() - 1);
+    }
+
+    private void spawnWave(List<WaveEnemyType> composition, WaveContext context) {
+        if (composition.isEmpty()) {
+            Bukkit.broadcastMessage(ChatColor.YELLOW + "No enemies could be spawned for wave " + context.waveNumber());
+            return;
+        }
+        World world = Main.world;
+        if (world == null) {
+            Bukkit.broadcastMessage(ChatColor.RED + "World is not ready. Cannot spawn wave.");
+            return;
+        }
+        for (WaveEnemyType type : composition) {
+            Location spawnLocation = pickSpawnLocation();
+            if (spawnLocation == null) {
+                continue;
+            }
+            LivingEntity entity = type.spawn(world, spawnLocation);
+            applyScaling(entity, type, context);
+            activeWaveEnemyIds.add(entity.getUniqueId());
+            Bukkit.broadcastMessage(ChatColor.DARK_PURPLE + "Spawned " + type.name() + " for wave " + context.waveNumber());
+        }
+    }
+
+    private Location pickSpawnLocation() {
+        if (Main.world == null || Main.world.getPlayers().isEmpty()) {
+            return null;
+        }
+        org.bukkit.entity.Player target = Main.world.getPlayers().get(random.nextInt(Main.world.getPlayers().size()));
+        if (target == null) {
+            return null;
+        }
+        Location base = target.getLocation();
+        if (base == null) {
+            return null;
+        }
+        double offsetX = random.nextInt(14) - 7;
+        double offsetZ = random.nextInt(14) - 7;
+        Location spawn = base.clone().add(offsetX, 0, offsetZ);
+        spawn.setY(Main.world.getHighestBlockYAt(spawn) + 1);
+        return spawn;
+    }
+
+    private void applyScaling(LivingEntity entity, WaveEnemyType type, WaveContext context) {
+        double baseHealth = type.baseHealth() * (1 + (context.waveNumber() * 0.15));
+        double healthMultiplier = 1 + (type.weight() * 0.05);
+        double finalHealth = baseHealth * healthMultiplier * context.difficulty().difficultyScale();
+
+        double baseDefense = (context.waveNumber() * 0.3) + (type.weight() * 0.2);
+        double finalDefense = baseDefense * context.difficulty().difficultyScale();
+
+        double finalDamage = type.baseDamage() * (1 + (context.waveNumber() * 0.1));
+
+        double newMax = Math.max(finalHealth, 1.0);
+        if (entity.getMaxHealth() != newMax) {
+            entity.setMaxHealth(newMax);
+        }
+        entity.setHealth(Math.max(1.0, newMax));
+
+        WaveEnemyInstance waveEnemy = new WaveEnemyInstance(
+                entity,
+                (float) finalHealth,
+                (float) finalHealth,
+                (float) finalDefense,
+                type,
+                finalDamage
+        );
+        lastSpawnedEnemies.add(waveEnemy);
+
+    }
+
+    public List<UUID> getActiveWaveEnemyIds() {
+        return new ArrayList<>(activeWaveEnemyIds);
+    }
+
+    public List<WaveEnemyInstance> getLastSpawnedEnemies() {
+        return new ArrayList<>(lastSpawnedEnemies);
+    }
+
+}

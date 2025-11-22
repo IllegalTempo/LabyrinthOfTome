@@ -1,6 +1,8 @@
 package com.yourfault;
 
+import com.yourfault.Commands.Debug.ReadyForNextWave;
 import com.yourfault.Commands.Debug.StartGame;
+import com.yourfault.wave.WaveManager;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -21,6 +23,7 @@ public class Main extends JavaPlugin {
     public static Game game;
     public static World world;
     private PerkSelectionListener perkSelectionListener;
+    private WaveManager waveManager;
 
     //private QuickdrawAbility quickdrawAbility;
     //private SharpshooterAbility sharpshooterAbility;
@@ -31,6 +34,8 @@ public class Main extends JavaPlugin {
         plugin = this;
         world = Bukkit.getWorld("world");
         game = new Game(this);
+        waveManager = new WaveManager(game);
+        game.setWaveManager(waveManager);
 
         perkSelectionListener = new PerkSelectionListener(this);
 
@@ -44,6 +49,7 @@ public class Main extends JavaPlugin {
         this.getCommand("startgame").setExecutor(new StartGame());
         this.getCommand("endgame").setExecutor(new EndGame());
         this.getCommand("get").setExecutor(new GetCommand());
+        this.getCommand("readyfornextwave").setExecutor(new ReadyForNextWave());
 
     }
     private void RegisterAbilityListeners() {

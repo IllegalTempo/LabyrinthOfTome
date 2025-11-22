@@ -2,6 +2,8 @@ package com.yourfault.Items;
 
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.components.CustomModelDataComponent;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +28,9 @@ public class weapons {
             );
             meta.setLore(lore);
             meta.setUnbreakable(true);
-            meta.setItemName("excalibur");
+            CustomModelDataComponent component = meta.getCustomModelDataComponent();
+            component.setStrings(List.of("excalibur","idle"));
+            meta.setCustomModelDataComponent(component);
             EXCALIBUR.setItemMeta(meta);
         }
         // Register items in the map

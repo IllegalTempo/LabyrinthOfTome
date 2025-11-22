@@ -9,6 +9,7 @@ import com.yourfault.perk.PerkType;
 import com.yourfault.weapon.WeaponType;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
+import org.bukkit.craftbukkit.v1_21_R6.entity.CraftPlayer;
 
 public class GamePlayer
 {
@@ -31,7 +32,6 @@ public class GamePlayer
         this.MANA = MAX_MANA;
         this.DEFENSE = SELECTED_WEAPON.Defense;
         PLAYER_PERKS = new Perks(this);
-
     }
     private WeaponType GetSelectedWeapon_From_Scoreboardtag() {
         return MINECRAFT_PLAYER.getScoreboardTags().stream()

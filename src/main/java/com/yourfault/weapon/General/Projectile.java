@@ -5,9 +5,11 @@ import org.bukkit.Location;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.ItemDisplay;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.EulerAngle;
 import org.bukkit.util.Vector;
 import java.util.Collection;
 import java.util.Objects;
@@ -23,7 +25,7 @@ public abstract class Projectile {
     private BukkitRunnable UpdateTask;
 
 
-    public Projectile(Location StartLocation, float speed, float damage, float radius,boolean UseGravity,ItemStack projectileItem, float LastFor)
+    public Projectile(Location eyeLocation,float speed, float damage, float radius, boolean UseGravity, ItemStack projectileItem, float LastFor)
     {
         //speed(b/t), age(ticks)
         //boundingbox is relative to 0 0 0
@@ -31,26 +33,33 @@ public abstract class Projectile {
         this.damage = damage;
         this.UseGravity = UseGravity;
         this.projectileItem = projectileItem;
+
         age = LastFor;
         this.radius = radius;
 
-        entity = (ArmorStand) StartLocation.getWorld().spawnEntity(StartLocation, EntityType.ARMOR_STAND);
-        Main.game.PROJECTILE_LIST.put(entity.getUniqueId(),this);
-        InitializeEntity();
+        entity = eyeLocation.getWorld().spawn(eyeLocation, ArmorStand.class, e ->{
+            e.setVisible(false);
+            e.setInvulnerable(true);
+            e.setBasePlate(false);
+            e.setMarker(true);
+            e.setSmall(true);
+            e.teleport(e.getLocation().subtract(0,1,0));
+            for (EquipmentSlot slot : EquipmentSlot.values()) {
+                e.addEquipmentLock(slot, ArmorStand.LockType.ADDING_OR_CHANGING);
+                e.addEquipmentLock(slot, ArmorStand.LockType.REMOVING_OR_CHANGING);
+            }
+            Objects.requireNonNull(e.getEquipment()).setHelmet(projectileItem);
+            Vector dir = eyeLocation.getDirection().clone().normalize();
+            double pitch = Math.asin(-dir.getY());
+            double yaw = Math.atan2(dir.getX(), dir.getZ());
+            e.setHeadPose(new EulerAngle(0, 0, pitch));
+            Main.game.PROJECTILE_LIST.put(e.getUniqueId(),this);
+
+        });
+
+
         Update();
 
-    }
-    private void InitializeEntity()
-    {
-        entity.setVisible(false);
-        entity.setInvulnerable(true);
-        entity.setBasePlate(false);
-        entity.setMarker(true);
-        for (EquipmentSlot slot : EquipmentSlot.values()) {
-            entity.addEquipmentLock(slot, ArmorStand.LockType.ADDING_OR_CHANGING);
-            entity.addEquipmentLock(slot, ArmorStand.LockType.REMOVING_OR_CHANGING);
-        }
-        Objects.requireNonNull(entity.getEquipment()).setHelmet(projectileItem);
     }
     public void Update()
     {

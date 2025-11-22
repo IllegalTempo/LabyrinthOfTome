@@ -18,3 +18,8 @@ commands:
     usage: /get <item>
     permissions:
       labyrinthoftome.admin: true
+  readyfornextwave:
+    description: Triggers the next wave spawn
+    usage: /readyfornextwave
+    permissions:
+      labyrinthoftome.admin: true

@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.UUID;
 
 import com.yourfault.system.GeneralPlayer.GamePlayer;
+import com.yourfault.wave.WaveDifficulty;
+import com.yourfault.wave.WaveManager;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -29,9 +31,13 @@ public class Game {
     {
         return !PLAYER_LIST.isEmpty();
     }
+    private WaveManager waveManager;
     public void StartGame()
     {
         CleanPlayerList();
+        if (waveManager != null) {
+            waveManager.initializeSession(WaveDifficulty.MEDIUM);
+        }
         Main.world.getPlayers().forEach(player -> {
             var gamePlayer = new GamePlayer(player);
             PLAYER_LIST.put(player.getUniqueId(), gamePlayer);
@@ -46,6 +52,9 @@ public class Game {
     public void EndGame()
     {
         CleanPlayerList();
+        if (waveManager != null) {
+            waveManager.stop();
+        }
         if(StatDisplayTask != null)StatDisplayTask.cancel();
     }
     private void CleanPlayerList()
@@ -73,7 +82,7 @@ public class Game {
                 PLAYER_LIST.values().forEach(GamePlayer::DisplayStatToPlayer);
             }
         };
-        StatDisplayTask.runTaskTimer(Main.plugin, 0L, 1L);
+        StatDisplayTask.runTaskTimer(plugin, 0L, 1L);
     }
 
 
@@ -82,5 +91,12 @@ public class Game {
         this.perkSelectionListener = perkSelectionListener;
     }
 
+    public void setWaveManager(WaveManager waveManager) {
+        this.waveManager = waveManager;
+    }
+
+    public WaveManager getWaveManager() {
+        return waveManager;
+    }
 
 }

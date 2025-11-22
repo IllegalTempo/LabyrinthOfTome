@@ -3,6 +3,7 @@ package com.yourfault.weapon.Excalibur;
 import com.yourfault.Main;
 import com.yourfault.system.GeneralPlayer.GamePlayer;
 import com.yourfault.weapon.WeaponType;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
@@ -19,11 +20,11 @@ public class Excalibur_Main implements Listener {
             WeaponType selectedWeapon = gamePlayer.SELECTED_WEAPON;
             if(selectedWeapon != WeaponType.Excalibur) return;
             if(e.getPlayer().getInventory().getItemInMainHand().getItemMeta() == null) return;
-            String itemname = e.getPlayer().getInventory().getItemInMainHand().getItemMeta().getItemName();
+            String itemname = e.getPlayer().getInventory().getItemInMainHand().getItemMeta().getCustomModelDataComponent().getStrings().get(0);
             if(itemname.equals("excalibur"))
             {
                 gamePlayer.ChangeMana(-5f);
-                new Sword_Aura(e.getPlayer().getLocation(),1f);
+                new Sword_Aura(e.getPlayer().getEyeLocation() , 10f);
 
             }
         }
