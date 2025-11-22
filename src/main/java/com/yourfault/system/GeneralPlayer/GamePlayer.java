@@ -1,36 +1,53 @@
-package com.yourfault.system;
+package com.yourfault.system.GeneralPlayer;
 
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
 
-import com.yourfault.listener.WeaponSelectionListener;
 import com.yourfault.perk.PerkType;
 
+import com.yourfault.weapon.WeaponType;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 
-public class Player
+public class GamePlayer
 {
     private org.bukkit.entity.Player MINECRAFT_PLAYER;
-    private float MAX_HEALTH = 100f;
-    private float MAX_MANA = 100f;
+    public Perks PLAYER_PERKS;
+    private float MAX_HEALTH;
+    private float MAX_MANA;
     private float HEALTH;
     private float MANA;
     public float DEFENSE;
-    public WeaponSelectionListener.WeaponType SELECTED_WEAPON = null;
-    private final EnumSet<PerkType> perks = EnumSet.noneOf(PerkType.class);
+    public WeaponType SELECTED_WEAPON = null;
 
-    public Player(org.bukkit.entity.Player minecraftplayer, float MaxHealth, float MaxMana, float Defense, WeaponSelectionListener.WeaponType selectedWeapon)
+    public GamePlayer(org.bukkit.entity.Player minecraftplayer)
     {
         this.MINECRAFT_PLAYER = minecraftplayer;
-        this.MAX_HEALTH = MaxHealth;
-        this.MAX_MANA = MaxMana;
-        this.HEALTH = MaxHealth;
-        this.MANA = MaxMana;
-        this.DEFENSE = Defense;
-        this.SELECTED_WEAPON = selectedWeapon;
+        this.SELECTED_WEAPON = GetSelectedWeapon_From_Scoreboardtag();
+        this.MAX_HEALTH = SELECTED_WEAPON.Health;
+        this.MAX_MANA = SELECTED_WEAPON.Mana;
+        this.HEALTH = MAX_HEALTH;
+        this.MANA = MAX_MANA;
+        this.DEFENSE = SELECTED_WEAPON.Defense;
+        PLAYER_PERKS = new Perks(this);
+
     }
+    private WeaponType GetSelectedWeapon_From_Scoreboardtag() {
+        return MINECRAFT_PLAYER.getScoreboardTags().stream()
+                .filter(tag -> tag.startsWith("SelectedWeapon_"))
+                .map(tag -> tag.replace("SelectedWeapon_", ""))
+                .findFirst()
+                .map(name -> {
+                    try {
+                        return WeaponType.valueOf(name);
+                    } catch (IllegalArgumentException | NullPointerException e) {
+                        return WeaponType.Excalibur;
+                    }
+                })
+                .orElse(WeaponType.Excalibur);
+    }
+
     public void DisplayStatToPlayer()
     {
         String message = "❤ " + Math.round(GetHealth_Ratio() * 100) + "%  ✦ " + Math.round(GetMana_Ratio() * 100) + "%";
@@ -44,6 +61,7 @@ public class Player
         if(MANA < 0) MANA = 0;
 
     }
+
     public float GetHealth_Ratio()
     {
         return (HEALTH / MAX_HEALTH);
@@ -59,21 +77,6 @@ public class Player
     public float GetMana()
     {
         return MANA;
-    }
-    public boolean addPerk(PerkType perk) {
-        return perks.add(perk);
-    }
-
-    public boolean hasPerk(PerkType perk) {
-        return perks.contains(perk);
-    }
-
-    public Set<PerkType> getPerks() {
-        return Collections.unmodifiableSet(perks);
-    }
-
-    public void clearPerks() {
-        perks.clear();
     }
 
     public void setMinecraftPlayer(org.bukkit.entity.Player minecraftPlayer) {

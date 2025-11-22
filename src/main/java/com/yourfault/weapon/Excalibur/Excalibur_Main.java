@@ -1,8 +1,8 @@
 package com.yourfault.weapon.Excalibur;
 
 import com.yourfault.Main;
-import com.yourfault.listener.WeaponSelectionListener;
-import com.yourfault.system.Player;
+import com.yourfault.system.GeneralPlayer.GamePlayer;
+import com.yourfault.weapon.WeaponType;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
@@ -14,15 +14,15 @@ public class Excalibur_Main implements Listener {
     {
         if(e.getAction() == Action.RIGHT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_AIR)
         {
-            Player player = Main.game.GetPlayer(e.getPlayer().getUniqueId());
-            if (player == null) return;
-            WeaponSelectionListener.WeaponType selectedWeapon = player.SELECTED_WEAPON;
-            if(selectedWeapon != WeaponSelectionListener.WeaponType.Excalibur) return;
+            GamePlayer gamePlayer = Main.game.GetPlayer(e.getPlayer().getUniqueId());
+            if (gamePlayer == null) return;
+            WeaponType selectedWeapon = gamePlayer.SELECTED_WEAPON;
+            if(selectedWeapon != WeaponType.Excalibur) return;
             if(e.getPlayer().getInventory().getItemInMainHand().getItemMeta() == null) return;
             String itemname = e.getPlayer().getInventory().getItemInMainHand().getItemMeta().getItemName();
             if(itemname.equals("excalibur"))
             {
-                player.ChangeMana(-5f);
+                gamePlayer.ChangeMana(-5f);
                 new Sword_Aura(e.getPlayer().getLocation(),1f);
 
             }

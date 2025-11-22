@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import com.yourfault.Main;
+import com.yourfault.system.GeneralPlayer.GamePlayer;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
@@ -16,14 +18,11 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
-import com.yourfault.handler.PerkSelectionHandler;
 import com.yourfault.perk.PerkType;
 
 public class QuickdrawAbility implements Listener {
@@ -35,12 +34,8 @@ public class QuickdrawAbility implements Listener {
             Material.TIPPED_ARROW
     );
 
-    private final PerkSelectionHandler perkSelectionHandler;
     private final Map<UUID, Long> cooldowns = new HashMap<>();
 
-    public QuickdrawAbility(PerkSelectionHandler perkSelectionHandler) {
-        this.perkSelectionHandler = perkSelectionHandler;
-    }
 
     @EventHandler
     public void onBowUse(PlayerInteractEvent event) {
@@ -50,8 +45,9 @@ public class QuickdrawAbility implements Listener {
         ItemStack item = event.getItem();
         if (item == null || item.getType() != Material.BOW) return;
         Player player = event.getPlayer();
+        GamePlayer gamePlayer = Main.game.GetPlayer(player);
         UUID uuid = player.getUniqueId();
-        if (!perkSelectionHandler.hasPerk(uuid, PerkType.QUICKDRAW)) return;
+        if (!gamePlayer.PLAYER_PERKS.hasPerk(PerkType.QUICKDRAW)) return;
 
         long now = System.currentTimeMillis();
         long lastUse = cooldowns.getOrDefault(uuid, 0L);
