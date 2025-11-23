@@ -36,5 +36,8 @@ public abstract class Enemy {
     {
         entity.remove();
         Main.game.ENEMY_LIST.remove(entity.getUniqueId());
+        if (Main.game.getWaveManager() != null) {
+            Main.game.getWaveManager().handleEnemyDeath(entity.getUniqueId(), null);
+        }
     }
 }

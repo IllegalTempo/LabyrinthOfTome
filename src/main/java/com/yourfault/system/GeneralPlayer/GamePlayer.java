@@ -1,15 +1,8 @@
 package com.yourfault.system.GeneralPlayer;
 
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.Set;
-
-import com.yourfault.perk.PerkType;
-
 import com.yourfault.weapon.WeaponType;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
-import org.bukkit.craftbukkit.v1_21_R6.entity.CraftPlayer;
 
 public class GamePlayer
 {
@@ -21,6 +14,9 @@ public class GamePlayer
     private float MANA;
     public float DEFENSE;
     public WeaponType SELECTED_WEAPON = null;
+    private int coins = 0;
+    private int level = 1;
+    private int experience = 0;
 
     public GamePlayer(org.bukkit.entity.Player minecraftplayer)
     {
@@ -50,7 +46,11 @@ public class GamePlayer
 
     public void DisplayStatToPlayer()
     {
-        String message = "❤ " + Math.round(GetHealth_Ratio() * 100) + "%  ✦ " + Math.round(GetMana_Ratio() * 100) + "%";
+        int healthPercent = Math.round(GetHealth_Ratio() * 100);
+        int manaPercent = Math.round(GetMana_Ratio() * 100);
+        int xpTarget = xpForNextLevel();
+        String message = "❤ " + healthPercent + "%  ✦ " + manaPercent + "%  |  L" + level + " " + coins + "C" +
+                "  (" + experience + "/" + xpTarget + " XP)";
         MINECRAFT_PLAYER.spigot().sendMessage(ChatMessageType.ACTION_BAR,new TextComponent(message));
 
     }
@@ -85,6 +85,45 @@ public class GamePlayer
 
     public org.bukkit.entity.Player getMinecraftPlayer() {
         return MINECRAFT_PLAYER;
+    }
+
+    public void addCoins(int amount) {
+        if (amount <= 0) {
+            return;
+        }
+        coins += amount;
+    }
+
+    public void addExperience(int amount) {
+        if (amount <= 0) {
+            return;
+        }
+        experience += amount;
+        boolean leveled = false;
+        while (experience >= xpForNextLevel()) {
+            experience -= xpForNextLevel();
+            level++;
+            leveled = true;
+        }
+        if (leveled) {
+            MINECRAFT_PLAYER.sendMessage("§6Level Up! You are now level " + level + "!");
+        }
+    }
+
+    public int getCoins() {
+        return coins;
+    }
+
+    public int getLevel() {
+        return level;
+    }
+
+    public int getExperience() {
+        return experience;
+    }
+
+    private int xpForNextLevel() {
+        return 100 + ((level - 1) * 50);
     }
 
 }

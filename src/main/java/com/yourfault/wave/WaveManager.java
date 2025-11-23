@@ -2,6 +2,7 @@ package com.yourfault.wave;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -15,16 +16,20 @@ import org.bukkit.entity.LivingEntity;
 
 import com.yourfault.Main;
 import com.yourfault.system.Game;
+import com.yourfault.system.GeneralPlayer.GamePlayer;
 
 public class WaveManager {
     private final Game game;
     private final Random random = new Random();
     private final List<UUID> activeWaveEnemyIds = new ArrayList<>();
+    private final Map<UUID, WaveEnemyInstance> activeWaveEnemies = new HashMap<>();
     private final List<WaveEnemyInstance> lastSpawnedEnemies = new ArrayList<>();
 
     private WaveDifficulty difficulty = WaveDifficulty.MEDIUM;
     private int currentWave = 0;
     private boolean active = false;
+    private boolean waveInProgress = false;
+    private boolean nextWaveScheduled = false;
 
     public WaveManager(Game game) {
         this.game = game;
@@ -34,6 +39,11 @@ public class WaveManager {
         this.difficulty = difficulty;
         this.currentWave = 0;
         this.active = true;
+        this.waveInProgress = false;
+        this.nextWaveScheduled = false;
+        activeWaveEnemyIds.clear();
+        activeWaveEnemyIds.clear();
+        lastSpawnedEnemies.clear();
     }
 
     public int getCurrentWave() {
@@ -44,10 +54,18 @@ public class WaveManager {
         return active;
     }
 
+    public WaveDifficulty getDifficulty() {
+        return difficulty;
+    }
+
     public void stop() {
         this.active = false;
+        this.waveInProgress = false;
+        this.nextWaveScheduled = false;
         activeWaveEnemyIds.clear();
+        activeWaveEnemies.clear();
         lastSpawnedEnemies.clear();
+
     }
 
     public void triggerNextWave() {
@@ -55,18 +73,29 @@ public class WaveManager {
             Bukkit.broadcastMessage(ChatColor.RED + "Wave manager is not active.");
             return;
         }
+        if (waveInProgress) {
+            Bukkit.broadcastMessage(ChatColor.YELLOW + "Wave " + currentWave + " is still in progress.");
+            return;
+        }
         int playersReady = game.PLAYER_LIST.size();
         if (playersReady == 0) {
             Bukkit.broadcastMessage(ChatColor.RED + "No players have joined the game. Wave cancelled.");
             return;
         }
+        waveInProgress = true;
+        nextWaveScheduled = false;
         currentWave++;
         activeWaveEnemyIds.clear();
+        activeWaveEnemies.clear();
         lastSpawnedEnemies.clear();
         WaveContext context = buildWaveContext(playersReady);
         Bukkit.broadcastMessage(ChatColor.AQUA + "Wave " + currentWave + " incoming! Weight budget: " + String.format("%.1f", context.totalWeightBudget()));
         List<WaveEnemyType> composition = planComposition(context);
         spawnWave(composition, context);
+        if (activeWaveEnemyIds.isEmpty()) {
+            waveInProgress = false;
+            Bukkit.broadcastMessage(ChatColor.RED + "Wave " + currentWave + " failed to spawn any enemies.");
+        }
     }
 
     private WaveContext buildWaveContext(int playerCount) {
@@ -209,6 +238,7 @@ public class WaveManager {
                 finalDamage
         );
         lastSpawnedEnemies.add(waveEnemy);
+        activeWaveEnemies.put(entity.getUniqueId(), waveEnemy);
 
     }
 
@@ -218,6 +248,73 @@ public class WaveManager {
 
     public List<WaveEnemyInstance> getLastSpawnedEnemies() {
         return new ArrayList<>(lastSpawnedEnemies);
+    }
+
+    public WaveEnemyInstance getActiveEnemy(UUID uuid) {
+        return activeWaveEnemies.get(uuid);
+    }
+
+    public void handleEnemyHit(UUID enemyId, GamePlayer attacker) {
+        if (!active || attacker == null) {
+            return;
+        }
+        WaveEnemyInstance instance = activeWaveEnemies.get(enemyId);
+        if (instance == null) {
+            return;
+        }
+        rewardPlayer(attacker, instance.getType().hitCoins(), instance.getType().hitXp());
+    }
+
+    public void handleEnemyDeath(UUID enemyId, GamePlayer killer) {
+        WaveEnemyInstance instance = activeWaveEnemies.remove(enemyId);
+        activeWaveEnemyIds.remove(enemyId);
+        if (!active || instance == null) {
+            return;
+        }
+        rewardPlayer(killer, instance.getType().killCoins(), instance.getType().killXp());
+        checkWaveCompletion();
+    }
+
+    private void rewardPlayer(GamePlayer player, int coins, int xp) {
+        if (player == null) {
+            return;
+        }
+        if (coins > 0) {
+            player.addCoins(coins);
+        }
+        if (xp > 0) {
+            player.addExperience(xp);
+        }
+    }
+
+    private void checkWaveCompletion() {
+        if (!waveInProgress) {
+            return;
+        }
+        if (!activeWaveEnemies.isEmpty()) {
+            return;
+        }
+        waveInProgress = false;
+        Bukkit.broadcastMessage(ChatColor.GREEN + "Wave " + currentWave + " cleared! Next wave in 5 seconds.");
+        scheduleAutoAdvance();
+    }
+
+    private void scheduleAutoAdvance() {
+        if (nextWaveScheduled) {
+            return;
+        }
+        nextWaveScheduled = true;
+        Bukkit.getScheduler().runTaskLater(Main.plugin, () -> {
+            nextWaveScheduled = false;
+            if (!active || waveInProgress) {
+                return;
+            }
+            triggerNextWave();
+        }, 100L);
+    }
+
+    public boolean isWaveInProgress() {
+        return waveInProgress;
     }
 
 }

@@ -123,6 +123,12 @@ public class PerkSelectionListener implements Listener {
         if (perkType == null) return;
         Player player = (Player) event.getWhoClicked();
         GamePlayer gamePlayer = Main.game.GetPlayer(player);
+        if (gamePlayer == null) {
+            player.sendMessage(ChatColor.RED + "You must join the game before selecting perks.");
+            pendingSelection.remove(player.getUniqueId());
+            player.closeInventory();
+            return;
+        }
         boolean applied = gamePlayer.PLAYER_PERKS.applyPerkSelection(perkType);
         if (applied) {
             player.sendMessage(ChatColor.GREEN + perkType.displayName() + ChatColor.GRAY + " perk equipped!");

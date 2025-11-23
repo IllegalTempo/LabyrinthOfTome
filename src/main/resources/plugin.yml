@@ -10,7 +10,7 @@ commands:
       labyrinthoftome.admin: true
   startgame:
     description: Starts the game for debugging
-    usage: /startgame
+    usage: /startgame [easy|medium|hard]
     permissions:
       labyrinthoftome.admin: true
   endgame:

@@ -66,6 +66,8 @@ public class Main extends JavaPlugin {
     private void RegisterAbilityListeners() {
         this.getServer().getPluginManager().registerEvents(new QuickdrawAbility(), this);
         this.getServer().getPluginManager().registerEvents(new SharpshooterAbility(), this);
+        //t
+        this.getServer().getPluginManager().registerEvents(new WaveCombatListener(game), this);
 
 
     }

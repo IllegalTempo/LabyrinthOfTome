@@ -26,4 +26,30 @@ public enum WaveDifficulty {
     public double difficultyScale() {
         return difficultyScale;
     }
+
+    public static WaveDifficulty fromInput(String input) {
+        if (input == null || input.isEmpty()) {
+            return EASY;
+        }
+        String normalized = input.trim().toUpperCase();
+        String trimmed = input.trim();
+        for (WaveDifficulty difficulty : values()) {
+            if (difficulty.name().equalsIgnoreCase(normalized) ||
+                difficulty.displayName().equalsIgnoreCase(trimmed)) {
+                return difficulty;
+            }
+        }
+        return EASY;
+    }
+
+    public static String optionsList() {
+        StringBuilder builder = new StringBuilder();
+        for (WaveDifficulty difficulty : values()) {
+            if (builder.length() > 0) {
+                builder.append(", ");
+            }
+            builder.append(difficulty.displayName());
+        }
+        return builder.toString();
+    }
 }
