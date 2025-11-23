@@ -1,7 +1,7 @@
 package com.yourfault.system.GeneralPlayer;
 
 import com.yourfault.Items.gui.General;
-import com.yourfault.perk.PerkType;
+import com.yourfault.perks.PerkType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 

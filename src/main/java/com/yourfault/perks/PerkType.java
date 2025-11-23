@@ -1,4 +1,4 @@
-package com.yourfault.perk;
+package com.yourfault.perks;
 
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
@@ -6,8 +6,8 @@ import java.util.function.Supplier;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 
-import com.yourfault.perk.quickdraw.QuickdrawPerk;
-import com.yourfault.perk.sharpshooter.SharpshooterPerk;
+import com.yourfault.perks.quickdraw.QuickdrawPerk;
+import com.yourfault.perks.sharpshooter.SharpshooterPerk;
 
 public enum PerkType {
     QUICKDRAW(

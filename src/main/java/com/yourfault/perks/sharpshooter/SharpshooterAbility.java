@@ -1,4 +1,4 @@
-package com.yourfault.perk.sharpshooter;
+package com.yourfault.perks.sharpshooter;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -17,7 +17,7 @@ import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.util.Vector;
 
-import com.yourfault.perk.PerkType;
+import com.yourfault.perks.PerkType;
 
 public class SharpshooterAbility implements Listener {
     private static final double VELOCITY_MULTIPLIER = 1.25;
@@ -30,8 +30,11 @@ public class SharpshooterAbility implements Listener {
         if (!(event.getEntity() instanceof Arrow arrow)) return;
         ProjectileSource shooter = arrow.getShooter();
         if (!(shooter instanceof Player player)) return;
-        UUID uuid = player.getUniqueId();
         GamePlayer gamePlayer = Main.game.GetPlayer(player);
+        if (gamePlayer == null) {
+            return;
+        }
+        UUID uuid = player.getUniqueId();
         if (!gamePlayer.PLAYER_PERKS.hasPerk(PerkType.SHARPSHOOTER)) return;
 
         Vector current = arrow.getVelocity();
@@ -46,8 +49,11 @@ public class SharpshooterAbility implements Listener {
         if (!empoweredArrows.remove(arrow.getUniqueId())) return;
         ProjectileSource shooter = arrow.getShooter();
         if (!(shooter instanceof Player player)) return;
-        UUID uuid = player.getUniqueId();
         GamePlayer gamePlayer = Main.game.GetPlayer(player);
+        if (gamePlayer == null) {
+            return;
+        }
+        UUID uuid = player.getUniqueId();
 
         if (!gamePlayer.PLAYER_PERKS.hasPerk(PerkType.SHARPSHOOTER)) return;
         event.setDamage(event.getDamage() + BONUS_DAMAGE);

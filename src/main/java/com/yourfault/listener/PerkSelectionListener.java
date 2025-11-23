@@ -28,7 +28,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.yourfault.perk.PerkType;
+import com.yourfault.perks.PerkType;
 
 public class PerkSelectionListener implements Listener {
     private static final int SELECTOR_SLOT = 8;

@@ -1,6 +1,5 @@
-package com.yourfault.Commands.Debug;
+package com.yourfault.Commands.Debugs;
 
-import com.yourfault.Main;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;

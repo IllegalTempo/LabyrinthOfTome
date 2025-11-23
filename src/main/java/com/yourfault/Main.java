@@ -1,17 +1,17 @@
 package com.yourfault;
 
-import com.yourfault.Commands.Debug.ReadyForNextWave;
-import com.yourfault.Commands.Debug.StartGame;
+import com.yourfault.Commands.Debugs.*;
+import com.yourfault.npcinteraction.WeaponSelect;
+import com.yourfault.system.PlayerActivity;
+import com.yourfault.wave.WaveCombatListener;
 import com.yourfault.wave.WaveManager;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.yourfault.Commands.Debug.EndGame;
-import com.yourfault.Commands.Debug.GetCommand;
 import com.yourfault.listener.PerkSelectionListener;
-import com.yourfault.perk.quickdraw.QuickdrawAbility;
-import com.yourfault.perk.sharpshooter.SharpshooterAbility;
+import com.yourfault.perks.quickdraw.QuickdrawAbility;
+import com.yourfault.perks.sharpshooter.SharpshooterAbility;
 import com.yourfault.system.Game;
 import com.yourfault.weapon.Excalibur.Excalibur_Main;
 
@@ -43,14 +43,25 @@ public class Main extends JavaPlugin {
         RegisterCommands();
         RegisterWeapons();
         RegisterAbilityListeners();
+        RegisterNPCInteraction();
+        RegisterPlayerActivity();
     }
     private void RegisterCommands()
     {
         this.getCommand("startgame").setExecutor(new StartGame());
-        this.getCommand("endgame").setExecutor(new EndGame());
+        this.getCommand("endgame").setExecutor(new EndGameCommand());
         this.getCommand("get").setExecutor(new GetCommand());
         this.getCommand("readyfornextwave").setExecutor(new ReadyForNextWave());
+        this.getCommand("spawnnpc").setExecutor(new SummonNPC());
 
+    }
+    private void RegisterPlayerActivity()
+    {
+        this.getServer().getPluginManager().registerEvents(new PlayerActivity(),this);
+    }
+    private void RegisterNPCInteraction()
+    {
+        this.getServer().getPluginManager().registerEvents(new WeaponSelect(),this);
     }
     private void RegisterAbilityListeners() {
         this.getServer().getPluginManager().registerEvents(new QuickdrawAbility(), this);

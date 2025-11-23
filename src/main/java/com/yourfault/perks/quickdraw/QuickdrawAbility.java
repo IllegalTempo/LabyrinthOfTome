@@ -1,4 +1,4 @@
-package com.yourfault.perk.quickdraw;
+package com.yourfault.perks.quickdraw;
 
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -23,7 +23,7 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
-import com.yourfault.perk.PerkType;
+import com.yourfault.perks.PerkType;
 
 public class QuickdrawAbility implements Listener {
     private static final long COOLDOWN_MS = 1000L;
@@ -46,6 +46,9 @@ public class QuickdrawAbility implements Listener {
         if (item == null || item.getType() != Material.BOW) return;
         Player player = event.getPlayer();
         GamePlayer gamePlayer = Main.game.GetPlayer(player);
+        if (gamePlayer == null) {
+            return;
+        }
         UUID uuid = player.getUniqueId();
         if (!gamePlayer.PLAYER_PERKS.hasPerk(PerkType.QUICKDRAW)) return;
 
@@ -55,7 +58,7 @@ public class QuickdrawAbility implements Listener {
             event.setCancelled(true);
             long wait = COOLDOWN_MS - (now - lastUse);
             player.spigot().sendMessage(net.md_5.bungee.api.ChatMessageType.ACTION_BAR,
-                new net.md_5.bungee.api.chat.TextComponent(ChatColor.YELLOW + "Quickdraw recharging: " + wait / 100 + "s"));
+                    new net.md_5.bungee.api.chat.TextComponent(ChatColor.YELLOW + "Quickdraw recharging: " + wait / 100 + "s"));
             return;
         }
 

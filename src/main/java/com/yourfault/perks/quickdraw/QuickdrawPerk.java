@@ -1,4 +1,4 @@
-package com.yourfault.perk.sharpshooter;
+package com.yourfault.perks.quickdraw;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,15 +10,15 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
-public final class SharpshooterPerk {
-    public static final int MENU_SLOT = 15;
-    public static final String DISPLAY_NAME = "Sharpshooter";
-    public static final String DESCRIPTION = "A steady hand and a keen eye";
+public final class QuickdrawPerk {
+    public static final int MENU_SLOT = 13;
+    public static final String DISPLAY_NAME = "Quickdraw";
+    public static final String DESCRIPTION = "Speed over precision";
 
     private static final List<String> ABILITY_LORE = List.of(
             ChatColor.GRAY + "Perk Ability:",
-            ChatColor.WHITE + "Arrows travel 25% faster",
-            ChatColor.WHITE + "Deal +3 bow damage"
+            ChatColor.WHITE + "Bow fires instantly at full power.",
+            ChatColor.WHITE + "1s cooldown between arrows."
     );
 
     private static final ItemStack MENU_TEMPLATE;
@@ -29,7 +29,8 @@ public final class SharpshooterPerk {
         INDICATOR_TEMPLATE = buildBaseIcon();
     }
 
-    private SharpshooterPerk() {}
+    private QuickdrawPerk() {
+    }
 
     public static ItemStack buildMenuIcon(NamespacedKey key, String perkId) {
         ItemStack stack = MENU_TEMPLATE.clone();
@@ -46,10 +47,10 @@ public final class SharpshooterPerk {
     }
 
     private static ItemStack buildBaseIcon() {
-        ItemStack stack = new ItemStack(Material.LAPIS_LAZULI);
+        ItemStack stack = new ItemStack(Material.LIME_DYE);
         ItemMeta meta = stack.getItemMeta();
         if (meta != null) {
-            meta.setDisplayName(ChatColor.AQUA + DISPLAY_NAME);
+            meta.setDisplayName(ChatColor.GREEN + DISPLAY_NAME);
             meta.setLore(buildLore());
             stack.setItemMeta(meta);
         }
@@ -64,4 +65,3 @@ public final class SharpshooterPerk {
         return lore;
     }
 }
-

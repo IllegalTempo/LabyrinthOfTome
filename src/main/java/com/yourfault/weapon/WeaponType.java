@@ -21,4 +21,8 @@ public enum WeaponType {
             this.Mana = Mana;
             this.Defense = Defense;
         }
+        public ItemStack GetItem() {
+            return templateSupplier.get().clone();
+
+        }
     }

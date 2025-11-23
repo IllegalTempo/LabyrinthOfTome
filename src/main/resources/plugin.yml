@@ -3,6 +3,11 @@ main: com.yourfault.Main
 version: 1.0
 api-version: 1.21
 commands:
+  spawnnpc:
+    description: Spawns a custom NPC at your location
+    usage: /spawnnpc <npc_name>
+    permissions:
+      labyrinthoftome.admin: true
   startgame:
     description: Starts the game for debugging
     usage: /startgame

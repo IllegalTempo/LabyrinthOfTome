@@ -1,4 +1,4 @@
-package com.yourfault.Commands.Debug;
+package com.yourfault.Commands.Debugs;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;

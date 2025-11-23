@@ -19,9 +19,10 @@ public class Game {
     public Game(JavaPlugin plugin)
     {
         this.plugin = plugin;
+        AddExistingPlayer();
     }
     private final JavaPlugin plugin;
-    private BukkitRunnable StatDisplayTask;
+    private BukkitRunnable UpdateTask;
     public Vector Gravity = new Vector(0,-0.5,0);
     public HashMap<UUID, GamePlayer> PLAYER_LIST = new HashMap<>();
     public HashMap<UUID,Projectile> PROJECTILE_LIST = new HashMap<>();
@@ -32,12 +33,8 @@ public class Game {
         return !PLAYER_LIST.isEmpty();
     }
     private WaveManager waveManager;
-    public void StartGame()
+    private void AddExistingPlayer()
     {
-        CleanPlayerList();
-        if (waveManager != null) {
-            waveManager.initializeSession(WaveDifficulty.MEDIUM);
-        }
         Main.world.getPlayers().forEach(player -> {
             var gamePlayer = new GamePlayer(player);
             PLAYER_LIST.put(player.getUniqueId(), gamePlayer);
@@ -47,44 +44,68 @@ public class Game {
             }
 
         });
-        DisplayPlayerStat();
     }
+    public void AddPlayer(Player player)
+    {
+        var gamePlayer = new GamePlayer(player);
+        PLAYER_LIST.put(player.getUniqueId(), gamePlayer);
+        player.sendTitle("§aGame Started","§7Select your default weapon!",10,40,20);
+        if (perkSelectionListener != null) {
+            perkSelectionListener.preparePlayer(gamePlayer);
+        }
+    }
+    public void RemovePlayer(Player player)
+    {
+        PLAYER_LIST.remove(player.getUniqueId());
+        
+    }
+    public void StartGame(WaveDifficulty difficulty)
+    {
+        //CleanPlayerList();
+        if (waveManager != null) {
+            waveManager.initializeSession(difficulty);
+        }
+
+        Main_Update();
+    }
+    private void Main_Update()
+    {
+        UpdateTask = new BukkitRunnable() {
+            @Override
+            public void run() {
+                PLAYER_LIST.values().forEach(GamePlayer::DisplayStatToPlayer);
+
+            }
+        };
+        UpdateTask.runTaskTimer(plugin, 0L, 1L);
+    }
+
     public void EndGame()
     {
-        CleanPlayerList();
+        //CleanPlayerList();
         if (waveManager != null) {
             waveManager.stop();
         }
-        if(StatDisplayTask != null)StatDisplayTask.cancel();
+        if(UpdateTask != null)UpdateTask.cancel();
     }
-    private void CleanPlayerList()
-    {
-        PLAYER_LIST.values().forEach(p -> {
-            var bukkitPlayer = p.getMinecraftPlayer();
-            if (bukkitPlayer != null) {
-                bukkitPlayer.getInventory().setItem(0, null);
-                p.PLAYER_PERKS.removePerks();
-            }
-            p.PLAYER_PERKS.clearPerks();
-            p.SELECTED_WEAPON = null;
-        });
-        PLAYER_LIST.clear();
-    }
+//    private void CleanPlayerList()
+//    {
+//        PLAYER_LIST.values().forEach(p -> {
+//            var bukkitPlayer = p.getMinecraftPlayer();
+//            if (bukkitPlayer != null) {
+//                bukkitPlayer.getInventory().setItem(0, null);
+//                p.PLAYER_PERKS.removePerks();
+//            }
+//            p.PLAYER_PERKS.clearPerks();
+//            p.SELECTED_WEAPON = null;
+//        });
+//        PLAYER_LIST.clear();
+//    }
     public GamePlayer GetPlayer(UUID uuid)
     {
         return PLAYER_LIST.get(uuid);
     }
     public GamePlayer GetPlayer(Player player){return GetPlayer(player.getUniqueId());}
-    public void DisplayPlayerStat() {
-        StatDisplayTask = new BukkitRunnable() {
-            @Override
-            public void run() {
-                PLAYER_LIST.values().forEach(GamePlayer::DisplayStatToPlayer);
-            }
-        };
-        StatDisplayTask.runTaskTimer(plugin, 0L, 1L);
-    }
-
 
 
     public void setPerkSelectionListener(PerkSelectionListener perkSelectionListener) {
@@ -98,5 +119,8 @@ public class Game {
     public WaveManager getWaveManager() {
         return waveManager;
     }
-
+    public int GetPlayerCount()
+    {
+        return PLAYER_LIST.size();
+    }
 }

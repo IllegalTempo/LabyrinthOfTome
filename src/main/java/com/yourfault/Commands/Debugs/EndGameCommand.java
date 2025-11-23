@@ -1,4 +1,4 @@
-package com.yourfault.Commands.Debug;
+package com.yourfault.Commands.Debugs;
 
 import com.yourfault.Main;
 import org.bukkit.Bukkit;
@@ -6,7 +6,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 
-public class EndGame implements CommandExecutor {
+public class EndGameCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (Main.game != null) {
