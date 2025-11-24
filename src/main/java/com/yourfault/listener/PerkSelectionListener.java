@@ -225,7 +225,6 @@ public class PerkSelectionListener implements Listener {
         }
     }
 
-    @EventHandler
     private void handleSelectionClick(InventoryClickEvent event) {
         event.setCancelled(true);
         ItemStack clicked = event.getCurrentItem();

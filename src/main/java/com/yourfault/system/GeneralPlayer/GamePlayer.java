@@ -5,14 +5,17 @@ import com.yourfault.weapon.WeaponType;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.TextComponent;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Pose;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
-import java.awt.*;
+import java.util.function.BooleanSupplier;
 
 public class GamePlayer
 {
-    private org.bukkit.entity.Player MINECRAFT_PLAYER;
+    private Player MINECRAFT_PLAYER;
     public Perks PLAYER_PERKS;
     private float MAX_HEALTH;
     private float MAX_MANA;
@@ -23,8 +26,9 @@ public class GamePlayer
     private int coins = 0;
     private int level = 1;
     private int experience = 0;
+    private final DownedVisual downedVisual = new DownedVisual();
 
-    public GamePlayer(org.bukkit.entity.Player minecraftplayer)
+    public GamePlayer(Player minecraftplayer)
     {
         this.MINECRAFT_PLAYER = minecraftplayer;
         this.SELECTED_WEAPON = GetSelectedWeapon_From_Scoreboardtag();
@@ -74,8 +78,6 @@ public class GamePlayer
                 "{\"text\":\"" + message + "\",\"shadow_color\":0}"
         );
         MINECRAFT_PLAYER.sendActionBar(component);
-
-
     }
     public void ChangeMana(float amount)
     {
@@ -110,12 +112,24 @@ public class GamePlayer
         HEALTH = Math.max(0, Math.min(amount, MAX_HEALTH));
     }
 
-    public void setMinecraftPlayer(org.bukkit.entity.Player minecraftPlayer) {
+    public void setMinecraftPlayer(Player minecraftPlayer) {
         this.MINECRAFT_PLAYER = minecraftPlayer;
     }
 
-    public org.bukkit.entity.Player getMinecraftPlayer() {
+    public Player getMinecraftPlayer() {
         return MINECRAFT_PLAYER;
+    }
+
+    public void beginBleedVisual(JavaPlugin plugin, BooleanSupplier stillDowned) {
+        downedVisual.start(plugin, this, stillDowned);
+    }
+
+    public void endBleedVisual() {
+        downedVisual.stop(this);
+    }
+
+    public boolean isBleeding() {
+        return downedVisual.isActive();
     }
 
     public void addCoins(int amount) {
@@ -182,4 +196,98 @@ public class GamePlayer
 
     }
 
+    private static final class DownedVisual {
+        private boolean active;
+        private boolean hadGravity;
+        private boolean allowedFlight;
+        private boolean wasFlying;
+        private boolean wasSleepingIgnored;
+        private Pose previousPose;
+        private BukkitTask poseTask;
+        private BooleanSupplier validator;
+
+        void start(JavaPlugin plugin, GamePlayer gamePlayer, BooleanSupplier stillDowned) {
+            Player player = gamePlayer.getMinecraftPlayer();
+            if (player == null) {
+                return;
+            }
+            stop(gamePlayer);
+            active = true;
+            validator = stillDowned;
+            hadGravity = player.hasGravity();
+            allowedFlight = player.getAllowFlight();
+            wasFlying = player.isFlying();
+            wasSleepingIgnored = player.isSleepingIgnored();
+            previousPose = player.getPose();
+            player.setGravity(false);
+            player.setAllowFlight(false);
+            player.setFlying(false);
+            player.setSneaking(false);
+            player.setSleepingIgnored(true);
+            applyPose(player);
+            poseTask = new BukkitRunnable() {
+                @Override
+                public void run() {
+                    Player tracked = gamePlayer.getMinecraftPlayer();
+                    if (tracked == null || !tracked.isOnline()) {
+                        restore(gamePlayer, false);
+                        cancel();
+                        return;
+                    }
+                    if (validator != null && !validator.getAsBoolean()) {
+                        restore(gamePlayer, false);
+                        cancel();
+                        return;
+                    }
+                    applyPose(tracked);
+                }
+            }.runTaskTimer(plugin, 0L, 1L);
+        }
+
+        void stop(GamePlayer gamePlayer) {
+            restore(gamePlayer, true);
+        }
+
+        boolean isActive() {
+            return active;
+        }
+
+        private void restore(GamePlayer gamePlayer, boolean cancelTask) {
+            if (poseTask != null && cancelTask) {
+                poseTask.cancel();
+            }
+            poseTask = null;
+            if (!active) {
+                return;
+            }
+            active = false;
+            Player player = gamePlayer.getMinecraftPlayer();
+            if (player == null) {
+                return;
+            }
+            player.setGravity(hadGravity);
+            player.setAllowFlight(allowedFlight);
+            if (allowedFlight) {
+                player.setFlying(wasFlying);
+            }
+            player.setSleepingIgnored(wasSleepingIgnored);
+            try {
+                player.setPose(previousPose != null ? previousPose : Pose.STANDING);
+            } catch (NoSuchMethodError ignored) {
+                // ignore
+            }
+        }
+
+        private void applyPose(Player player) {
+            try {
+                player.setPose(Pose.SLEEPING);
+            } catch (NoSuchMethodError ignored) {
+                try {
+                    player.setPose(Pose.SWIMMING);
+                } catch (NoSuchMethodError ignored2) {
+                    player.setPose(Pose.SNEAKING);
+                }
+            }
+        }
+    }
 }

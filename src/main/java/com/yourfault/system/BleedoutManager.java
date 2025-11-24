@@ -11,6 +11,9 @@ import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Pose;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.Location;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -76,6 +79,39 @@ public class BleedoutManager implements Listener {
         startBleedout(gamePlayer);
     }
 
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onPlayerDeath(PlayerDeathEvent event) {
+        Player player = event.getEntity();
+        GamePlayer gamePlayer = game.GetPlayer(player);
+        if (gamePlayer == null) {
+            return;
+        }
+        UUID playerId = player.getUniqueId();
+        if (player.getGameMode() == GameMode.SPECTATOR || downedPlayers.containsKey(playerId)) {
+            return;
+        }
+        EntityDamageEvent lastDamage = player.getLastDamageCause();
+        if (lastDamage == null) {
+            return;
+        }
+        Location deathLocation = player.getLocation().clone();
+        event.getDrops().clear();
+        event.setKeepInventory(true);
+        event.setKeepLevel(true);
+        event.setDroppedExp(0);
+        event.deathMessage(null);
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            if (!player.isDead()) {
+                return;
+            }
+            player.spigot().respawn();
+            player.teleport(deathLocation);
+            player.setVelocity(new Vector());
+            player.setFallDistance(0f);
+            startBleedout(gamePlayer);
+        });
+    }
+
     @EventHandler
     public void onSneakToggle(PlayerToggleSneakEvent event) {
         Player rescuer = event.getPlayer();
@@ -125,7 +161,7 @@ public class BleedoutManager implements Listener {
         }
         BleedoutState state = new BleedoutState(player);
         downedPlayers.put(playerId, state);
-        applyDownedEffects(player, state);
+        applyDownedEffects(player, gamePlayer, state);
         Bukkit.broadcastMessage(ChatColor.RED + player.getName() + " is bleeding out! Hold SHIFT on them for 5 seconds to revive.");
         BukkitTask timer = new BukkitRunnable() {
             private int ticksRemaining = BLEED_OUT_SECONDS * 20;
@@ -149,7 +185,7 @@ public class BleedoutManager implements Listener {
         checkForTeamBleedout();
     }
 
-    private void applyDownedEffects(Player player, BleedoutState state) {
+    private void applyDownedEffects(Player player, GamePlayer gamePlayer, BleedoutState state) {
         double maxHealth = Math.max(1.0, getMaxHealth(player));
         player.setHealth(Math.max(1.0, maxHealth * 0.15));
         player.setSprinting(false);
@@ -166,20 +202,9 @@ public class BleedoutManager implements Listener {
             player.addPotionEffect(new PotionEffect(EFFECT_BLINDNESS, 60, 0, false, false, true));
         }
         state.anchorY = player.getLocation().getY();
-        state.hadGravity = player.hasGravity();
-        state.allowedFlight = player.getAllowFlight();
-        state.wasFlying = player.isFlying();
-        state.wasSwimming = player.isSwimming();
-        player.setGravity(false);
-        player.setAllowFlight(false);
-        player.setFlying(false);
-        player.setSleepingIgnored(true);
-        try {
-            player.setSwimming(true);
-        } catch (NoSuchMethodError ignored) {
-            // Older versions do not expose swimming state control
+        if (gamePlayer != null) {
+            gamePlayer.beginBleedVisual(plugin, () -> downedPlayers.containsKey(player.getUniqueId()));
         }
-        forceDownedPose(player, state);
         player.getWorld().playSound(player.getLocation(), Sound.ENTITY_PLAYER_HURT, 1.0f, 0.6f);
         player.sendTitle(ChatColor.DARK_RED + "Bleeding Out", ChatColor.YELLOW + "Teammates must revive you", 10, 40, 20);
     }
@@ -331,25 +356,14 @@ public class BleedoutManager implements Listener {
     }
 
     private void restorePlayer(Player player, BleedoutState state) {
+        GamePlayer gamePlayer = game.GetPlayer(player);
+        if (gamePlayer != null) {
+            gamePlayer.endBleedVisual();
+        }
         player.setFreezeTicks(state.previousFreezeTicks);
         player.setWalkSpeed(state.previousWalkSpeed);
         player.setCollidable(state.wasCollidable);
         player.setInvulnerable(state.wasInvulnerable);
-        player.setSleepingIgnored(state.wasSleepingIgnored);
-        player.setGravity(state.hadGravity);
-        player.setAllowFlight(state.allowedFlight);
-        if (state.allowedFlight) {
-            player.setFlying(state.wasFlying);
-        }
-        try {
-            player.setSwimming(state.wasSwimming);
-        } catch (NoSuchMethodError ignored) {
-            // ignore
-        }
-        if (state.poseTask != null) {
-            state.poseTask.cancel();
-            state.poseTask = null;
-        }
         if (EFFECT_SLOW != null) {
             player.removePotionEffect(EFFECT_SLOW);
         }
@@ -359,18 +373,11 @@ public class BleedoutManager implements Listener {
         if (EFFECT_BLINDNESS != null) {
             player.removePotionEffect(EFFECT_BLINDNESS);
         }
-        if (player.isSleeping()) {
-            try {
-                player.wakeup(true);
-            } catch (NoSuchMethodError ignored) {
-                player.setPose(Pose.STANDING);
-            }
-        }
         player.setSneaking(false);
         try {
-            player.setPose(state.previousPose);
-        } catch (NoSuchMethodError ignored) {
             player.setPose(Pose.STANDING);
+        } catch (NoSuchMethodError ignored) {
+            // ignore
         }
     }
 
@@ -459,14 +466,7 @@ public class BleedoutManager implements Listener {
         private final int previousFreezeTicks;
         private final boolean wasCollidable;
         private final boolean wasInvulnerable;
-        private final Pose previousPose;
-        private final boolean wasSleepingIgnored;
         private double anchorY;
-        private boolean hadGravity;
-        private boolean allowedFlight;
-        private boolean wasFlying;
-        private boolean wasSwimming;
-        private BukkitTask poseTask;
         private BukkitTask bleedoutTask;
         private UUID activeRescuer;
 
@@ -476,13 +476,7 @@ public class BleedoutManager implements Listener {
             this.previousFreezeTicks = player.getFreezeTicks();
             this.wasCollidable = player.isCollidable();
             this.wasInvulnerable = player.isInvulnerable();
-            this.previousPose = player.getPose();
-            this.wasSleepingIgnored = player.isSleepingIgnored();
             this.anchorY = player.getLocation().getY();
-            this.hadGravity = player.hasGravity();
-            this.allowedFlight = player.getAllowFlight();
-            this.wasFlying = player.isFlying();
-            this.wasSwimming = player.isSwimming();
         }
 
         private void cancelTimer() {
@@ -493,39 +487,6 @@ public class BleedoutManager implements Listener {
         }
     }
 
-    private void forceDownedPose(Player player, BleedoutState state) {
-        if (state == null) {
-            return;
-        }
-        applyDownedPose(player);
-        if (state.poseTask != null) {
-            state.poseTask.cancel();
-        }
-        state.poseTask = new BukkitRunnable() {
-            @Override
-            public void run() {
-                if (!player.isOnline() || !downedPlayers.containsKey(player.getUniqueId())) {
-                    cancel();
-                    state.poseTask = null;
-                    return;
-                }
-                applyDownedPose(player);
-            }
-        }.runTaskTimer(plugin, 0L, 1L);
-    }
-
-    private void applyDownedPose(Player player) {
-        try {
-            player.setPose(Pose.SWIMMING);
-        } catch (NoSuchMethodError ignored) {
-            player.setPose(Pose.SNEAKING);
-        }
-        try {
-            player.setSwimming(true);
-        } catch (NoSuchMethodError ignored) {
-            // ignore
-        }
-    }
     private static PotionEffectType resolveEffect(String... names) {
         for (String name : names) {
             PotionEffectType type = PotionEffectType.getByName(name);
