@@ -43,3 +43,8 @@ commands:
     usage: /clearmap
     permissions:
       labyrinthoftome.admin: true
+  skipwave:
+    description: Removes all remaining enemies in the current wave
+    usage: /skipwave
+    permissions:
+      labyrinthoftome.admin: true

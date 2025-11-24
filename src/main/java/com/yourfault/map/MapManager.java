@@ -20,6 +20,9 @@ import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.Set;
 
+/**
+ * Generates and clears PvE arenas that leverage Perlin noise heightmaps and biome themes.
+ */
 public class MapManager {
     private final JavaPlugin plugin;
     private final Game game;
@@ -29,6 +32,7 @@ public class MapManager {
     private static final int GENERATION_SLICE_WIDTH = 4;
     private static final int CLEAR_SLICE_INTERVAL_TICKS = 10;
     private static final int CLEAR_COLUMNS_PER_SLICE = 256;
+    private static final int CLEAR_RADIUS_PADDING = 6;
     private static final double MIN_SPAWN_MARKER_SPACING = 6.0;
 
     private final Set<String> touchedBlocks = new HashSet<>();
@@ -102,12 +106,12 @@ public class MapManager {
         MapTheme theme = MapTheme.pickRandom(random);
 
         GenerationSession session = new GenerationSession(
-                theme,
-                radius,
-                center.getBlockY(),
-                playerCount,
-                onComplete,
-                onError
+            theme,
+            radius,
+            center.getBlockY(),
+            playerCount,
+            onComplete,
+            onError
         );
         activeGeneration = session;
         session.runTaskTimer(plugin, 1L, GENERATION_SLICE_INTERVAL_TICKS);
@@ -130,7 +134,7 @@ public class MapManager {
             return;
         }
 
-        int radius = Math.max(8, lastRadius);
+        int radius = Math.max(8, lastRadius + CLEAR_RADIUS_PADDING);
         List<ColumnCoordinate> columns = buildClearColumns(radius);
         if (columns.isEmpty()) {
             resetRegionState();
@@ -221,7 +225,8 @@ public class MapManager {
         for (int y = minHeight; y <= surfaceY; y++) {
             Material material;
             if (y == surfaceY) {
-                material = edge ? theme.getBorderMaterial() : theme.getTopMaterial();
+                boolean useBorderMaterial = edge && theme.hasBorder();
+                material = useBorderMaterial ? resolveBorderMaterial(theme) : theme.getTopMaterial();
             } else if (y >= surfaceY - fillerDepth) {
                 material = theme.getFillerMaterial();
             } else {
@@ -233,6 +238,28 @@ public class MapManager {
         clearAboveSurface(x, surfaceY + 1, z);
         maybePlaceDecoration(x, surfaceY + 1, z, theme, edge);
         applyEdgeAccent(x, surfaceY, z, theme, edge);
+    }
+
+    private Material resolveBorderMaterial(MapTheme theme) {
+        if (theme == null) {
+            return Material.STONE;
+        }
+        Material material = theme.getBorderMaterial();
+        if (material == null || material == Material.AIR) {
+            return Material.STONE;
+        }
+        return material;
+    }
+
+    private Material resolveTopCoverMaterial(MapTheme theme) {
+        if (theme == null) {
+            return Material.GLASS;
+        }
+        Material material = theme.getTopCoverMaterial();
+        if (material == null || material == Material.AIR) {
+            return Material.GLASS;
+        }
+        return material;
     }
 
     private double adjustFalloffForProfile(MapTheme theme, double falloff) {
@@ -270,6 +297,9 @@ public class MapManager {
 
     private void applyEdgeAccent(int x, int surfaceY, int z, MapTheme theme, boolean edge) {
         if (!edge) {
+            return;
+        }
+        if (!theme.hasBorder()) {
             return;
         }
         if (theme.getTerrainProfile() != MapTheme.TerrainProfile.REAL_MOUNTAIN) {
@@ -368,6 +398,100 @@ public class MapManager {
         for (int i = 0; i < attempts; i++) {
             tryPlacePool(fluid, radius, theme);
         }
+    }
+
+    private void buildContainmentRidge(MapTheme theme, int radius, int baseY) {
+        if (activeWorld == null || activeCenter == null) {
+            return;
+        }
+        if (!theme.hasBorder()) {
+            return;
+        }
+        int ridgeRadius = radius + 2;
+        int samples = Math.max(32, (int) Math.round(ridgeRadius * 6.0));
+        Material ridgeMaterial = resolveBorderMaterial(theme);
+        for (int i = 0; i < samples; i++) {
+            double angle = (Math.PI * 2 * i) / samples;
+            int x = activeCenter.getBlockX() + (int) Math.round(ridgeRadius * Math.cos(angle));
+            int z = activeCenter.getBlockZ() + (int) Math.round(ridgeRadius * Math.sin(angle));
+            Integer surface = findNearestSurfaceY(x, z, baseY);
+            int surfaceY = surface != null ? surface + 1 : baseY + 1;
+            buildRidgeColumn(x, z, surfaceY, ridgeMaterial);
+        }
+
+        int minBarrierY = Math.max(activeWorld.getMinHeight(), baseY - 2);
+        int maxBarrierY = Math.min(activeWorld.getMaxHeight(), baseY + 22);
+        buildBarrierRing(ridgeRadius + 1, minBarrierY, maxBarrierY);
+    }
+
+    private void buildRidgeColumn(int centerX, int centerZ, int baseSurfaceY, Material ridgeMaterial) {
+        if (activeWorld == null) {
+            return;
+        }
+        int height = 9 + random.nextInt(5);
+        int topY = Math.min(activeWorld.getMaxHeight() - 1, baseSurfaceY + height);
+        regionMinY = Math.min(regionMinY, baseSurfaceY);
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dz = -1; dz <= 1; dz++) {
+                double distance = Math.sqrt((dx * dx) + (dz * dz));
+                if (distance > 1.5) {
+                    continue;
+                }
+                int x = centerX + dx;
+                int z = centerZ + dz;
+                int taper = distance < 0.25 ? 0 : 1;
+                int columnTop = topY - taper;
+                for (int y = baseSurfaceY; y <= columnTop; y++) {
+                    Material material = y >= columnTop - 1 ? Material.COBBLESTONE : ridgeMaterial;
+                    setBlock(activeWorld, x, y, z, material);
+                    regionMaxY = Math.max(regionMaxY, y);
+                }
+            }
+        }
+    }
+
+    private void buildBarrierRing(int radius, int minY, int maxY) {
+        if (activeWorld == null || activeCenter == null) {
+            return;
+        }
+        int samples = Math.max(16, (int) Math.round(radius * 6.0));
+        regionMinY = Math.min(regionMinY, minY);
+        regionMaxY = Math.max(regionMaxY, maxY);
+        for (int i = 0; i < samples; i++) {
+            double angle = (Math.PI * 2 * i) / samples;
+            int x = activeCenter.getBlockX() + (int) Math.round(radius * Math.cos(angle));
+            int z = activeCenter.getBlockZ() + (int) Math.round(radius * Math.sin(angle));
+            for (int y = minY; y <= maxY; y++) {
+                setBlock(activeWorld, x, y, z, Material.BARRIER);
+            }
+        }
+    }
+
+    private void buildTopCover(MapTheme theme, int radius, int baseY) {
+        if (activeWorld == null || activeCenter == null) {
+            return;
+        }
+        if (!theme.hasTopCover()) {
+            return;
+        }
+        Material coverMaterial = resolveTopCoverMaterial(theme);
+        if (coverMaterial == null || coverMaterial == Material.AIR) {
+            return;
+        }
+        int coverHeightBoost = theme.getTerrainProfile() == MapTheme.TerrainProfile.REAL_MOUNTAIN ? 24 : 18;
+        int coverY = Math.min(activeWorld.getMaxHeight() - 2, baseY + coverHeightBoost);
+        int centerX = activeCenter.getBlockX();
+        int centerZ = activeCenter.getBlockZ();
+        int radiusSquared = (radius + 1) * (radius + 1);
+        for (int dx = -radius; dx <= radius; dx++) {
+            for (int dz = -radius; dz <= radius; dz++) {
+                if ((dx * dx) + (dz * dz) > radiusSquared) {
+                    continue;
+                }
+                setBlock(activeWorld, centerX + dx, coverY, centerZ + dz, coverMaterial);
+            }
+        }
+        regionMaxY = Math.max(regionMaxY, coverY);
     }
 
     private void tryPlacePool(Material fluid, int radius, MapTheme theme) {
@@ -577,6 +701,8 @@ public class MapManager {
         private void finishSuccessfully() {
             cancel();
             activeGeneration = null;
+            buildContainmentRidge(theme, radius, baseY);
+            buildTopCover(theme, radius, baseY);
             placePools(theme, radius);
             placeSpawnMarkers(playerCount, radius);
             lastTheme = theme;

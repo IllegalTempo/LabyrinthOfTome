@@ -21,7 +21,10 @@ public enum MapTheme {
             List.of(Material.OAK_SAPLING, Material.FERN, Material.FLOWERING_AZALEA),
             TerrainProfile.DEFAULT,
             true,
-            false
+            false,
+            true,
+            true,
+            Material.GLASS
     ),
     NETHER(
             Material.CRIMSON_NYLIUM,
@@ -35,7 +38,10 @@ public enum MapTheme {
             List.of(Material.NETHER_WART_BLOCK, Material.SHROOMLIGHT, Material.CRIMSON_FUNGUS),
             TerrainProfile.DEFAULT,
             false,
-            true
+            true,
+            true,
+            false,
+            Material.BLACK_STAINED_GLASS
     ),
     END(
             Material.END_STONE,
@@ -49,7 +55,10 @@ public enum MapTheme {
             List.of(Material.CHORUS_PLANT, Material.PURPUR_PILLAR),
                 TerrainProfile.DEFAULT,
                 false,
-                false
+                false,
+                true,
+                false,
+                Material.GLASS
     ),
     DESERT(
             Material.SAND,
@@ -63,7 +72,10 @@ public enum MapTheme {
             List.of(Material.CACTUS, Material.CUT_SANDSTONE),
             TerrainProfile.DEFAULT,
             true,
-            false
+                false,
+                true,
+                true,
+                Material.GLASS
     ),
     MOUNTAINS(
             Material.STONE,
@@ -77,7 +89,10 @@ public enum MapTheme {
             List.of(Material.COBBLED_DEEPSLATE, Material.PACKED_ICE, Material.COBBLESTONE_STAIRS),
             TerrainProfile.DEFAULT,
             true,
-            false
+                false,
+                true,
+                false,
+                Material.GLASS
     ),
     REAL_MOUNTAIN(
             Material.STONE,
@@ -91,7 +106,10 @@ public enum MapTheme {
             List.of(Material.SPRUCE_SAPLING, Material.COBBLESTONE_WALL, Material.PACKED_ICE),
             TerrainProfile.REAL_MOUNTAIN,
             true,
-            false
+                false,
+                true,
+                false,
+                Material.PACKED_ICE
     );
 
     private final Material topMaterial;
@@ -106,6 +124,9 @@ public enum MapTheme {
     private final TerrainProfile terrainProfile;
     private final boolean waterPools;
     private final boolean lavaPools;
+    private final boolean borderEnabled;
+    private final boolean topCoverEnabled;
+    private final Material topCoverMaterial;
 
     MapTheme(Material topMaterial,
              Material fillerMaterial,
@@ -115,10 +136,13 @@ public enum MapTheme {
              double heightVariance,
              int fillerDepth,
              double decorationChance,
-             List<Material> decorations,
-               TerrainProfile terrainProfile,
-               boolean waterPools,
-               boolean lavaPools) {
+                         List<Material> decorations,
+                             TerrainProfile terrainProfile,
+                             boolean waterPools,
+                             boolean lavaPools,
+                             boolean borderEnabled,
+                             boolean topCoverEnabled,
+                             Material topCoverMaterial) {
         this.topMaterial = topMaterial;
         this.fillerMaterial = fillerMaterial;
         this.borderMaterial = borderMaterial;
@@ -131,6 +155,9 @@ public enum MapTheme {
         this.terrainProfile = terrainProfile;
         this.waterPools = waterPools;
         this.lavaPools = lavaPools;
+        this.borderEnabled = borderEnabled;
+        this.topCoverEnabled = topCoverEnabled;
+        this.topCoverMaterial = topCoverMaterial;
     }
 
     public Material getTopMaterial() {
@@ -175,6 +202,18 @@ public enum MapTheme {
 
     public boolean allowsLavaPools() {
         return lavaPools;
+    }
+
+    public boolean hasBorder() {
+        return borderEnabled;
+    }
+
+    public boolean hasTopCover() {
+        return topCoverEnabled;
+    }
+
+    public Material getTopCoverMaterial() {
+        return topCoverMaterial;
     }
 
     public Material pickRandomDecoration(Random random) {

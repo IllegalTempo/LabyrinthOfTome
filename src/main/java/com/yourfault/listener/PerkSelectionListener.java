@@ -1,9 +1,11 @@
 package com.yourfault.listener;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
-import com.yourfault.Items.gui.General;
 import com.yourfault.Main;
 import com.yourfault.system.GeneralPlayer.GamePlayer;
 import com.yourfault.system.GeneralPlayer.Perks;
@@ -33,10 +35,12 @@ import com.yourfault.perks.PerkType;
 public class PerkSelectionListener implements Listener {
     private static final int SELECTOR_SLOT = 8;
     private static final String GUI_TITLE = "Select your perk";
+    private static final long PERK_REMOVE_CONFIRM_WINDOW_MS = 1500L;
 
     private final NamespacedKey perkKey;
     private final NamespacedKey selectorKey;
     private final ItemStack selectorItem;
+    private final Map<UUID, RemovalPrompt> pendingRemoval = new HashMap<>();
 
     public PerkSelectionListener(JavaPlugin plugin) {
         this.perkKey = new NamespacedKey(plugin, "perk_option");
@@ -133,6 +137,14 @@ public class PerkSelectionListener implements Listener {
         int slot = event.getSlot();
         if (slot == SELECTOR_SLOT && isSelectorItem(clicked)) {
             event.setCancelled(true);
+            return;
+        }
+        if (event.getClick().isRightClick() && Perks.isPerkSlot(slot)) {
+            PerkType indicatorPerk = matchIndicator(clicked);
+            if (indicatorPerk != null) {
+                event.setCancelled(true);
+                handlePerkRemovalClick(player, indicatorPerk);
+            }
         }
     }
 
@@ -158,17 +170,19 @@ public class PerkSelectionListener implements Listener {
             event.setCancelled(true);
             return;
         }
-        if (!(event.getWhoClicked() instanceof Player)) {
+        if (!(event.getWhoClicked() instanceof Player player)) {
             return;
         }
-        int topSize = event.getView().getTopInventory().getSize();
+        InventoryView view = event.getView();
         for (int rawSlot : event.getRawSlots()) {
-            if (rawSlot < topSize) {
+            Inventory targetInventory = view.getInventory(rawSlot);
+            if (targetInventory == null || targetInventory != player.getInventory()) {
                 continue;
             }
-            int playerSlot = rawSlot - topSize;
+            int playerSlot = view.convertSlot(rawSlot);
             if (playerSlot == SELECTOR_SLOT) {
                 event.setCancelled(true);
+                player.updateInventory();
                 return;
             }
         }
@@ -275,5 +289,48 @@ public class PerkSelectionListener implements Listener {
         meta.setLore(lore);
         stack.setItemMeta(meta);
         return stack;
+    }
+
+    private PerkType matchIndicator(ItemStack stack) {
+        if (stack == null) {
+            return null;
+        }
+        for (PerkType perkType : PerkType.values()) {
+            if (stack.isSimilar(perkType.buildIndicatorIcon())) {
+                return perkType;
+            }
+        }
+        return null;
+    }
+
+    private void handlePerkRemovalClick(Player player, PerkType perkType) {
+        GamePlayer gamePlayer = Main.game.GetPlayer(player);
+        if (gamePlayer == null) {
+            player.sendMessage(ChatColor.RED + "Join the game before managing perks.");
+            return;
+        }
+        if (!gamePlayer.PLAYER_PERKS.hasPerk(perkType)) {
+            player.sendMessage(ChatColor.YELLOW + "You do not own " + perkType.displayName() + ChatColor.YELLOW + ".");
+            return;
+        }
+        UUID playerId = player.getUniqueId();
+        long now = System.currentTimeMillis();
+        RemovalPrompt prompt = pendingRemoval.get(playerId);
+        if (prompt != null && prompt.perkType == perkType && prompt.expiresAt >= now) {
+            pendingRemoval.remove(playerId);
+            boolean removed = gamePlayer.PLAYER_PERKS.removePerk(perkType);
+            if (removed) {
+                player.sendMessage(ChatColor.GRAY + "Removed perk " + ChatColor.GOLD + perkType.displayName() + ChatColor.GRAY + ". Coins are not refunded.");
+            } else {
+                player.sendMessage(ChatColor.RED + "Unable to remove perk right now.");
+            }
+            player.updateInventory();
+            return;
+        }
+        pendingRemoval.put(playerId, new RemovalPrompt(perkType, now + PERK_REMOVE_CONFIRM_WINDOW_MS));
+        player.sendMessage(ChatColor.YELLOW + "Right-click " + perkType.displayName() + ChatColor.YELLOW + " again within 1.5s to remove it. No refund provided.");
+    }
+
+    private record RemovalPrompt(PerkType perkType, long expiresAt) {
     }
 }

@@ -10,6 +10,7 @@ public enum WaveEnemyType {
     ARCHER(EntityType.SKELETON, 2, 5.0, 5.0, 1, 2, 0.9, 2, 4, 6, 12),
     BRUTE(EntityType.HUSK, 3, 12.0, 7.0, 2, 4, 0.75, 3, 5, 10, 18),
     MAGE(EntityType.STRAY, 4, 9.0, 6.0, 2, 6, 0.6, 2, 6, 12, 20),
+    LASER_ZOMBIE(EntityType.ZOMBIE, 4.5, 24.0, 8.0, 3, 6, 0.65, 3, 6, 14, 24),
     BOSS(EntityType.WITHER_SKELETON, 10, 80.0, 18.0, 3, 10, 0.35, 5, 10, 50, 100);
 
     private final EntityType entityType;

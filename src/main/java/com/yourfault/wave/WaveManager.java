@@ -5,17 +5,20 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 import java.util.UUID;
 
+import com.yourfault.Enemy.LaserZombieEnemy;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.command.CommandSender;
 
 import com.yourfault.Main;
 import com.yourfault.system.Game;
@@ -194,6 +197,7 @@ public class WaveManager {
                 continue;
             }
             LivingEntity entity = type.spawn(world, spawnLocation);
+            tagWaveEntity(entity, type);
             applyScaling(entity, type, context);
             activeWaveEnemyIds.add(entity.getUniqueId());
             Bukkit.broadcastMessage(ChatColor.DARK_PURPLE + "Spawned " + type.name() + " for wave " + context.waveNumber());
@@ -278,14 +282,26 @@ public class WaveManager {
         }
         entity.setHealth(Math.max(1.0, newMax));
 
-        WaveEnemyInstance waveEnemy = new WaveEnemyInstance(
-                entity,
-                (float) finalHealth,
-                (float) finalHealth,
-                (float) finalDefense,
-                type,
-                finalDamage
-        );
+        WaveEnemyInstance waveEnemy;
+        if (type == WaveEnemyType.LASER_ZOMBIE) {
+            waveEnemy = new LaserZombieEnemy(
+                    entity,
+                    (float) finalHealth,
+                    (float) finalHealth,
+                    (float) finalDefense,
+                    type,
+                    finalDamage
+            );
+        } else {
+            waveEnemy = new WaveEnemyInstance(
+                    entity,
+                    (float) finalHealth,
+                    (float) finalHealth,
+                    (float) finalDefense,
+                    type,
+                    finalDamage
+            );
+        }
         lastSpawnedEnemies.add(waveEnemy);
         activeWaveEnemies.put(entity.getUniqueId(), waveEnemy);
 
@@ -346,6 +362,64 @@ public class WaveManager {
         waveInProgress = false;
         Bukkit.broadcastMessage(ChatColor.GREEN + "Wave " + currentWave + " cleared! Next wave in 5 seconds.");
         scheduleAutoAdvance();
+    }
+
+    public void skipCurrentWave(CommandSender initiator) {
+        if (!active || !waveInProgress) {
+            if (initiator != null) {
+                initiator.sendMessage(ChatColor.YELLOW + "No active wave to skip.");
+            }
+            return;
+        }
+        List<UUID> targets = new ArrayList<>(activeWaveEnemyIds);
+        for (UUID enemyId : targets) {
+            WaveEnemyInstance instance = activeWaveEnemies.get(enemyId);
+            if (instance != null) {
+                instance.Destroy();
+            } else {
+                LivingEntity entity = (LivingEntity) Bukkit.getEntity(enemyId);
+                if (entity != null) {
+                    entity.remove();
+                }
+                handleEnemyDeath(enemyId, null);
+            }
+        }
+        Bukkit.broadcastMessage(ChatColor.RED + "Wave " + currentWave + " was skipped by an administrator.");
+    }
+
+    public int clearAllEnemiesInstantly(boolean suppressCompletionBroadcast) {
+        List<UUID> targets = new ArrayList<>(activeWaveEnemyIds);
+        if (targets.isEmpty()) {
+            return 0;
+        }
+        if (suppressCompletionBroadcast) {
+            waveInProgress = false;
+        }
+        int removed = 0;
+        for (UUID enemyId : targets) {
+            WaveEnemyInstance instance = activeWaveEnemies.get(enemyId);
+            if (instance != null) {
+                instance.Destroy();
+                removed++;
+                continue;
+            }
+            LivingEntity entity = (LivingEntity) Bukkit.getEntity(enemyId);
+            if (entity != null) {
+                entity.remove();
+                removed++;
+            }
+            handleEnemyDeath(enemyId, null);
+        }
+        activeWaveEnemyIds.clear();
+        activeWaveEnemies.clear();
+        lastSpawnedEnemies.clear();
+        nextWaveScheduled = false;
+        return removed;
+    }
+
+    private void tagWaveEntity(LivingEntity entity, WaveEnemyType type) {
+        entity.addScoreboardTag("lot_wave_enemy");
+        entity.addScoreboardTag("lot_wave_enemy_" + type.name().toLowerCase(Locale.ROOT));
     }
 
     private void scheduleAutoAdvance() {

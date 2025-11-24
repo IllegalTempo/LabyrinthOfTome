@@ -3,6 +3,7 @@ package com.yourfault.system;
 import java.util.HashMap;
 import java.util.UUID;
 
+import com.yourfault.map.MapManager;
 import com.yourfault.system.GeneralPlayer.GamePlayer;
 import com.yourfault.wave.WaveDifficulty;
 import com.yourfault.wave.WaveManager;
@@ -35,6 +36,7 @@ public class Game {
         return !PLAYER_LIST.isEmpty();
     }
     private WaveManager waveManager;
+    private MapManager mapManager;
     private void AddExistingPlayer()
     {
         Main.world.getPlayers().forEach(player -> {
@@ -88,7 +90,17 @@ public class Game {
         //CleanPlayerList();
         PLAYER_LIST.values().forEach(player -> player.PLAYER_PERKS.removePerks());
         if (waveManager != null) {
+            int cleared = waveManager.clearAllEnemiesInstantly(true);
+            if (cleared > 0) {
+                plugin.getLogger().info(String.format("Cleared %d active wave enemies during EndGame.", cleared));
+            }
             waveManager.stop();
+        }
+        if (mapManager != null && mapManager.hasActiveMap()) {
+            mapManager.clearMapAsync(
+                    removed -> plugin.getLogger().info(String.format("Cleared map after EndGame (%d blocks).", removed)),
+                    error -> plugin.getLogger().warning(String.format("Failed to clear map after EndGame: %s", error))
+            );
         }
         if(UpdateTask != null)UpdateTask.cancel();
     }
@@ -123,6 +135,14 @@ public class Game {
 
     public WaveManager getWaveManager() {
         return waveManager;
+    }
+
+    public void setMapManager(MapManager mapManager) {
+        this.mapManager = mapManager;
+    }
+
+    public MapManager getMapManager() {
+        return mapManager;
     }
     public int GetPlayerCount()
     {

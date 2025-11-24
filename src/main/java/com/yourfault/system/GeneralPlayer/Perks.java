@@ -67,6 +67,13 @@ public class Perks {
     public boolean addPerk(PerkType perk) {
         return perks.add(perk);
     }
+    public boolean removePerk(PerkType perk) {
+        boolean removed = perks.remove(perk);
+        if (removed) {
+            preparePerkSlots();
+        }
+        return removed;
+    }
     public boolean hasPerk(PerkType perk) {
         return perks.contains(perk);
     }

@@ -61,6 +61,7 @@ public class Main extends JavaPlugin {
         this.getCommand("getcoins").setExecutor(new GetCoinsCommand());
         this.getCommand("createmap").setExecutor(new CreateMapCommand(mapManager));
         this.getCommand("clearmap").setExecutor(new ClearMapCommand(mapManager));
+        this.getCommand("skipwave").setExecutor(new SkipWaveCommand(game));
 
     }
     private void RegisterPlayerActivity()
