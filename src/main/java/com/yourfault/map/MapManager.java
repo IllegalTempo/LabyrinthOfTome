@@ -5,27 +5,33 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.block.data.BlockData;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.logging.Level;
+import java.util.Set;
 
-/**
- * Generates and clears PvE arenas that leverage Perlin noise heightmaps and biome themes.
- */
 public class MapManager {
     private final JavaPlugin plugin;
     private final Game game;
     private final Random random = new Random();
     private PerlinNoise noise;
+    private static final int GENERATION_SLICE_INTERVAL_TICKS = 10; // 0.5 seconds
+    private static final int GENERATION_SLICE_WIDTH = 4;
+    private static final int CLEAR_SLICE_INTERVAL_TICKS = 10;
+    private static final int CLEAR_COLUMNS_PER_SLICE = 256;
+    private static final double MIN_SPAWN_MARKER_SPACING = 6.0;
 
-    private final Map<String, BlockSnapshot> modifiedBlocks = new HashMap<>();
+    private final Set<String> touchedBlocks = new HashSet<>();
     private final Map<Long, Integer> surfaceHeights = new HashMap<>();
     private final List<Location> spawnMarkerLocations = new ArrayList<>();
 
@@ -35,6 +41,10 @@ public class MapManager {
     private int lastRadius;
     private double noiseOffsetX;
     private double noiseOffsetZ;
+    private GenerationSession activeGeneration;
+    private ClearSession activeClear;
+    private int regionMinY;
+    private int regionMaxY;
 
     public MapManager(JavaPlugin plugin, Game game) {
         this.plugin = plugin;
@@ -43,22 +53,45 @@ public class MapManager {
     }
 
     public synchronized boolean hasActiveMap() {
-        return !modifiedBlocks.isEmpty();
+        return activeCenter != null && activeGeneration == null;
     }
 
-    public synchronized MapGenerationSummary generateMap(Location center) {
+    public synchronized boolean isGenerationRunning() {
+        return activeGeneration != null;
+    }
+
+    public synchronized boolean isClearingRunning() {
+        return activeClear != null;
+    }
+
+    public synchronized void generateMapAsync(Location center,
+                                              Consumer<MapGenerationSummary> onComplete,
+                                              Consumer<String> onError) {
         Objects.requireNonNull(center, "center");
         Objects.requireNonNull(center.getWorld(), "World cannot be null");
+        Objects.requireNonNull(onComplete, "onComplete");
+        Objects.requireNonNull(onError, "onError");
 
+        if (activeGeneration != null) {
+            onError.accept("Map generation is already in progress.");
+            return;
+        }
+        if (activeClear != null) {
+            onError.accept("Map clearing is in progress. Please wait.");
+            return;
+        }
         if (hasActiveMap()) {
-            throw new IllegalStateException("A generated map already exists. Run /clearmap first.");
+            onError.accept("A generated map already exists. Run /clearmap first.");
+            return;
         }
 
         activeWorld = center.getWorld();
         activeCenter = center.clone();
         surfaceHeights.clear();
         spawnMarkerLocations.clear();
-        modifiedBlocks.clear();
+        touchedBlocks.clear();
+        regionMinY = Integer.MAX_VALUE;
+        regionMaxY = Integer.MIN_VALUE;
 
         noise = new PerlinNoise(random.nextLong());
         noiseOffsetX = random.nextDouble() * 10_000d;
@@ -68,53 +101,51 @@ public class MapManager {
         int radius = computeRadius(playerCount);
         MapTheme theme = MapTheme.pickRandom(random);
 
-        int centerX = center.getBlockX();
-        int centerY = center.getBlockY();
-        int centerZ = center.getBlockZ();
-
-        int radiusSquared = radius * radius;
-
-        for (int dx = -radius; dx <= radius; dx++) {
-            for (int dz = -radius; dz <= radius; dz++) {
-                int distanceSquared = dx * dx + dz * dz;
-                if (distanceSquared > radiusSquared) {
-                    continue;
-                }
-
-                double normalizedDistance = Math.sqrt(distanceSquared) / radius;
-                boolean isEdge = normalizedDistance > 0.9;
-                int x = centerX + dx;
-                int z = centerZ + dz;
-
-                int surfaceY = calculateSurfaceY(centerY, x, z, normalizedDistance, theme);
-                buildColumn(x, z, surfaceY, theme, isEdge);
-            }
-        }
-
-        placeSpawnMarkers(playerCount, radius);
-
-        lastTheme = theme;
-        lastRadius = radius;
-
-        plugin.getLogger().info(String.format("Generated %s PvE map (radius=%d, blocks=%d)", theme.name(), radius, modifiedBlocks.size()));
-
-        return new MapGenerationSummary(theme, radius, modifiedBlocks.size(), spawnMarkerLocations.size());
+        GenerationSession session = new GenerationSession(
+                theme,
+                radius,
+                center.getBlockY(),
+                playerCount,
+                onComplete,
+                onError
+        );
+        activeGeneration = session;
+        session.runTaskTimer(plugin, 1L, GENERATION_SLICE_INTERVAL_TICKS);
     }
 
-    public synchronized int clearMap() {
-        int restoredBlocks = 0;
-        for (BlockSnapshot snapshot : modifiedBlocks.values()) {
-            snapshot.restore();
-            restoredBlocks++;
+    public synchronized void clearMapAsync(Consumer<Integer> onComplete, Consumer<String> onError) {
+        Objects.requireNonNull(onComplete, "onComplete");
+        Objects.requireNonNull(onError, "onError");
+
+        if (activeClear != null) {
+            onError.accept("Map clearing is already running.");
+            return;
         }
-        modifiedBlocks.clear();
-        surfaceHeights.clear();
-        spawnMarkerLocations.clear();
-        activeWorld = null;
-        activeCenter = null;
-        lastTheme = null;
-        lastRadius = 0;
-        return restoredBlocks;
+        if (activeGeneration != null) {
+            onError.accept("Cannot clear while map generation is running.");
+            return;
+        }
+        if (!hasActiveMap() || activeWorld == null || activeCenter == null) {
+            onError.accept("There is no map to clear.");
+            return;
+        }
+
+        int radius = Math.max(8, lastRadius);
+        List<ColumnCoordinate> columns = buildClearColumns(radius);
+        if (columns.isEmpty()) {
+            resetRegionState();
+            onComplete.accept(0);
+            return;
+        }
+
+        int minY = regionMinY == Integer.MAX_VALUE ? Math.max(activeWorld.getMinHeight(), activeCenter.getBlockY() - 8) : regionMinY;
+        int maxY = regionMaxY == Integer.MIN_VALUE ? Math.min(activeWorld.getMaxHeight(), activeCenter.getBlockY() + 24) : regionMaxY;
+        minY = Math.max(activeWorld.getMinHeight(), minY);
+        maxY = Math.min(activeWorld.getMaxHeight(), maxY);
+
+        ClearSession session = new ClearSession(columns, minY, maxY, onComplete, onError);
+        activeClear = session;
+        session.runTaskTimer(plugin, 1L, CLEAR_SLICE_INTERVAL_TICKS);
     }
 
     public synchronized MapTheme getLastTheme() {
@@ -123,6 +154,14 @@ public class MapManager {
 
     public synchronized int getLastRadius() {
         return lastRadius;
+    }
+
+    public synchronized List<Location> getSpawnMarkers() {
+        List<Location> copy = new ArrayList<>(spawnMarkerLocations.size());
+        for (Location marker : spawnMarkerLocations) {
+            copy.add(marker.clone());
+        }
+        return copy;
     }
 
     private int computeRadius(int playerCount) {
@@ -177,6 +216,8 @@ public class MapManager {
         }
         int fillerDepth = theme.getFillerDepth();
         int minHeight = Math.max(activeWorld.getMinHeight(), surfaceY - fillerDepth - 2);
+        regionMinY = Math.min(regionMinY, minHeight);
+        regionMaxY = Math.max(regionMaxY, surfaceY + 2);
         for (int y = minHeight; y <= surfaceY; y++) {
             Material material;
             if (y == surfaceY) {
@@ -258,13 +299,87 @@ public class MapManager {
         if (activeWorld == null || activeCenter == null) {
             return;
         }
-        double markerRadius = radius * 0.65;
+        spawnMarkerLocations.clear();
         int markerCount = Math.max(4, playerCount * 2);
-        double angleStep = (Math.PI * 2) / markerCount;
-        for (int i = 0; i < markerCount; i++) {
-            double angle = angleStep * i;
-            int x = activeCenter.getBlockX() + (int) Math.round(markerRadius * Math.cos(angle));
-            int z = activeCenter.getBlockZ() + (int) Math.round(markerRadius * Math.sin(angle));
+        double innerRadius = radius * 0.35;
+        double outerRadius = radius * 0.8;
+        double spacing = MIN_SPAWN_MARKER_SPACING;
+        while (spawnMarkerLocations.size() < markerCount && spacing >= 3.0) {
+            int attempts = markerCount * 12;
+            while (spawnMarkerLocations.size() < markerCount && attempts-- > 0) {
+                double distance = innerRadius + random.nextDouble() * (outerRadius - innerRadius);
+                double angle = random.nextDouble() * Math.PI * 2;
+                int x = activeCenter.getBlockX() + (int) Math.round(distance * Math.cos(angle));
+                int z = activeCenter.getBlockZ() + (int) Math.round(distance * Math.sin(angle));
+                if (!isMarkerFarEnough(x, z, spacing)) {
+                    continue;
+                }
+                Integer surfaceY = surfaceHeights.get(columnKey(x, z));
+                if (surfaceY == null) {
+                    surfaceY = findNearestSurfaceY(x, z, activeCenter.getBlockY());
+                }
+                if (surfaceY == null) {
+                    continue;
+                }
+                int markerY = surfaceY + 1;
+                setBlock(activeWorld, x, markerY, z, Material.YELLOW_WOOL);
+                spawnMarkerLocations.add(new Location(activeWorld, x + 0.5, markerY, z + 0.5));
+            }
+            spacing -= 1.0;
+        }
+    }
+
+    private boolean isMarkerFarEnough(int x, int z, double spacing) {
+        double spacingSquared = spacing * spacing;
+        double candidateX = x + 0.5;
+        double candidateZ = z + 0.5;
+        for (Location marker : spawnMarkerLocations) {
+            if (marker.getWorld() != activeWorld) {
+                continue;
+            }
+            double dx = marker.getX() - candidateX;
+            double dz = marker.getZ() - candidateZ;
+            if ((dx * dx) + (dz * dz) < spacingSquared) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void placePools(MapTheme theme, int radius) {
+        if (activeWorld == null || activeCenter == null) {
+            return;
+        }
+        boolean allowWater = theme.allowsWaterPools();
+        boolean allowLava = theme.allowsLavaPools();
+        if (!allowWater && !allowLava) {
+            return;
+        }
+        int attempts = Math.max(1, radius / 20);
+        if (allowWater) {
+            spawnFluidPools(Material.WATER, attempts, radius, theme);
+        }
+        if (allowLava) {
+            spawnFluidPools(Material.LAVA, Math.max(1, attempts / 2), radius, theme);
+        }
+    }
+
+    private void spawnFluidPools(Material fluid, int attempts, int radius, MapTheme theme) {
+        for (int i = 0; i < attempts; i++) {
+            tryPlacePool(fluid, radius, theme);
+        }
+    }
+
+    private void tryPlacePool(Material fluid, int radius, MapTheme theme) {
+        if (activeCenter == null) {
+            return;
+        }
+        int tries = 10;
+        while (tries-- > 0) {
+            double angle = random.nextDouble() * Math.PI * 2;
+            double distance = radius * 0.2 + random.nextDouble() * radius * 0.4;
+            int x = activeCenter.getBlockX() + (int) Math.round(distance * Math.cos(angle));
+            int z = activeCenter.getBlockZ() + (int) Math.round(distance * Math.sin(angle));
             Integer surfaceY = surfaceHeights.get(columnKey(x, z));
             if (surfaceY == null) {
                 surfaceY = findNearestSurfaceY(x, z, activeCenter.getBlockY());
@@ -272,9 +387,50 @@ public class MapManager {
             if (surfaceY == null) {
                 continue;
             }
-            int markerY = surfaceY + 1;
-            setBlock(activeWorld, x, markerY, z, Material.YELLOW_WOOL);
-            spawnMarkerLocations.add(new Location(activeWorld, x, markerY, z));
+            carvePoolAt(x, surfaceY, z, fluid, theme);
+            break;
+        }
+    }
+
+    private void carvePoolAt(int centerX, int surfaceY, int centerZ, Material fluid, MapTheme theme) {
+        if (activeWorld == null) {
+            return;
+        }
+        int poolRadius = 2 + random.nextInt(2);
+        int radiusSquared = poolRadius * poolRadius;
+        int innerRadiusSquared = Math.max(1, (poolRadius - 1) * (poolRadius - 1));
+        for (int dx = -poolRadius; dx <= poolRadius; dx++) {
+            for (int dz = -poolRadius; dz <= poolRadius; dz++) {
+                int distSq = dx * dx + dz * dz;
+                if (distSq > radiusSquared) {
+                    continue;
+                }
+                int x = centerX + dx;
+                int z = centerZ + dz;
+                int depth = distSq <= innerRadiusSquared ? 2 : 1;
+                placeFluidColumn(x, surfaceY, z, depth, fluid, theme);
+                clearAboveSurface(x, surfaceY + 1, z);
+            }
+        }
+        regionMinY = Math.min(regionMinY, surfaceY - 3);
+    }
+
+    private void placeFluidColumn(int x, int surfaceY, int z, int depth, Material fluid, MapTheme theme) {
+        if (activeWorld == null) {
+            return;
+        }
+        int minY = activeWorld.getMinHeight();
+        setBlock(activeWorld, x, surfaceY, z, fluid);
+        if (surfaceY - 1 >= minY && depth >= 1) {
+            setBlock(activeWorld, x, surfaceY - 1, z, fluid);
+        }
+        if (surfaceY - 2 >= minY && depth >= 2) {
+            setBlock(activeWorld, x, surfaceY - 2, z, theme.getFillerMaterial());
+        }
+        int baseY = surfaceY - (depth + 1);
+        if (baseY >= minY) {
+            setBlock(activeWorld, x, baseY, z, theme.getFillerMaterial());
+            regionMinY = Math.min(regionMinY, baseY);
         }
     }
 
@@ -302,10 +458,221 @@ public class MapManager {
         }
         Block block = world.getBlockAt(x, y, z);
         String key = blockKey(world.getUID(), x, y, z);
-        if (!modifiedBlocks.containsKey(key)) {
-            modifiedBlocks.put(key, new BlockSnapshot(world, x, y, z, block.getBlockData().clone()));
-        }
+        touchedBlocks.add(key);
         block.setType(material, false);
+    }
+
+    private void processColumn(ColumnWork work, int baseY, MapTheme theme) {
+        int surfaceY = calculateSurfaceY(baseY, work.x(), work.z(), work.normalizedDistance(), theme);
+        buildColumn(work.x(), work.z(), surfaceY, theme, work.edge());
+    }
+
+    private List<List<ColumnWork>> buildSlices(int radius) {
+        List<List<ColumnWork>> slices = new ArrayList<>();
+        if (activeCenter == null) {
+            return slices;
+        }
+        int centerX = activeCenter.getBlockX();
+        int centerZ = activeCenter.getBlockZ();
+        int radiusSquared = radius * radius;
+        for (int startDx = -radius; startDx <= radius; startDx += GENERATION_SLICE_WIDTH) {
+            int endDx = Math.min(radius, startDx + GENERATION_SLICE_WIDTH - 1);
+            List<ColumnWork> slice = new ArrayList<>();
+            for (int dx = startDx; dx <= endDx; dx++) {
+                for (int dz = -radius; dz <= radius; dz++) {
+                    int distanceSquared = dx * dx + dz * dz;
+                    if (distanceSquared > radiusSquared) {
+                        continue;
+                    }
+                    double normalizedDistance = Math.sqrt(distanceSquared) / radius;
+                    boolean edge = normalizedDistance > 0.9;
+                    int x = centerX + dx;
+                    int z = centerZ + dz;
+                    slice.add(new ColumnWork(x, z, normalizedDistance, edge));
+                }
+            }
+            if (!slice.isEmpty()) {
+                slices.add(slice);
+            }
+        }
+        return slices;
+    }
+
+    private List<ColumnCoordinate> buildClearColumns(int radius) {
+        List<ColumnCoordinate> columns = new ArrayList<>();
+        if (activeCenter == null) {
+            return columns;
+        }
+        int centerX = activeCenter.getBlockX();
+        int centerZ = activeCenter.getBlockZ();
+        int radiusSquared = radius * radius;
+        for (int dx = -radius; dx <= radius; dx++) {
+            for (int dz = -radius; dz <= radius; dz++) {
+                if (dx * dx + dz * dz > radiusSquared) {
+                    continue;
+                }
+                columns.add(new ColumnCoordinate(centerX + dx, centerZ + dz));
+            }
+        }
+        return columns;
+    }
+
+    private void resetRegionState() {
+        touchedBlocks.clear();
+        surfaceHeights.clear();
+        spawnMarkerLocations.clear();
+        activeCenter = null;
+        activeWorld = null;
+        lastTheme = null;
+        lastRadius = 0;
+        regionMinY = Integer.MAX_VALUE;
+        regionMaxY = Integer.MIN_VALUE;
+    }
+
+    private final class GenerationSession extends BukkitRunnable {
+        private final MapTheme theme;
+        private final int radius;
+        private final int baseY;
+        private final int playerCount;
+        private final Consumer<MapGenerationSummary> completion;
+        private final Consumer<String> error;
+        private final List<List<ColumnWork>> slices;
+        private int sliceCursor = 0;
+
+        private GenerationSession(MapTheme theme,
+                                  int radius,
+                                  int baseY,
+                                  int playerCount,
+                                  Consumer<MapGenerationSummary> completion,
+                                  Consumer<String> error) {
+            this.theme = theme;
+            this.radius = radius;
+            this.baseY = baseY;
+            this.playerCount = playerCount;
+            this.completion = completion;
+            this.error = error;
+            this.slices = buildSlices(radius);
+        }
+
+        @Override
+        public void run() {
+            try {
+                if (sliceCursor >= slices.size()) {
+                    finishSuccessfully();
+                    return;
+                }
+                List<ColumnWork> slice = slices.get(sliceCursor++);
+                for (ColumnWork work : slice) {
+                    processColumn(work, baseY, theme);
+                }
+                if (sliceCursor >= slices.size()) {
+                    finishSuccessfully();
+                }
+            } catch (Exception ex) {
+                cancel();
+                handleFailure(ex);
+            }
+        }
+
+        private void finishSuccessfully() {
+            cancel();
+            activeGeneration = null;
+            placePools(theme, radius);
+            placeSpawnMarkers(playerCount, radius);
+            lastTheme = theme;
+            lastRadius = radius;
+            plugin.getLogger().info(String.format("Generated %s PvE map (radius=%d, blocks=%d)", theme.name(), radius, touchedBlocks.size()));
+            MapGenerationSummary summary = new MapGenerationSummary(theme, radius, touchedBlocks.size(), spawnMarkerLocations.size());
+            completion.accept(summary);
+        }
+
+        private void handleFailure(Exception ex) {
+            plugin.getLogger().log(Level.SEVERE, "Failed to generate map", ex);
+            activeGeneration = null;
+            surfaceHeights.clear();
+            spawnMarkerLocations.clear();
+            touchedBlocks.clear();
+            activeCenter = null;
+            activeWorld = null;
+            lastTheme = null;
+            lastRadius = 0;
+            error.accept("Failed to generate map. Check server logs.");
+        }
+    }
+
+    private record ColumnWork(int x, int z, double normalizedDistance, boolean edge) {
+    }
+
+    private final class ClearSession extends BukkitRunnable {
+        private final List<ColumnCoordinate> columns;
+        private final int minY;
+        private final int maxY;
+        private final Consumer<Integer> completion;
+        private final Consumer<String> error;
+        private int cursor = 0;
+        private int clearedBlocks = 0;
+
+        private ClearSession(List<ColumnCoordinate> columns,
+                             int minY,
+                             int maxY,
+                             Consumer<Integer> completion,
+                             Consumer<String> error) {
+            this.columns = columns;
+            this.minY = minY;
+            this.maxY = maxY;
+            this.completion = completion;
+            this.error = error;
+        }
+
+        @Override
+        public void run() {
+            try {
+                int processed = 0;
+                while (cursor < columns.size() && processed < CLEAR_COLUMNS_PER_SLICE) {
+                    ColumnCoordinate column = columns.get(cursor++);
+                    clearedBlocks += clearColumn(column);
+                    processed++;
+                }
+                if (cursor >= columns.size()) {
+                    finishSuccessfully();
+                }
+            } catch (Exception ex) {
+                cancel();
+                handleFailure(ex);
+            }
+        }
+
+        private int clearColumn(ColumnCoordinate column) {
+            if (activeWorld == null) {
+                return 0;
+            }
+            int cleared = 0;
+            for (int y = minY; y <= maxY; y++) {
+                Block block = activeWorld.getBlockAt(column.x(), y, column.z());
+                if (!block.isEmpty()) {
+                    block.setType(Material.AIR, false);
+                    cleared++;
+                }
+            }
+            return cleared;
+        }
+
+        private void finishSuccessfully() {
+            cancel();
+            activeClear = null;
+            resetRegionState();
+            completion.accept(clearedBlocks);
+        }
+
+        private void handleFailure(Exception ex) {
+            plugin.getLogger().log(Level.SEVERE, "Failed to clear map region", ex);
+            activeClear = null;
+            resetRegionState();
+            error.accept("Failed to clear map region. Check server logs.");
+        }
+    }
+
+    private record ColumnCoordinate(int x, int z) {
     }
 
     private static String blockKey(UUID worldId, int x, int y, int z) {
@@ -316,24 +683,4 @@ public class MapManager {
         return (((long) x) << 32) ^ (z & 0xffffffffL);
     }
 
-    private static class BlockSnapshot {
-        private final World world;
-        private final int x;
-        private final int y;
-        private final int z;
-        private final BlockData blockData;
-
-        private BlockSnapshot(World world, int x, int y, int z, BlockData blockData) {
-            this.world = world;
-            this.x = x;
-            this.y = y;
-            this.z = z;
-            this.blockData = blockData;
-        }
-
-        private void restore() {
-            Block block = world.getBlockAt(x, y, z);
-            block.setBlockData(blockData, false);
-        }
-    }
 }

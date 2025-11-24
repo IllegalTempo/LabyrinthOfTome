@@ -19,7 +19,9 @@ public enum MapTheme {
             3,
             0.18,
             List.of(Material.OAK_SAPLING, Material.FERN, Material.FLOWERING_AZALEA),
-            TerrainProfile.DEFAULT
+            TerrainProfile.DEFAULT,
+            true,
+            false
     ),
     NETHER(
             Material.CRIMSON_NYLIUM,
@@ -31,7 +33,9 @@ public enum MapTheme {
             4,
             0.14,
             List.of(Material.NETHER_WART_BLOCK, Material.SHROOMLIGHT, Material.CRIMSON_FUNGUS),
-            TerrainProfile.DEFAULT
+            TerrainProfile.DEFAULT,
+            false,
+            true
     ),
     END(
             Material.END_STONE,
@@ -43,7 +47,9 @@ public enum MapTheme {
             3,
             0.11,
             List.of(Material.CHORUS_PLANT, Material.PURPUR_PILLAR),
-            TerrainProfile.DEFAULT
+                TerrainProfile.DEFAULT,
+                false,
+                false
     ),
     DESERT(
             Material.SAND,
@@ -55,7 +61,9 @@ public enum MapTheme {
             4,
             0.09,
             List.of(Material.CACTUS, Material.CUT_SANDSTONE),
-            TerrainProfile.DEFAULT
+            TerrainProfile.DEFAULT,
+            true,
+            false
     ),
     MOUNTAINS(
             Material.STONE,
@@ -67,7 +75,9 @@ public enum MapTheme {
             5,
             0.06,
             List.of(Material.COBBLED_DEEPSLATE, Material.PACKED_ICE, Material.COBBLESTONE_STAIRS),
-            TerrainProfile.DEFAULT
+            TerrainProfile.DEFAULT,
+            true,
+            false
     ),
     REAL_MOUNTAIN(
             Material.STONE,
@@ -79,7 +89,9 @@ public enum MapTheme {
             6,
             0.04,
             List.of(Material.SPRUCE_SAPLING, Material.COBBLESTONE_WALL, Material.PACKED_ICE),
-            TerrainProfile.REAL_MOUNTAIN
+            TerrainProfile.REAL_MOUNTAIN,
+            true,
+            false
     );
 
     private final Material topMaterial;
@@ -92,6 +104,8 @@ public enum MapTheme {
     private final double decorationChance;
     private final List<Material> decorations;
     private final TerrainProfile terrainProfile;
+    private final boolean waterPools;
+    private final boolean lavaPools;
 
     MapTheme(Material topMaterial,
              Material fillerMaterial,
@@ -102,7 +116,9 @@ public enum MapTheme {
              int fillerDepth,
              double decorationChance,
              List<Material> decorations,
-             TerrainProfile terrainProfile) {
+               TerrainProfile terrainProfile,
+               boolean waterPools,
+               boolean lavaPools) {
         this.topMaterial = topMaterial;
         this.fillerMaterial = fillerMaterial;
         this.borderMaterial = borderMaterial;
@@ -113,6 +129,8 @@ public enum MapTheme {
         this.decorationChance = decorationChance;
         this.decorations = decorations;
         this.terrainProfile = terrainProfile;
+        this.waterPools = waterPools;
+        this.lavaPools = lavaPools;
     }
 
     public Material getTopMaterial() {
@@ -149,6 +167,14 @@ public enum MapTheme {
 
     public TerrainProfile getTerrainProfile() {
         return terrainProfile;
+    }
+
+    public boolean allowsWaterPools() {
+        return waterPools;
+    }
+
+    public boolean allowsLavaPools() {
+        return lavaPools;
     }
 
     public Material pickRandomDecoration(Random random) {

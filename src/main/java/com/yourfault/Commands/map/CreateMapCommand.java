@@ -1,6 +1,5 @@
 package com.yourfault.Commands.map;
 
-import com.yourfault.map.MapGenerationSummary;
 import com.yourfault.map.MapManager;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -8,6 +7,8 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
+import java.util.Objects;
 
 public class CreateMapCommand implements  CommandExecutor {
     private final MapManager mapManager;
@@ -18,6 +19,7 @@ public class CreateMapCommand implements  CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        Objects.requireNonNull(sender, "sender");
         if (!(sender instanceof Player player)) {
             sender.sendMessage(ChatColor.RED + "Players only");
             return true;
@@ -41,16 +43,12 @@ public class CreateMapCommand implements  CommandExecutor {
         }
 
         Location center = new Location(player.getWorld(), x, y, z);
-        try {
-            MapGenerationSummary summary = mapManager.generateMap(center);
-            sender.sendMessage(ChatColor.GREEN + "Generated a " + summary.getTheme().name().toLowerCase() + " map with radius "
-                    + summary.getRadius() + " and " + summary.getSpawnMarkerCount() + " spawn markers.");
-        } catch (IllegalStateException ex) {
-            sender.sendMessage(ChatColor.RED + ex.getMessage());
-        } catch (Exception ex) {
-            sender.sendMessage(ChatColor.RED + "Failed to generate map. Check server logs.");
-            ex.printStackTrace();
-        }
+        sender.sendMessage(ChatColor.YELLOW + "Starting slice-based map generation...");
+        mapManager.generateMapAsync(center,
+                summary -> sender.sendMessage(ChatColor.GREEN + "Generated a "
+                        + summary.getTheme().name().toLowerCase() + " map with radius "
+                        + summary.getRadius() + " and " + summary.getSpawnMarkerCount() + " spawn markers."),
+                error -> sender.sendMessage(ChatColor.RED + error));
 
         return true;
     }

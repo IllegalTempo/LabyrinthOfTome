@@ -1,10 +1,12 @@
 package com.yourfault.wave;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 import java.util.UUID;
 
@@ -13,14 +15,17 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 
 import com.yourfault.Main;
 import com.yourfault.system.Game;
 import com.yourfault.system.GeneralPlayer.GamePlayer;
+import com.yourfault.map.MapManager;
 
 public class WaveManager {
     private final Game game;
     private final Random random = new Random();
+    private final MapManager mapManager;
     private final List<UUID> activeWaveEnemyIds = new ArrayList<>();
     private final Map<UUID, WaveEnemyInstance> activeWaveEnemies = new HashMap<>();
     private final List<WaveEnemyInstance> lastSpawnedEnemies = new ArrayList<>();
@@ -31,8 +36,9 @@ public class WaveManager {
     private boolean waveInProgress = false;
     private boolean nextWaveScheduled = false;
 
-    public WaveManager(Game game) {
+    public WaveManager(Game game, MapManager mapManager) {
         this.game = game;
+        this.mapManager = mapManager;
     }
 
     public void initializeSession(WaveDifficulty difficulty) {
@@ -195,10 +201,53 @@ public class WaveManager {
     }
 
     private Location pickSpawnLocation() {
+        List<Location> markers = mapManager != null ? mapManager.getSpawnMarkers() : Collections.emptyList();
+        if (!markers.isEmpty()) {
+            List<Location> nearbyMarkers = markersNearActivePlayers(markers, 5.0);
+            Location choice = nearbyMarkers.isEmpty() ? markers.get(random.nextInt(markers.size())) : nearbyMarkers.get(random.nextInt(nearbyMarkers.size()));
+            Location spawn = choice.clone();
+            spawn.setY(spawn.getY() + 1);
+            return spawn;
+        }
+        return pickFallbackLocation();
+    }
+
+    private List<Location> markersNearActivePlayers(List<Location> markers, double range) {
+        double rangeSquared = range * range;
+        List<Location> candidates = new ArrayList<>();
+        List<Location> playerLocations = getActivePlayerLocations();
+        for (Location marker : markers) {
+            for (Location playerLocation : playerLocations) {
+                if (!Objects.equals(marker.getWorld(), playerLocation.getWorld())) {
+                    continue;
+                }
+                double dx = marker.getX() - playerLocation.getX();
+                double dz = marker.getZ() - playerLocation.getZ();
+                if ((dx * dx) + (dz * dz) <= rangeSquared) {
+                    candidates.add(marker);
+                    break;
+                }
+            }
+        }
+        return candidates;
+    }
+
+    private List<Location> getActivePlayerLocations() {
+        List<Location> locations = new ArrayList<>();
+        for (GamePlayer player : game.PLAYER_LIST.values()) {
+            Player bukkitPlayer = player.getMinecraftPlayer();
+            if (bukkitPlayer != null && bukkitPlayer.isOnline() && !bukkitPlayer.isDead()) {
+                locations.add(bukkitPlayer.getLocation());
+            }
+        }
+        return locations;
+    }
+
+    private Location pickFallbackLocation() {
         if (Main.world == null || Main.world.getPlayers().isEmpty()) {
             return null;
         }
-        org.bukkit.entity.Player target = Main.world.getPlayers().get(random.nextInt(Main.world.getPlayers().size()));
+        Player target = Main.world.getPlayers().get(random.nextInt(Main.world.getPlayers().size()));
         if (target == null) {
             return null;
         }

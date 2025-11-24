@@ -38,9 +38,9 @@ public class Main extends JavaPlugin {
         plugin = this;
         world = Bukkit.getWorld("world");
         game = new Game(this);
-        waveManager = new WaveManager(game);
-        game.setWaveManager(waveManager);
         mapManager = new MapManager(this, game);
+        waveManager = new WaveManager(game, mapManager);
+        game.setWaveManager(waveManager);
 
         perkSelectionListener = new PerkSelectionListener(this);
 
