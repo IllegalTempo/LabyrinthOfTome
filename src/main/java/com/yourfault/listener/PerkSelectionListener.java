@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import com.yourfault.Items.gui.General;
 import com.yourfault.Main;
 import com.yourfault.system.GeneralPlayer.GamePlayer;
 import com.yourfault.system.GeneralPlayer.Perks;
@@ -17,6 +18,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -123,28 +125,44 @@ public class PerkSelectionListener implements Listener {
         if (!(event.getWhoClicked() instanceof Player player)) {
             return;
         }
+        if (event.getClick() == ClickType.NUMBER_KEY) {
+            int hotbarSlot = event.getHotbarButton();
+            ItemStack hotbarItem = player.getInventory().getItem(hotbarSlot);
+            if ((hotbarSlot >= 0 && isProtectedSlot(hotbarSlot) && isProtectedItem(hotbarItem))
+                    || (event.getSlot() >= 0 && isProtectedSlot(event.getSlot()) && isProtectedItem(event.getCurrentItem()))) {
+                event.setCancelled(true);
+                player.updateInventory();
+                return;
+            }
+        }
+
         Inventory clickedInventory = event.getClickedInventory();
-        if (clickedInventory == null || !clickedInventory.equals(player.getInventory())) {
-            handleHotbarSwap(event);
+        if (clickedInventory == null || clickedInventory != player.getInventory()) {
+            if (event.isShiftClick() && isProtectedItem(event.getCurrentItem())) {
+                event.setCancelled(true);
+                player.updateInventory();
+            }
             return;
         }
 
         ItemStack clicked = event.getCurrentItem();
+        int slot = event.getSlot();
         if (clicked == null) {
             return;
         }
 
-        int slot = event.getSlot();
-        if (slot == SELECTOR_SLOT && isSelectorItem(clicked)) {
-            event.setCancelled(true);
-            return;
-        }
         if (event.getClick().isRightClick() && Perks.isPerkSlot(slot)) {
             PerkType indicatorPerk = matchIndicator(clicked);
             if (indicatorPerk != null) {
                 event.setCancelled(true);
                 handlePerkRemovalClick(player, indicatorPerk);
+                return;
             }
+        }
+
+        if (slot >= 0 && isProtectedSlot(slot) && isProtectedItem(clicked)) {
+            event.setCancelled(true);
+            player.updateInventory();
         }
     }
 
@@ -180,10 +198,13 @@ public class PerkSelectionListener implements Listener {
                 continue;
             }
             int playerSlot = view.convertSlot(rawSlot);
-            if (playerSlot == SELECTOR_SLOT) {
-                event.setCancelled(true);
-                player.updateInventory();
-                return;
+            if (isProtectedSlot(playerSlot)) {
+                ItemStack protectedItem = player.getInventory().getItem(playerSlot);
+                if (isProtectedItem(protectedItem)) {
+                    event.setCancelled(true);
+                    player.updateInventory();
+                    return;
+                }
             }
         }
     }
@@ -191,7 +212,7 @@ public class PerkSelectionListener implements Listener {
     @EventHandler
     public void onPlayerDrop(PlayerDropItemEvent event) {
         ItemStack dropped = event.getItemDrop().getItemStack();
-        if (isSelectorItem(dropped)) {
+        if (isProtectedItem(dropped)) {
             event.setCancelled(true);
             event.getPlayer().updateInventory();
         }
@@ -199,7 +220,7 @@ public class PerkSelectionListener implements Listener {
 
     @EventHandler
     public void onPlayerSwapHandItems(PlayerSwapHandItemsEvent event) {
-        if (isSelectorItem(event.getMainHandItem()) || isSelectorItem(event.getOffHandItem())) {
+        if (isProtectedItem(event.getMainHandItem()) || isProtectedItem(event.getOffHandItem())) {
             event.setCancelled(true);
         }
     }
@@ -241,41 +262,34 @@ public class PerkSelectionListener implements Listener {
         player.closeInventory();
     }
 
-    private void handleHotbarSwap(InventoryClickEvent event) {
-        int hotbarSlot = event.getHotbarButton();
-        if (hotbarSlot == SELECTOR_SLOT) {
-            event.setCancelled(true);
-        }
+    private boolean isProtectedSlot(int slot) {
+        return slot == SELECTOR_SLOT || Perks.isPerkSlot(slot);
     }
 
-//    private boolean isProtectedSlot(int slot) {
-//        return slot == SELECTOR_SLOT || Perks.isPerkSlot(slot);
-//    }
-//
-//    private boolean isProtectedItem(ItemStack stack) {
-//        if (stack == null) {
-//            return false;
-//        }
-//        if (isSelectorItem(stack)) {
-//            return true;
-//        }
-//        return isPerkUiItem(stack);
-//    }
-//
-//    private boolean isPerkUiItem(ItemStack stack) {
-//        if (stack == null) {
-//            return false;
-//        }
-//        if (stack.isSimilar(General.Perk_EmptySlotItem)) {
-//            return true;
-//        }
-//        for (PerkType perkType : PerkType.values()) {
-//            if (stack.isSimilar(perkType.buildIndicatorIcon())) {
-//                return true;
-//            }
-//        }
-//        return false;
-//    }
+    private boolean isProtectedItem(ItemStack stack) {
+        if (stack == null) {
+            return false;
+        }
+        if (isSelectorItem(stack)) {
+            return true;
+        }
+        return isPerkUiItem(stack);
+    }
+
+    private boolean isPerkUiItem(ItemStack stack) {
+        if (stack == null) {
+            return false;
+        }
+        if (stack.isSimilar(General.Perk_EmptySlotItem)) {
+            return true;
+        }
+        for (PerkType perkType : PerkType.values()) {
+            if (stack.isSimilar(perkType.buildIndicatorIcon())) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     private ItemStack withCostLore(ItemStack original, int cost) {
         ItemStack stack = original.clone();

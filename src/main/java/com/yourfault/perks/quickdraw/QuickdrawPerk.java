@@ -62,6 +62,8 @@ public final class QuickdrawPerk {
         lore.add(ChatColor.GRAY + DESCRIPTION);
         lore.add(" ");
         lore.addAll(ABILITY_LORE);
+        lore.add(" ");
+        lore.add(ChatColor.YELLOW + "Right-click to remove this perk");
         return lore;
     }
 }

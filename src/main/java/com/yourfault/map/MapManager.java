@@ -71,6 +71,13 @@ public class MapManager {
     public synchronized void generateMapAsync(Location center,
                                               Consumer<MapGenerationSummary> onComplete,
                                               Consumer<String> onError) {
+        generateMapAsync(center, null, onComplete, onError);
+    }
+
+    public synchronized void generateMapAsync(Location center,
+                                              MapTheme requestedTheme,
+                                              Consumer<MapGenerationSummary> onComplete,
+                                              Consumer<String> onError) {
         Objects.requireNonNull(center, "center");
         Objects.requireNonNull(center.getWorld(), "World cannot be null");
         Objects.requireNonNull(onComplete, "onComplete");
@@ -103,7 +110,7 @@ public class MapManager {
 
         int playerCount = Math.max(1, Math.max(game.GetPlayerCount(), activeWorld.getPlayers().size()));
         int radius = computeRadius(playerCount);
-        MapTheme theme = MapTheme.pickRandom(random);
+        MapTheme theme = requestedTheme != null ? requestedTheme : MapTheme.pickRandom(random);
 
         GenerationSession session = new GenerationSession(
             theme,
@@ -169,9 +176,16 @@ public class MapManager {
     }
 
     private int computeRadius(int playerCount) {
-        int minRadius = 24;
-        int maxRadius = 80;
-        return Math.max(minRadius, Math.min(maxRadius, 18 + playerCount * 6));
+        int minRadius = 30;
+        int maxRadius = 94;
+        double base = 24 + playerCount * 5.5;
+        if (playerCount <= 3) {
+            base += 6;
+        }
+        if (playerCount >= 10) {
+            base += 6;
+        }
+        return Math.max(minRadius, Math.min(maxRadius, (int) Math.round(base)));
     }
 
     private int calculateSurfaceY(int baseY, int x, int z, double normalizedDistance, MapTheme theme) {
@@ -424,6 +438,86 @@ public class MapManager {
         buildBarrierRing(ridgeRadius + 1, minBarrierY, maxBarrierY);
     }
 
+    private void buildBorderWall(MapTheme theme, int radius, int baseY) {
+        if (activeWorld == null || activeCenter == null) {
+            return;
+        }
+        if (!theme.hasBorder()) {
+            return;
+        }
+        int centerX = activeCenter.getBlockX();
+        int centerZ = activeCenter.getBlockZ();
+        int floorRadius = radius + 1;
+        int innerRadiusSquared = radius * radius;
+        int floorRadiusSquared = floorRadius * floorRadius;
+        Material floorMaterial = theme.getTopMaterial();
+        if (floorMaterial == null || floorMaterial == Material.AIR) {
+            floorMaterial = resolveBorderMaterial(theme);
+        }
+        Material fillerMaterial = theme.getFillerMaterial();
+        if (fillerMaterial == null || fillerMaterial == Material.AIR) {
+            fillerMaterial = Material.STONE;
+        }
+        Material wallMaterial = resolveBorderMaterial(theme);
+        int wallHeight = theme.getTerrainProfile() == MapTheme.TerrainProfile.REAL_MOUNTAIN ? 8 : 3;
+
+        for (int dx = -floorRadius; dx <= floorRadius; dx++) {
+            for (int dz = -floorRadius; dz <= floorRadius; dz++) {
+                int distanceSquared = dx * dx + dz * dz;
+                if (distanceSquared <= innerRadiusSquared || distanceSquared > floorRadiusSquared) {
+                    continue;
+                }
+                int x = centerX + dx;
+                int z = centerZ + dz;
+
+                int innerX = centerX + (int) Math.round(dx * (radius / (double) floorRadius));
+                int innerZ = centerZ + (int) Math.round(dz * (radius / (double) floorRadius));
+                Integer innerSurface = surfaceHeights.get(columnKey(innerX, innerZ));
+
+                Integer surfaceY = surfaceHeights.get(columnKey(x, z));
+                if (surfaceY == null) {
+                    surfaceY = findNearestSurfaceY(x, z, baseY);
+                }
+                if (innerSurface != null) {
+                    if (surfaceY == null) {
+                        surfaceY = innerSurface;
+                    } else {
+                        surfaceY = Math.max(surfaceY, innerSurface);
+                    }
+                }
+                if (surfaceY == null) {
+                    surfaceY = baseY;
+                }
+                buildBorderColumn(x, z, surfaceY, fillerMaterial, floorMaterial, wallMaterial, wallHeight);
+            }
+        }
+    }
+
+    private void buildBorderColumn(int x,
+                                   int z,
+                                   int surfaceY,
+                                   Material fillerMaterial,
+                                   Material floorMaterial,
+                                   Material wallMaterial,
+                                   int wallHeight) {
+        if (activeWorld == null) {
+            return;
+        }
+        int minY = Math.max(activeWorld.getMinHeight(), surfaceY - 4);
+        for (int y = minY; y < surfaceY; y++) {
+            setBlock(activeWorld, x, y, z, fillerMaterial);
+        }
+        setBlock(activeWorld, x, surfaceY, z, floorMaterial);
+        int wallTop = Math.min(activeWorld.getMaxHeight() - 1, surfaceY + Math.max(1, wallHeight));
+        for (int y = surfaceY + 1; y <= wallTop; y++) {
+            setBlock(activeWorld, x, y, z, wallMaterial);
+        }
+        clearAboveSurface(x, wallTop + 1, z);
+        surfaceHeights.put(columnKey(x, z), surfaceY);
+        regionMinY = Math.min(regionMinY, minY);
+        regionMaxY = Math.max(regionMaxY, wallTop + 1);
+    }
+
     private void buildRidgeColumn(int centerX, int centerZ, int baseSurfaceY, Material ridgeMaterial) {
         if (activeWorld == null) {
             return;
@@ -494,6 +588,66 @@ public class MapManager {
         regionMaxY = Math.max(regionMaxY, coverY);
     }
 
+    private void buildRoadNetwork(MapTheme theme, int radius) {
+        if (activeWorld == null || activeCenter == null) {
+            return;
+        }
+        if (!theme.roadPathsEnabled()) {
+            return;
+        }
+        Material material = theme.getRoadMaterial();
+        if (material == null || material == Material.AIR) {
+            return;
+        }
+        int halfWidth = Math.max(1, (int) Math.round(radius * 0.04));
+        double angle = random.nextDouble() * Math.PI * 2.0;
+        carveRoadLine(radius, halfWidth, angle, material);
+    }
+
+    private void carveRoadLine(int radius, int halfWidth, double angle, Material material) {
+        if (activeCenter == null) {
+            return;
+        }
+        int centerX = activeCenter.getBlockX();
+        int centerZ = activeCenter.getBlockZ();
+        double dirX = Math.cos(angle);
+        double dirZ = Math.sin(angle);
+        double perpX = -dirZ;
+        double perpZ = dirX;
+        int radiusSquared = radius * radius;
+        for (int t = -radius; t <= radius; t++) {
+            int baseX = centerX + (int) Math.round(dirX * t);
+            int baseZ = centerZ + (int) Math.round(dirZ * t);
+            for (int offset = -halfWidth; offset <= halfWidth; offset++) {
+                int x = baseX + (int) Math.round(perpX * offset);
+                int z = baseZ + (int) Math.round(perpZ * offset);
+                int dx = x - centerX;
+                int dz = z - centerZ;
+                if ((dx * dx) + (dz * dz) > radiusSquared) {
+                    continue;
+                }
+                paintRoadTile(x, z, material);
+            }
+        }
+    }
+
+    private void paintRoadTile(int x, int z, Material material) {
+        if (activeWorld == null) {
+            return;
+        }
+        Integer surfaceY = surfaceHeights.get(columnKey(x, z));
+        if (surfaceY == null && activeCenter != null) {
+            surfaceY = findNearestSurfaceY(x, z, activeCenter.getBlockY());
+        }
+        if (surfaceY == null) {
+            return;
+        }
+        setBlock(activeWorld, x, surfaceY, z, material);
+        clearAboveSurface(x, surfaceY + 1, z);
+        regionMinY = Math.min(regionMinY, surfaceY);
+        regionMaxY = Math.max(regionMaxY, surfaceY + 1);
+    }
+
     private void tryPlacePool(Material fluid, int radius, MapTheme theme) {
         if (activeCenter == null) {
             return;
@@ -536,7 +690,44 @@ public class MapManager {
                 clearAboveSurface(x, surfaceY + 1, z);
             }
         }
+        reinforcePoolRim(centerX, centerZ, surfaceY, poolRadius, theme);
         regionMinY = Math.min(regionMinY, surfaceY - 3);
+    }
+
+    private void reinforcePoolRim(int centerX, int centerZ, int surfaceY, int poolRadius, MapTheme theme) {
+        if (activeWorld == null) {
+            return;
+        }
+        int rimRadius = poolRadius + 1;
+        int innerRadiusSquared = poolRadius * poolRadius;
+        int outerRadiusSquared = rimRadius * rimRadius;
+        Material rimMaterial = theme.getTopMaterial();
+        if (rimMaterial == null || rimMaterial == Material.AIR) {
+            rimMaterial = resolveBorderMaterial(theme);
+        }
+        Material fillerMaterial = theme.getFillerMaterial();
+        if (fillerMaterial == null || fillerMaterial == Material.AIR) {
+            fillerMaterial = Material.STONE;
+        }
+        for (int dx = -rimRadius; dx <= rimRadius; dx++) {
+            for (int dz = -rimRadius; dz <= rimRadius; dz++) {
+                int distSq = dx * dx + dz * dz;
+                if (distSq <= innerRadiusSquared || distSq > outerRadiusSquared) {
+                    continue;
+                }
+                int x = centerX + dx;
+                int z = centerZ + dz;
+                int minY = Math.max(activeWorld.getMinHeight(), surfaceY - 2);
+                for (int y = minY; y < surfaceY; y++) {
+                    setBlock(activeWorld, x, y, z, fillerMaterial);
+                }
+                setBlock(activeWorld, x, surfaceY, z, rimMaterial);
+                clearAboveSurface(x, surfaceY + 1, z);
+                surfaceHeights.put(columnKey(x, z), surfaceY);
+                regionMinY = Math.min(regionMinY, minY);
+                regionMaxY = Math.max(regionMaxY, surfaceY + 1);
+            }
+        }
     }
 
     private void placeFluidColumn(int x, int surfaceY, int z, int depth, Material fluid, MapTheme theme) {
@@ -701,7 +892,9 @@ public class MapManager {
         private void finishSuccessfully() {
             cancel();
             activeGeneration = null;
+            buildBorderWall(theme, radius, baseY);
             buildContainmentRidge(theme, radius, baseY);
+            buildRoadNetwork(theme, radius);
             buildTopCover(theme, radius, baseY);
             placePools(theme, radius);
             placeSpawnMarkers(playerCount, radius);

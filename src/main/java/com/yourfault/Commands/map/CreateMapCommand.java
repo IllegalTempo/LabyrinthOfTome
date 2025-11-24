@@ -1,6 +1,7 @@
 package com.yourfault.Commands.map;
 
 import com.yourfault.map.MapManager;
+import com.yourfault.map.MapTheme;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
@@ -8,7 +9,9 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.Arrays;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class CreateMapCommand implements  CommandExecutor {
     private final MapManager mapManager;
@@ -25,8 +28,8 @@ public class CreateMapCommand implements  CommandExecutor {
             return true;
         }
 
-        if (args.length != 3) {
-            sender.sendMessage(ChatColor.YELLOW + "Usage: /createmap <x> <y> <z>");
+        if (args.length < 3 || args.length > 4) {
+            sender.sendMessage(ChatColor.YELLOW + "Usage: /createmap <x> <y> <z> [theme]");
             return true;
         }
 
@@ -42,13 +45,29 @@ public class CreateMapCommand implements  CommandExecutor {
             return true;
         }
 
+        MapTheme requestedTheme = null;
+        if (args.length == 4) {
+            requestedTheme = MapTheme.findByName(args[3]);
+            if (requestedTheme == null) {
+            String options = Arrays.stream(MapTheme.values())
+                .map(theme -> theme.name().toLowerCase())
+                .collect(Collectors.joining(ChatColor.GRAY + ", " + ChatColor.YELLOW));
+            sender.sendMessage(ChatColor.RED + "Unknown theme '" + args[3] + "'.");
+            sender.sendMessage(ChatColor.YELLOW + "Available: " + ChatColor.GRAY + options);
+            return true;
+            }
+        }
+
         Location center = new Location(player.getWorld(), x, y, z);
-        sender.sendMessage(ChatColor.YELLOW + "Starting slice-based map generation...");
+        sender.sendMessage(ChatColor.YELLOW + "Starting slice-based map generation..."
+            + (requestedTheme != null ? " Theme: " + requestedTheme.name().toLowerCase() : ""));
+        MapTheme finalRequestedTheme = requestedTheme;
         mapManager.generateMapAsync(center,
-                summary -> sender.sendMessage(ChatColor.GREEN + "Generated a "
-                        + summary.getTheme().name().toLowerCase() + " map with radius "
-                        + summary.getRadius() + " and " + summary.getSpawnMarkerCount() + " spawn markers."),
-                error -> sender.sendMessage(ChatColor.RED + error));
+            finalRequestedTheme,
+            summary -> sender.sendMessage(ChatColor.GREEN + "Generated a "
+                + summary.getTheme().name().toLowerCase() + " map with radius "
+                + summary.getRadius() + " and " + summary.getSpawnMarkerCount() + " spawn markers."),
+            error -> sender.sendMessage(ChatColor.RED + error));
 
         return true;
     }

@@ -5,7 +5,9 @@ import com.yourfault.Commands.map.ClearMapCommand;
 import com.yourfault.Commands.map.CreateMapCommand;
 import com.yourfault.map.MapManager;
 import com.yourfault.npcinteraction.WeaponSelect;
+import com.yourfault.system.BleedoutManager;
 import com.yourfault.system.PlayerActivity;
+import com.yourfault.wave.EnemyHealthDisplay;
 import com.yourfault.wave.WaveCombatListener;
 import com.yourfault.wave.WaveManager;
 import org.bukkit.Bukkit;
@@ -25,9 +27,13 @@ public class Main extends JavaPlugin {
     public static JavaPlugin plugin;
     public static Game game;
     public static World world;
+    public static BleedoutManager bleedoutManager;
+    public static EnemyHealthDisplay enemyHealthDisplay;
     private PerkSelectionListener perkSelectionListener;
     private WaveManager waveManager;
     private MapManager mapManager;
+    private BleedoutManager bleedManager;
+    private EnemyHealthDisplay healthDisplay;
 
     //private QuickdrawAbility quickdrawAbility;
     //private SharpshooterAbility sharpshooterAbility;
@@ -39,7 +45,13 @@ public class Main extends JavaPlugin {
         world = Bukkit.getWorld("world");
         game = new Game(this);
         mapManager = new MapManager(this, game);
-        waveManager = new WaveManager(game, mapManager);
+        bleedManager = new BleedoutManager(this, game);
+        bleedoutManager = bleedManager;
+        this.getServer().getPluginManager().registerEvents(bleedManager, this);
+        healthDisplay = new EnemyHealthDisplay(this);
+        enemyHealthDisplay = healthDisplay;
+        this.getServer().getPluginManager().registerEvents(healthDisplay, this);
+        waveManager = new WaveManager(game, mapManager, healthDisplay);
         game.setWaveManager(waveManager);
 
         perkSelectionListener = new PerkSelectionListener(this);
@@ -75,7 +87,6 @@ public class Main extends JavaPlugin {
     private void RegisterAbilityListeners() {
         this.getServer().getPluginManager().registerEvents(new QuickdrawAbility(), this);
         this.getServer().getPluginManager().registerEvents(new SharpshooterAbility(), this);
-        //t
         this.getServer().getPluginManager().registerEvents(new WaveCombatListener(game), this);
 
 

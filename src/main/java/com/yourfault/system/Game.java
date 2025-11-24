@@ -88,6 +88,9 @@ public class Game {
     public void EndGame()
     {
         //CleanPlayerList();
+        if (Main.bleedoutManager != null) {
+            Main.bleedoutManager.resetAll();
+        }
         PLAYER_LIST.values().forEach(player -> player.PLAYER_PERKS.removePerks());
         if (waveManager != null) {
             int cleared = waveManager.clearAllEnemiesInstantly(true);

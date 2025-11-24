@@ -10,7 +10,7 @@ public class WaveEnemyInstance extends Enemy {
     private final double scaledDefense;
 
     public WaveEnemyInstance(LivingEntity entity, float health, float maxHealth, float defense, WaveEnemyType type, double scaledDamage) {
-        super(entity, health, maxHealth, defense, type.name());
+        super(entity, health, maxHealth, defense, type.displayName());
         this.type = type;
         this.scaledDamage = scaledDamage;
         this.scaledDefense = defense;

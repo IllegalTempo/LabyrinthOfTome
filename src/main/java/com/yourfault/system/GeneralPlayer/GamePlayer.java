@@ -102,6 +102,14 @@ public class GamePlayer
         return MANA;
     }
 
+    public float getMaxHealth() {
+        return MAX_HEALTH;
+    }
+
+    public void setHealth(float amount) {
+        HEALTH = Math.max(0, Math.min(amount, MAX_HEALTH));
+    }
+
     public void setMinecraftPlayer(org.bukkit.entity.Player minecraftPlayer) {
         this.MINECRAFT_PLAYER = minecraftPlayer;
     }
