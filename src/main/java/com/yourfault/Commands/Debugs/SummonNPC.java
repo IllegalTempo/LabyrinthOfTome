@@ -3,6 +3,9 @@ package com.yourfault.Commands.Debugs;
 import com.yourfault.Items.weapons;
 import com.yourfault.Main;
 import com.yourfault.NBT_namespace;
+import com.yourfault.weapon.WeaponType;
+import io.papermc.paper.datacomponent.item.ResolvableProfile;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
@@ -36,8 +39,9 @@ public class SummonNPC implements CommandExecutor {
             mannequin.getEquipment().setItemInMainHand(weapons.EXCALIBUR);
             mannequin.setInvulnerable(true);
             mannequin.setCollidable(false);
-            mannequin.getPersistentDataContainer().set(NBT_namespace.SELECT_NPC_Weapon, PersistentDataType.STRING, "excalibur");
-            mannequin.setDescription("Right Click");
+            mannequin.getPersistentDataContainer().set(NBT_namespace.SELECT_NPC_Weapon, PersistentDataType.STRING, WeaponType.Excalibur.toString());
+
+            mannequin.setDescription(Component.text("Right Click\u2f00"));
             PlayerProfile displaySkin = Bukkit.createPlayerProfile("excalibur_npc");
             URL skinurl = null;
             try {
@@ -46,8 +50,9 @@ public class SummonNPC implements CommandExecutor {
                 throw new RuntimeException(e);
             }
             displaySkin.getTextures().setSkin(skinurl);
-
-            mannequin.setPlayerProfile(displaySkin);
+            ResolvableProfile profile = (ResolvableProfile) displaySkin;
+            mannequin.setProfile(profile);
+            //mannequin.setPlayerProfile(displaySkin);
 
         });
     }

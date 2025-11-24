@@ -20,6 +20,8 @@ public class Game {
     {
         this.plugin = plugin;
         AddExistingPlayer();
+        Main_Update();
+
     }
     private final JavaPlugin plugin;
     private BukkitRunnable UpdateTask;
@@ -62,11 +64,12 @@ public class Game {
     public void StartGame(WaveDifficulty difficulty)
     {
         //CleanPlayerList();
+        PLAYER_LIST.values().forEach(GamePlayer::resetProgress);
+        preparePerkItemsForAllPlayers();
         if (waveManager != null) {
             waveManager.initializeSession(difficulty);
         }
 
-        Main_Update();
     }
     private void Main_Update()
     {
@@ -83,6 +86,7 @@ public class Game {
     public void EndGame()
     {
         //CleanPlayerList();
+        PLAYER_LIST.values().forEach(player -> player.PLAYER_PERKS.removePerks());
         if (waveManager != null) {
             waveManager.stop();
         }
@@ -110,6 +114,7 @@ public class Game {
 
     public void setPerkSelectionListener(PerkSelectionListener perkSelectionListener) {
         this.perkSelectionListener = perkSelectionListener;
+        preparePerkItemsForAllPlayers();
     }
 
     public void setWaveManager(WaveManager waveManager) {
@@ -122,5 +127,12 @@ public class Game {
     public int GetPlayerCount()
     {
         return PLAYER_LIST.size();
+    }
+
+    private void preparePerkItemsForAllPlayers() {
+        if (perkSelectionListener == null) {
+            return;
+        }
+        PLAYER_LIST.values().forEach(perkSelectionListener::preparePlayer);
     }
 }

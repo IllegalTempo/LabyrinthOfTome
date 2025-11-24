@@ -80,4 +80,13 @@ public class Perks {
     {
         return perks.contains(perk);
     }
+
+    public static boolean isPerkSlot(int slot) {
+        for (int index : PERK_SLOT_INDEXES) {
+            if (index == slot) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

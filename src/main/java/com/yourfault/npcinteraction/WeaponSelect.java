@@ -4,6 +4,7 @@ import com.yourfault.Main;
 import com.yourfault.NBT_namespace;
 import com.yourfault.weapon.WeaponType;
 import org.bukkit.Bukkit;
+import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Mannequin;
@@ -25,7 +26,7 @@ public class WeaponSelect implements Listener {
 
         if(rightclicked.getType().equals(EntityType.MANNEQUIN))
         {
-            String weapontype = rightclicked.getPersistentDataContainer().getOrDefault(NBT_namespace.SELECT_NPC_Weapon, PersistentDataType.STRING,"").toUpperCase();
+            String weapontype = rightclicked.getPersistentDataContainer().getOrDefault(NBT_namespace.SELECT_NPC_Weapon, PersistentDataType.STRING,"");
             if(weapontype.equals("")) return;
             try{
                 WeaponType npcweapon = WeaponType.valueOf(weapontype);
@@ -46,7 +47,8 @@ public class WeaponSelect implements Listener {
     public void EquipWeapon(Player player, WeaponType weaponType)
     {
         Main.game.GetPlayer(player.getUniqueId()).SELECTED_WEAPON = weaponType;
-        player.getInventory().setItem(40,weaponType.GetItem());
+        player.getInventory().setItem(4,weaponType.GetItem());
+        player.playSound(player.getLocation(), Sound.ENTITY_ARROW_HIT_PLAYER,1,1);
     }
 
 

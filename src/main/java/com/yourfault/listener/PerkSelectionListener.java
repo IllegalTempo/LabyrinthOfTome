@@ -1,12 +1,12 @@
 package com.yourfault.listener;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 
+import com.yourfault.Items.gui.General;
 import com.yourfault.Main;
 import com.yourfault.system.GeneralPlayer.GamePlayer;
+import com.yourfault.system.GeneralPlayer.Perks;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -16,10 +16,10 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
@@ -34,14 +34,11 @@ public class PerkSelectionListener implements Listener {
     private static final int SELECTOR_SLOT = 8;
     private static final String GUI_TITLE = "Select your perk";
 
-    private final JavaPlugin plugin;
     private final NamespacedKey perkKey;
     private final NamespacedKey selectorKey;
     private final ItemStack selectorItem;
-    private final Set<UUID> pendingSelection = new HashSet<>();
 
     public PerkSelectionListener(JavaPlugin plugin) {
-        this.plugin = plugin;
         this.perkKey = new NamespacedKey(plugin, "perk_option");
         this.selectorKey = new NamespacedKey(plugin, "perk_selector_item");
         this.selectorItem = buildSelectorItem();
@@ -86,14 +83,14 @@ public class PerkSelectionListener implements Listener {
     }
 
     private void openSelection(Player player) {
-        pendingSelection.add(player.getUniqueId());
         player.openInventory(buildInventory());
     }
 
     private Inventory buildInventory() {
         Inventory inventory = Bukkit.createInventory(null, 27, GUI_TITLE);
         for (PerkType perkType : PerkType.values()) {
-            inventory.setItem(perkType.menuSlot(), perkType.buildMenuIcon(perkKey));
+            ItemStack icon = perkType.buildMenuIcon(perkKey);
+            inventory.setItem(perkType.menuSlot(), withCostLore(icon, perkType.coinCost()));
         }
         fillEmpty(inventory);
         return inventory;
@@ -115,28 +112,28 @@ public class PerkSelectionListener implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!isSelectionInventory(event.getView())) return;
-        event.setCancelled(true);
-        ItemStack clicked = event.getCurrentItem();
-        if (clicked == null) return;
-        PerkType perkType = resolvePerkType(clicked);
-        if (perkType == null) return;
-        Player player = (Player) event.getWhoClicked();
-        GamePlayer gamePlayer = Main.game.GetPlayer(player);
-        if (gamePlayer == null) {
-            player.sendMessage(ChatColor.RED + "You must join the game before selecting perks.");
-            pendingSelection.remove(player.getUniqueId());
-            player.closeInventory();
+        if (isSelectionInventory(event.getView())) {
+            handleSelectionClick(event);
             return;
         }
-        boolean applied = gamePlayer.PLAYER_PERKS.applyPerkSelection(perkType);
-        if (applied) {
-            player.sendMessage(ChatColor.GREEN + perkType.displayName() + ChatColor.GRAY + " perk equipped!");
-        } else {
-            player.sendMessage(ChatColor.YELLOW + "You already have " + perkType.displayName() + ChatColor.YELLOW + ".");
+        if (!(event.getWhoClicked() instanceof Player player)) {
+            return;
         }
-        pendingSelection.remove(player.getUniqueId());
-        player.closeInventory();
+        Inventory clickedInventory = event.getClickedInventory();
+        if (clickedInventory == null || !clickedInventory.equals(player.getInventory())) {
+            handleHotbarSwap(event);
+            return;
+        }
+
+        ItemStack clicked = event.getCurrentItem();
+        if (clicked == null) {
+            return;
+        }
+
+        int slot = event.getSlot();
+        if (slot == SELECTOR_SLOT && isSelectorItem(clicked)) {
+            event.setCancelled(true);
+        }
     }
 
     private boolean isSelectionInventory(InventoryView view) {
@@ -157,18 +154,126 @@ public class PerkSelectionListener implements Listener {
 
     @EventHandler
     public void onInventoryDrag(InventoryDragEvent event) {
-        if (!isSelectionInventory(event.getView())) return;
+        if (isSelectionInventory(event.getView())) {
+            event.setCancelled(true);
+            return;
+        }
+        if (!(event.getWhoClicked() instanceof Player)) {
+            return;
+        }
+        int topSize = event.getView().getTopInventory().getSize();
+        for (int rawSlot : event.getRawSlots()) {
+            if (rawSlot < topSize) {
+                continue;
+            }
+            int playerSlot = rawSlot - topSize;
+            if (playerSlot == SELECTOR_SLOT) {
+                event.setCancelled(true);
+                return;
+            }
+        }
+    }
+
+    @EventHandler
+    public void onPlayerDrop(PlayerDropItemEvent event) {
+        ItemStack dropped = event.getItemDrop().getItemStack();
+        if (isSelectorItem(dropped)) {
+            event.setCancelled(true);
+            event.getPlayer().updateInventory();
+        }
+    }
+
+    @EventHandler
+    public void onPlayerSwapHandItems(PlayerSwapHandItemsEvent event) {
+        if (isSelectorItem(event.getMainHandItem()) || isSelectorItem(event.getOffHandItem())) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    private void handleSelectionClick(InventoryClickEvent event) {
         event.setCancelled(true);
+        ItemStack clicked = event.getCurrentItem();
+        if (clicked == null) return;
+        PerkType perkType = resolvePerkType(clicked);
+        if (perkType == null) return;
+        Player player = (Player) event.getWhoClicked();
+        GamePlayer gamePlayer = Main.game.GetPlayer(player);
+        if (gamePlayer == null) {
+            player.sendMessage(ChatColor.RED + "You must join the game before selecting perks.");
+            player.closeInventory();
+            return;
+        }
+        if (gamePlayer.PLAYER_PERKS.hasPerk(perkType)) {
+            player.sendMessage(ChatColor.YELLOW + "You already have " + perkType.displayName() + ChatColor.YELLOW + ".");
+            player.closeInventory();
+            return;
+        }
+
+        int cost = perkType.coinCost();
+        if (!gamePlayer.spendCoins(cost)) {
+            player.sendMessage(ChatColor.RED + "You need " + cost + " coins to buy " + perkType.displayName() + ChatColor.RED + ".");
+            player.closeInventory();
+            return;
+        }
+
+        boolean applied = gamePlayer.PLAYER_PERKS.applyPerkSelection(perkType);
+        if (applied) {
+            player.sendMessage(ChatColor.GREEN + perkType.displayName() + ChatColor.GRAY + " purchased for " + ChatColor.GOLD + cost + ChatColor.GRAY + " coins.");
+        } else {
+            gamePlayer.addCoins(cost); // refund if application failed for any reason
+            player.sendMessage(ChatColor.RED + "Unable to equip perk. Your coins were refunded.");
+        }
+        player.closeInventory();
     }
 
-    @EventHandler
-    public void onInventoryClose(InventoryCloseEvent event) {
-        if (!isSelectionInventory(event.getView())) return;
-        pendingSelection.remove(event.getPlayer().getUniqueId());
+    private void handleHotbarSwap(InventoryClickEvent event) {
+        int hotbarSlot = event.getHotbarButton();
+        if (hotbarSlot == SELECTOR_SLOT) {
+            event.setCancelled(true);
+        }
     }
 
-    @EventHandler
-    public void onPlayerQuit(PlayerQuitEvent event) {
-        pendingSelection.remove(event.getPlayer().getUniqueId());
+//    private boolean isProtectedSlot(int slot) {
+//        return slot == SELECTOR_SLOT || Perks.isPerkSlot(slot);
+//    }
+//
+//    private boolean isProtectedItem(ItemStack stack) {
+//        if (stack == null) {
+//            return false;
+//        }
+//        if (isSelectorItem(stack)) {
+//            return true;
+//        }
+//        return isPerkUiItem(stack);
+//    }
+//
+//    private boolean isPerkUiItem(ItemStack stack) {
+//        if (stack == null) {
+//            return false;
+//        }
+//        if (stack.isSimilar(General.Perk_EmptySlotItem)) {
+//            return true;
+//        }
+//        for (PerkType perkType : PerkType.values()) {
+//            if (stack.isSimilar(perkType.buildIndicatorIcon())) {
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
+
+    private ItemStack withCostLore(ItemStack original, int cost) {
+        ItemStack stack = original.clone();
+        ItemMeta meta = stack.getItemMeta();
+        if (meta == null) {
+            return stack;
+        }
+        List<String> lore = meta.getLore() == null ? new ArrayList<>() : new ArrayList<>(meta.getLore());
+        lore.add(" ");
+        lore.add(ChatColor.GOLD + "Cost: " + ChatColor.YELLOW + cost + " coins");
+        meta.setLore(lore);
+        stack.setItemMeta(meta);
+        return stack;
     }
 }

@@ -28,3 +28,18 @@ commands:
     usage: /readyfornextwave
     permissions:
       labyrinthoftome.admin: true
+  getcoins:
+    description: Grants coins for testing perks and systems
+    usage: /getcoins <amount> [player]
+    permissions:
+        labyrinthoftome.admin: true
+  createmap:
+    description: Generates a circular PvE arena using procedural terrain
+    usage: /createmap <x> <y> <z>
+    permissions:
+      labyrinthoftome.admin: true
+  clearmap:
+    description: Restores the world state prior to the last PvE map generation
+    usage: /clearmap
+    permissions:
+      labyrinthoftome.admin: true

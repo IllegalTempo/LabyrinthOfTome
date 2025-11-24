@@ -1,6 +1,9 @@
 package com.yourfault;
 
 import com.yourfault.Commands.Debugs.*;
+import com.yourfault.Commands.map.ClearMapCommand;
+import com.yourfault.Commands.map.CreateMapCommand;
+import com.yourfault.map.MapManager;
 import com.yourfault.npcinteraction.WeaponSelect;
 import com.yourfault.system.PlayerActivity;
 import com.yourfault.wave.WaveCombatListener;
@@ -24,6 +27,7 @@ public class Main extends JavaPlugin {
     public static World world;
     private PerkSelectionListener perkSelectionListener;
     private WaveManager waveManager;
+    private MapManager mapManager;
 
     //private QuickdrawAbility quickdrawAbility;
     //private SharpshooterAbility sharpshooterAbility;
@@ -36,6 +40,7 @@ public class Main extends JavaPlugin {
         game = new Game(this);
         waveManager = new WaveManager(game);
         game.setWaveManager(waveManager);
+        mapManager = new MapManager(this, game);
 
         perkSelectionListener = new PerkSelectionListener(this);
 
@@ -53,6 +58,9 @@ public class Main extends JavaPlugin {
         this.getCommand("get").setExecutor(new GetCommand());
         this.getCommand("readyfornextwave").setExecutor(new ReadyForNextWave());
         this.getCommand("spawnnpc").setExecutor(new SummonNPC());
+        this.getCommand("getcoins").setExecutor(new GetCoinsCommand());
+        this.getCommand("createmap").setExecutor(new CreateMapCommand(mapManager));
+        this.getCommand("clearmap").setExecutor(new ClearMapCommand(mapManager));
 
     }
     private void RegisterPlayerActivity()

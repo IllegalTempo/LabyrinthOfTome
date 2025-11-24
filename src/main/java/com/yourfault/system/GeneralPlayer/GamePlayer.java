@@ -1,8 +1,14 @@
 package com.yourfault.system.GeneralPlayer;
 
+import com.yourfault.Main;
 import com.yourfault.weapon.WeaponType;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
+
+import java.awt.*;
 
 public class GamePlayer
 {
@@ -49,9 +55,26 @@ public class GamePlayer
         int healthPercent = Math.round(GetHealth_Ratio() * 100);
         int manaPercent = Math.round(GetMana_Ratio() * 100);
         int xpTarget = xpForNextLevel();
-        String message = "❤ " + healthPercent + "%  ✦ " + manaPercent + "%  |  L" + level + " " + coins + "C" +
-                "  (" + experience + "/" + xpTarget + " XP)";
-        MINECRAFT_PLAYER.spigot().sendMessage(ChatMessageType.ACTION_BAR,new TextComponent(message));
+//        String message = "❤ " + healthPercent + "%  ✦ " + manaPercent + "%  |  L" + level + " " + coins + "C" +
+//                "  (" + experience + "/" + xpTarget + " XP)";
+        int healthCodePoint = 0x1F1F + healthPercent;
+        int manaCodePoint   = 0x1F2F + manaPercent;
+
+        String Preset = ChatColor.of("#000000") + "\u1f01";
+        String healthChar = ChatColor.of("#000000") + new String(Character.toChars(healthCodePoint));
+        String manaChar   = ChatColor.of("#000000") + new String(Character.toChars(manaCodePoint));
+
+
+
+
+        //String message =  "\u1f00" + String.join("\u1f00",Preset,manaChar,healthChar) + "\u1f00";
+        String message = "\u2f01".repeat(healthPercent);
+
+        Component component = GsonComponentSerializer.gson().deserialize(
+                "{\"text\":\"" + message + "\",\"shadow_color\":0}"
+        );
+        MINECRAFT_PLAYER.sendActionBar(component);
+
 
     }
     public void ChangeMana(float amount)
@@ -114,6 +137,21 @@ public class GamePlayer
         return coins;
     }
 
+    public void setCoins(int amount) {
+        coins = Math.max(0, amount);
+    }
+
+    public boolean spendCoins(int amount) {
+        if (amount <= 0) {
+            return true;
+        }
+        if (coins < amount) {
+            return false;
+        }
+        coins -= amount;
+        return true;
+    }
+
     public int getLevel() {
         return level;
     }
@@ -124,6 +162,16 @@ public class GamePlayer
 
     private int xpForNextLevel() {
         return 100 + ((level - 1) * 50);
+    }
+
+    public void resetProgress() {
+        level = 1;
+        coins = 0;
+        experience = 0;
+        HEALTH = MAX_HEALTH;
+        MANA = MAX_MANA;
+        PLAYER_PERKS.removePerks();
+
     }
 
 }

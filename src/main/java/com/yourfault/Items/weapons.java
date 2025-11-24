@@ -31,6 +31,7 @@ public class weapons {
             CustomModelDataComponent component = meta.getCustomModelDataComponent();
             component.setStrings(List.of("excalibur","idle"));
             meta.setCustomModelDataComponent(component);
+
             EXCALIBUR.setItemMeta(meta);
         }
         // Register items in the map
