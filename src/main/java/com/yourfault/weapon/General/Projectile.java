@@ -37,13 +37,12 @@ public abstract class Projectile {
         age = LastFor;
         this.radius = radius;
 
-        entity = eyeLocation.getWorld().spawn(eyeLocation, ArmorStand.class, e ->{
+        entity = eyeLocation.getWorld().spawn(eyeLocation.subtract(0,1,0), ArmorStand.class, e ->{
             e.setVisible(false);
             e.setInvulnerable(true);
             e.setBasePlate(false);
             e.setMarker(true);
             e.setSmall(true);
-            e.teleport(e.getLocation().subtract(0,1,0));
             for (EquipmentSlot slot : EquipmentSlot.values()) {
                 e.addEquipmentLock(slot, ArmorStand.LockType.ADDING_OR_CHANGING);
                 e.addEquipmentLock(slot, ArmorStand.LockType.REMOVING_OR_CHANGING);
@@ -52,7 +51,7 @@ public abstract class Projectile {
             Vector dir = eyeLocation.getDirection().clone().normalize();
             double pitch = Math.asin(-dir.getY());
             double yaw = Math.atan2(dir.getX(), dir.getZ());
-            e.setHeadPose(new EulerAngle(0, 0, pitch));
+            e.setHeadPose(new EulerAngle(pitch, 0, 0));
             Main.game.PROJECTILE_LIST.put(e.getUniqueId(),this);
 
         });

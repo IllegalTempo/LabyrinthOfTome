@@ -53,3 +53,8 @@ commands:
     usage: /damageself <amount>
     permissions:
       labyrinthoftome.admin: true
+  debugtab:
+    description: Debug Tab
+    usage: /debugtab <header> <footer>
+    permissions:
+      labyrinthoftome.admin: true

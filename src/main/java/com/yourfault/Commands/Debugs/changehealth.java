@@ -12,6 +12,6 @@ public class changehealth implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String @NotNull [] strings) {
         Player p = (Player) commandSender;
         Main.game.GetPlayer(p).damage(Float.parseFloat(strings[0]));
-        return false;
+        return true;
     }
 }

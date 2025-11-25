@@ -8,6 +8,7 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.BlockVector;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,6 +29,7 @@ public class MapManager {
     private final JavaPlugin plugin;
     private final Game game;
     private final Random random = new Random();
+    private final StructurePlacementHelper structureHelper;
     private PerlinNoise noise;
     private static final int GENERATION_SLICE_INTERVAL_TICKS = 10; // 0.5 seconds
     private static final int GENERATION_SLICE_WIDTH = 4;
@@ -39,6 +41,7 @@ public class MapManager {
     private final Set<String> touchedBlocks = new HashSet<>();
     private final Map<Long, Integer> surfaceHeights = new HashMap<>();
     private final List<Location> spawnMarkerLocations = new ArrayList<>();
+    private final Set<Long> reservedStructureColumns = new HashSet<>();
 
     private World activeWorld;
     private Location activeCenter;
@@ -55,6 +58,7 @@ public class MapManager {
         this.plugin = plugin;
         this.game = game;
         this.noise = new PerlinNoise(System.currentTimeMillis());
+        this.structureHelper = new StructurePlacementHelper(plugin);
     }
 
     public synchronized boolean hasActiveMap() {
@@ -102,6 +106,7 @@ public class MapManager {
         surfaceHeights.clear();
         spawnMarkerLocations.clear();
         touchedBlocks.clear();
+        reservedStructureColumns.clear();
         regionMinY = Integer.MAX_VALUE;
         regionMaxY = Integer.MIN_VALUE;
 
@@ -114,12 +119,12 @@ public class MapManager {
         MapTheme theme = requestedTheme != null ? requestedTheme : MapTheme.pickRandom(random);
 
         GenerationSession session = new GenerationSession(
-            theme,
-            radius,
-            center.getBlockY(),
-            playerCount,
-            onComplete,
-            onError
+                theme,
+                radius,
+                center.getBlockY(),
+                playerCount,
+                onComplete,
+                onError
         );
         activeGeneration = session;
         session.runTaskTimer(plugin, 1L, GENERATION_SLICE_INTERVAL_TICKS);
@@ -356,6 +361,9 @@ public class MapManager {
                 double angle = random.nextDouble() * Math.PI * 2;
                 int x = activeCenter.getBlockX() + (int) Math.round(distance * Math.cos(angle));
                 int z = activeCenter.getBlockZ() + (int) Math.round(distance * Math.sin(angle));
+                if (isStructureBlocked(x, z)) {
+                    continue;
+                }
                 if (!isMarkerFarEnough(x, z, spacing)) {
                     continue;
                 }
@@ -407,6 +415,144 @@ public class MapManager {
         if (allowLava) {
             spawnFluidPools(Material.LAVA, Math.max(1, attempts / 2), radius, theme);
         }
+    }
+
+    private void placeWatchtowers(MapTheme theme, int radius) {
+        if (activeWorld == null || activeCenter == null) {
+            return;
+        }
+        MapTheme.StructureSettings structureSettings = theme.getStructureSettings();
+        if (structureSettings == null || !structureSettings.enabled()) {
+            return;
+        }
+        if (radius < 24) {
+            return;
+        }
+        double spawnChance = 0.45;
+        if (random.nextDouble() > spawnChance) {
+            return;
+        }
+
+        MapTheme.StructureTemplate template = structureSettings.pickTemplate(random);
+        if (template == null) {
+            plugin.getLogger().log(Level.WARNING, "Structure settings provided no template for theme {0}", theme.name());
+            return;
+        }
+
+        String resourcePath = template.resourcePath();
+        if (resourcePath == null || resourcePath.isBlank()) {
+            plugin.getLogger().log(Level.WARNING, "Structure template path is not set for theme {0}", theme.name());
+            return;
+        }
+        if (!structureHelper.hasStructure(resourcePath)) {
+            plugin.getLogger().log(Level.WARNING, "Structure resource {0} could not be loaded; skipping placement.", resourcePath);
+            return;
+        }
+
+        List<Location> placed = new ArrayList<>(1);
+        int attempts = 12;
+        int safeRadiusSquared = (radius - 6) * (radius - 6);
+        BlockVector templateSize = structureHelper.getStructureSize(resourcePath);
+        int footprintRadius = structureHelper.estimateFootprintRadius(templateSize, template.fallbackFootprintRadius());
+        int structureHeight = templateSize != null ? templateSize.getBlockY() : template.estimatedHeight();
+
+        while (placed.isEmpty() && attempts-- > 0) {
+            double distance = radius * (0.35 + random.nextDouble() * 0.4);
+            double angle = random.nextDouble() * Math.PI * 2;
+            int x = activeCenter.getBlockX() + (int) Math.round(distance * Math.cos(angle));
+            int z = activeCenter.getBlockZ() + (int) Math.round(distance * Math.sin(angle));
+            int dx = x - activeCenter.getBlockX();
+            int dz = z - activeCenter.getBlockZ();
+            if ((dx * dx) + (dz * dz) > safeRadiusSquared) {
+                continue;
+            }
+            if (!isTowerFarEnough(placed, x + 0.5, z + 0.5, 12.0)) {
+                continue;
+            }
+            Integer surfaceY = surfaceHeights.get(columnKey(x, z));
+            if (surfaceY == null) {
+                surfaceY = findNearestSurfaceY(x, z, activeCenter.getBlockY());
+            }
+            if (surfaceY == null) {
+                continue;
+            }
+            if (surfaceY + 24 >= activeWorld.getMaxHeight()) {
+                continue;
+            }
+            if (!canPlaceWatchtower(x, z, surfaceY, footprintRadius)) {
+                continue;
+            }
+
+            boolean placedStructure = structureHelper.placeStructure(
+                    resourcePath,
+                    activeWorld,
+                    x,
+                    surfaceY + 1,
+                    z,
+                    random,
+                    template.includeEntities()
+            );
+            if (!placedStructure) {
+                continue;
+            }
+
+            markStructureFootprint(x, z, footprintRadius);
+
+            placed.add(new Location(activeWorld, x + 0.5, surfaceY, z + 0.5));
+            regionMinY = Math.min(regionMinY, surfaceY - 2);
+            regionMaxY = Math.max(regionMaxY, surfaceY + 1 + structureHeight + 2);
+        }
+    }
+
+    private boolean canPlaceWatchtower(int centerX, int centerZ, int baseY, int radius) {
+        for (int dx = -radius; dx <= radius; dx++) {
+            for (int dz = -radius; dz <= radius; dz++) {
+                if ((dx * dx) + (dz * dz) > radius * radius) {
+                    continue;
+                }
+                int x = centerX + dx;
+                int z = centerZ + dz;
+                long key = columnKey(x, z);
+                if (reservedStructureColumns.contains(key)) {
+                    return false;
+                }
+                Integer surface = surfaceHeights.get(key);
+                if (surface != null && Math.abs(surface - baseY) > 2) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private void markStructureFootprint(int centerX, int centerZ, int radius) {
+        for (int dx = -radius; dx <= radius; dx++) {
+            for (int dz = -radius; dz <= radius; dz++) {
+                if ((dx * dx) + (dz * dz) > radius * radius) {
+                    continue;
+                }
+                reservedStructureColumns.add(columnKey(centerX + dx, centerZ + dz));
+            }
+        }
+    }
+
+    private boolean isTowerFarEnough(List<Location> towers, double candidateX, double candidateZ, double minDistance) {
+        double minSquared = minDistance * minDistance;
+        for (Location tower : towers) {
+            if (tower.getWorld() != activeWorld) {
+                continue;
+            }
+            double dx = tower.getX() - candidateX;
+            double dz = tower.getZ() - candidateZ;
+            if ((dx * dx) + (dz * dz) < minSquared) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean isStructureBlocked(int x, int z) {
+        return reservedStructureColumns.contains(columnKey(x, z));
     }
 
     private void spawnFluidPools(Material fluid, int attempts, int radius, MapTheme theme) {
@@ -837,6 +983,7 @@ public class MapManager {
         touchedBlocks.clear();
         surfaceHeights.clear();
         spawnMarkerLocations.clear();
+        reservedStructureColumns.clear();
         activeCenter = null;
         activeWorld = null;
         lastTheme = null;
@@ -898,6 +1045,7 @@ public class MapManager {
             buildRoadNetwork(theme, radius);
             buildTopCover(theme, radius, baseY);
             placePools(theme, radius);
+            placeWatchtowers(theme, radius);
             placeSpawnMarkers(playerCount, radius);
             lastTheme = theme;
             lastRadius = radius;

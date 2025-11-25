@@ -122,7 +122,6 @@ public class Game {
                     error -> plugin.getLogger().warning(String.format("Failed to clear map after EndGame: %s", error))
             );
         }
-        if(UpdateTask != null)UpdateTask.cancel();
     }
     public boolean WholeFamilyDies()
     {
