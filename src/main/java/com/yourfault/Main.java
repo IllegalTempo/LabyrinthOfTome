@@ -6,6 +6,7 @@ import com.yourfault.Commands.map.CreateMapCommand;
 import com.yourfault.map.MapManager;
 import com.yourfault.npcinteraction.WeaponSelect;
 import com.yourfault.system.BleedoutManager;
+import com.yourfault.system.CustomHealthListener;
 import com.yourfault.system.PlayerActivity;
 import com.yourfault.wave.EnemyHealthDisplay;
 import com.yourfault.wave.WaveCombatListener;
@@ -62,6 +63,7 @@ public class Main extends JavaPlugin {
         RegisterAbilityListeners();
         RegisterNPCInteraction();
         RegisterPlayerActivity();
+        RegisterCustomHealthSystem();
     }
     private void RegisterCommands()
     {
@@ -91,6 +93,9 @@ public class Main extends JavaPlugin {
         this.getServer().getPluginManager().registerEvents(new WaveCombatListener(game), this);
 
 
+    }
+    private void RegisterCustomHealthSystem() {
+        this.getServer().getPluginManager().registerEvents(new CustomHealthListener(game), this);
     }
     public void RegisterWeapons() {
         this.getServer().getPluginManager().registerEvents(new Excalibur_Main(), this);

@@ -1,5 +1,6 @@
 package com.yourfault.system;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.UUID;
 
@@ -7,6 +8,9 @@ import com.yourfault.map.MapManager;
 import com.yourfault.system.GeneralPlayer.GamePlayer;
 import com.yourfault.wave.WaveDifficulty;
 import com.yourfault.wave.WaveManager;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.title.Title;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -17,6 +21,11 @@ import com.yourfault.listener.PerkSelectionListener;
 import com.yourfault.weapon.General.Projectile;
 
 public class Game {
+    private static final Title.Times GAME_START_TITLE_TIMES = Title.Times.times(
+            Duration.ofMillis(500),
+            Duration.ofSeconds(2),
+            Duration.ofMillis(1000)
+    );
     public Game(JavaPlugin plugin)
     {
         this.plugin = plugin;
@@ -43,7 +52,7 @@ public class Game {
             player.setInvulnerable(true);
             var gamePlayer = new GamePlayer(player);
             PLAYER_LIST.put(player.getUniqueId(), gamePlayer);
-            player.sendTitle("§aGame Started","§7Select your default weapon!",10,40,20);
+            showGameStartTitle(player);
             if (perkSelectionListener != null) {
                 perkSelectionListener.preparePlayer(gamePlayer);
             }
@@ -54,7 +63,7 @@ public class Game {
     {
         var gamePlayer = new GamePlayer(player);
         PLAYER_LIST.put(player.getUniqueId(), gamePlayer);
-        player.sendTitle("§aGame Started","§7Select your default weapon!",10,40,20);
+        showGameStartTitle(player);
         if (perkSelectionListener != null) {
             perkSelectionListener.preparePlayer(gamePlayer);
         }
@@ -63,6 +72,14 @@ public class Game {
     {
         PLAYER_LIST.remove(player.getUniqueId());
         
+    }
+    private void showGameStartTitle(Player player) {
+        Title title = Title.title(
+                Component.text("Game Started", NamedTextColor.GREEN),
+                Component.text("Select your default weapon!", NamedTextColor.GRAY),
+                GAME_START_TITLE_TIMES
+        );
+        player.showTitle(title);
     }
     public void StartGame(WaveDifficulty difficulty)
     {

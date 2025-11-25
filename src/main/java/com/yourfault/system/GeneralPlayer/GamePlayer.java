@@ -1,13 +1,12 @@
 package com.yourfault.system.GeneralPlayer;
 
 import com.yourfault.Main;
-import com.yourfault.system.BleedoutManager;
 import com.yourfault.weapon.WeaponType;
 import io.papermc.paper.datacomponent.item.ResolvableProfile;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
-import net.kyori.adventure.title.TitlePart;
+import net.kyori.adventure.title.Title;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -15,14 +14,12 @@ import org.bukkit.Location;
 import org.bukkit.entity.Mannequin;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Pose;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
-import java.util.Objects;
-import java.util.UUID;
-import java.util.function.BooleanSupplier;
+import java.time.Duration;
+import java.util.Locale;
 
 import static com.yourfault.Main.plugin;
 import static com.yourfault.system.BleedoutManager.BLEED_OUT_SECONDS;
@@ -31,15 +28,22 @@ import static com.yourfault.system.BleedoutManager.REVIVE_SECONDS;
 public class GamePlayer
 {
     public static final Vector Downed_WatchOffset = new Vector(0,5,0);
+    private static final Title.Times DEATH_TITLE_TIMES = Title.Times.times(
+            Duration.ofMillis(300),
+            Duration.ofSeconds(2),
+            Duration.ofMillis(600)
+    );
+
     public enum SurvivalState {
         ALIVE,
         DOWNED,
         DEAD
     }
+
     private Player MINECRAFT_PLAYER;
     public Perks PLAYER_PERKS;
-    private float MAX_HEALTH;
-    private float MAX_MANA;
+    private final float MAX_HEALTH;
+    private final float MAX_MANA;
     private float HEALTH;
     private float MANA;
     public float DEFENSE;
@@ -48,7 +52,6 @@ public class GamePlayer
     private int level = 1;
     private int experience = 0;
 
-
     public SurvivalState CurrentState = SurvivalState.ALIVE;
     public GamePlayer Reviving_Someone = null;
     public GamePlayer Being_Revived = null;
@@ -56,6 +59,7 @@ public class GamePlayer
     public Mannequin SndPerson;
     private BukkitTask downTask;
     private BukkitTask ReviveTask;
+
     public GamePlayer(Player minecraftplayer)
     {
         this.MINECRAFT_PLAYER = minecraftplayer;
@@ -66,7 +70,9 @@ public class GamePlayer
         this.MANA = MAX_MANA;
         this.DEFENSE = SELECTED_WEAPON.Defense;
         PLAYER_PERKS = new Perks(this);
+        refillVanillaHealth();
     }
+
     private WeaponType GetSelectedWeapon_From_Scoreboardtag() {
         return MINECRAFT_PLAYER.getScoreboardTags().stream()
                 .filter(tag -> tag.startsWith("SelectedWeapon_"))
@@ -84,9 +90,12 @@ public class GamePlayer
 
     public void DisplayStatToPlayer()
     {
+        Player player = MINECRAFT_PLAYER;
+        if (player == null) {
+            return;
+        }
         int healthPercent = Math.round(GetHealth_Ratio() * 100);
         int manaPercent = Math.round(GetMana_Ratio() * 100);
-        int xpTarget = xpForNextLevel();
 //        String message = "❤ " + healthPercent + "%  ✦ " + manaPercent + "%  |  L" + level + " " + coins + "C" +
 //                "  (" + experience + "/" + xpTarget + " XP)";
         int healthCodePoint = 0x1F1F + healthPercent;
@@ -100,13 +109,14 @@ public class GamePlayer
 
 
         //String message =  "\u1f00" + String.join("\u1f00",Preset,manaChar,healthChar) + "\u1f00";
-        String message = "\u2f01".repeat(healthPercent);
+        String message =  "\u1f00" + String.join("\u1f00",Preset,manaChar,healthChar) + "\u1f00";
 
         Component component = GsonComponentSerializer.gson().deserialize(
                 "{\"text\":\"" + message + "\",\"shadow_color\":0}"
         );
         MINECRAFT_PLAYER.sendActionBar(component);
     }
+
     public void ChangeMana(float amount)
     {
         MANA += amount;
@@ -141,13 +151,17 @@ public class GamePlayer
     }
     public void damage(float amount)
     {
+        if (CurrentState != SurvivalState.ALIVE) {
+            return;
+        }
         HEALTH -= amount;
-        MINECRAFT_PLAYER.damage(0);
 
-        if(HEALTH < 0) {
+        if(HEALTH <= 0) {
             HEALTH = 0;
             start_down();
 
+        } else {
+            refillVanillaHealth();
         }
     }
     public Mannequin SpawnSecondPerson()
@@ -173,8 +187,6 @@ public class GamePlayer
         watchcorpse.setRotation(0,90);
         MINECRAFT_PLAYER.teleport(watchcorpse);
         MINECRAFT_PLAYER.setGameMode(GameMode.SPECTATOR);
-        //BleedoutManager.BleedoutState state = new BleedoutManager.BleedoutState(player);
-        //applyDownedEffects(player, gamePlayer, state);
         Bukkit.broadcastMessage(org.bukkit.ChatColor.RED + MINECRAFT_PLAYER.getName() + " is bleeding out! Hold SHIFT on them for 5 seconds to revive.");
         downTask = new BukkitRunnable() {
             private int ticksRemaining = BLEED_OUT_SECONDS * 20;
@@ -191,7 +203,10 @@ public class GamePlayer
                 } else {
                     int seconds = Math.max(0, ticksRemaining / 20);
                     MINECRAFT_PLAYER.sendActionBar(Component.text("Bleeding out - " + seconds + "s", NamedTextColor.RED));
-                    SndPerson.setDescription(Component.text("Bleeding out - " + seconds + "s\nHold SHIFT to revive", NamedTextColor.RED));}
+                    if (SndPerson != null) {
+                        SndPerson.setDescription(Component.text("Bleeding out - " + seconds + "s\nHold SHIFT to revive", NamedTextColor.RED));
+                    }
+                }
 
             }
         }.runTaskTimer(plugin, 0L, 20L);
@@ -208,13 +223,22 @@ public class GamePlayer
 
             }
             Reviving_Someone.Being_Revived = null;
-            ReviveTask.cancel();
+            if (ReviveTask != null) {
+                ReviveTask.cancel();
+                ReviveTask = null;
+            }
             Reviving_Someone = null;
         }
     }
     public void beginRevive(GamePlayer targetState) {
+        if (CurrentState != SurvivalState.ALIVE) {
+            return;
+        }
+        if (targetState == null || targetState.CurrentState != SurvivalState.DOWNED) {
+            MINECRAFT_PLAYER.sendMessage(org.bukkit.ChatColor.RED + "Only bleeding teammates can be revived.");
+            return;
+        }
         if (Reviving_Someone != null) {
-            //MINECRAFT_PLAYER.sendMessage(org.bukkit.ChatColor.YELLOW + "You are already reviving someone.");
             return;
         }
         if (targetState.Being_Revived != null) {
@@ -223,10 +247,6 @@ public class GamePlayer
         }
         Reviving_Someone = targetState;
         targetState.Being_Revived = this;
-//        if (!isWithinRange(rescuer, targetState.playerId)) {
-//            rescuer.sendMessage(org.bukkit.ChatColor.RED + "Move closer to revive.");
-//            return;
-//        }
         ReviveTask = new BukkitRunnable() {
             private int ticksRemaining = REVIVE_SECONDS * 20;
             @Override
@@ -251,37 +271,53 @@ public class GamePlayer
     public void revived()
     {
         CurrentState = SurvivalState.ALIVE;
-        Being_Revived.Reviving_Someone = null;
-        Being_Revived = null;
-        HEALTH = MAX_HEALTH * 0.3f;
-        MINECRAFT_PLAYER.setGameMode(GameMode.ADVENTURE);
-        downTask.cancel();
-        SndPerson.remove();
+        if (Being_Revived != null) {
+            Being_Revived.Reviving_Someone = null;
+            Being_Revived = null;
+        }
+        HEALTH = MAX_HEALTH * 0.2f;
+        refillVanillaHealth();
+        if (MINECRAFT_PLAYER != null) {
+            MINECRAFT_PLAYER.setGameMode(GameMode.ADVENTURE);
+            if (SndPerson != null) {
+                Location reviveLocation = SndPerson.getLocation().clone();
+                reviveLocation.setPitch(0f);
+                MINECRAFT_PLAYER.teleport(reviveLocation);
+            }
+        }
+        if (downTask != null) {
+            downTask.cancel();
+            downTask = null;
+        }
+        if (SndPerson != null) {
+            SndPerson.remove();
+            SndPerson = null;
+        }
     }
     public void died()
     {
         CurrentState = SurvivalState.DEAD;
-        if(Being_Revived == null) //no one saving you
+        if(Being_Revived == null)
         {
 
 
-        } else { //you died in someones hand
+        } else {
             Being_Revived.CancelRevive();
 
         }
-        SndPerson.setDescription(Component.text("DEAD - Revive next wave", NamedTextColor.DARK_RED));
-        MINECRAFT_PLAYER.sendTitlePart(TitlePart.TITLE, Component.text("You Died", NamedTextColor.RED));
-        MINECRAFT_PLAYER.sendTitlePart(TitlePart.SUBTITLE, Component.text("Revive next dimension", NamedTextColor.DARK_RED));
-        //TODO handle death logic (What is death?)
+        if (SndPerson != null) {
+            SndPerson.setDescription(Component.text("DEAD - Revive next wave", NamedTextColor.DARK_RED));
+        }
+        Player player = MINECRAFT_PLAYER;
+        if (player != null) {
+            Title deathTitle = Title.title(
+                    Component.text("You Died", NamedTextColor.RED),
+                    Component.text("Revive next dimension", NamedTextColor.DARK_RED),
+                    DEATH_TITLE_TIMES
+            );
+            player.showTitle(deathTitle);
+        }
     }
-
-
-
-
-
-
-
-
 
     public void setMinecraftPlayer(Player minecraftPlayer) {
         this.MINECRAFT_PLAYER = minecraftPlayer;
@@ -310,7 +346,7 @@ public class GamePlayer
             level++;
             leveled = true;
         }
-        if (leveled) {
+        if (leveled && MINECRAFT_PLAYER != null) {
             MINECRAFT_PLAYER.sendMessage("§6Level Up! You are now level " + level + "!");
         }
     }
@@ -353,107 +389,47 @@ public class GamePlayer
         HEALTH = MAX_HEALTH;
         MANA = MAX_MANA;
         CurrentState = SurvivalState.ALIVE;
+        if (ReviveTask != null) {
+            ReviveTask.cancel();
+            ReviveTask = null;
+        }
+        if (downTask != null) {
+            downTask.cancel();
+            downTask = null;
+        }
+        if (Reviving_Someone != null) {
+            Reviving_Someone.Being_Revived = null;
+            Reviving_Someone = null;
+        }
+        if (Being_Revived != null) {
+            Being_Revived.Reviving_Someone = null;
+            Being_Revived = null;
+        }
+        Player player = MINECRAFT_PLAYER;
+        if (player != null) {
+            if (SndPerson != null) {
+                Location reviveLocation = SndPerson.getLocation().clone();
+                reviveLocation.setPitch(0f);
+                player.teleport(reviveLocation);
+            }
+            player.setGameMode(GameMode.ADVENTURE);
+            player.setAllowFlight(false);
+            player.setFlying(false);
+            refillVanillaHealth();
+        }
         if(SndPerson != null) {
             SndPerson.remove();
+            SndPerson = null;
         }
         PLAYER_PERKS.removePerks();
-        if(downTask != null)downTask.cancel();
-        if(ReviveTask != null)ReviveTask.cancel();
-
     }
 
-//    private static final class DownedVisual {
-//        private boolean active;
-//        private boolean hadGravity;
-//        private boolean allowedFlight;
-//        private boolean wasFlying;
-//        private boolean wasSleepingIgnored;
-//        private Pose previousPose;
-//        private BukkitTask poseTask;
-//        private BooleanSupplier validator;
-//
-//        void start(JavaPlugin plugin, GamePlayer gamePlayer, BooleanSupplier stillDowned) {
-//            Player player = gamePlayer.getMinecraftPlayer();
-//            if (player == null) {
-//                return;
-//            }
-//            stop(gamePlayer);
-//            active = true;
-//            validator = stillDowned;
-//            hadGravity = player.hasGravity();
-//            allowedFlight = player.getAllowFlight();
-//            wasFlying = player.isFlying();
-//            wasSleepingIgnored = player.isSleepingIgnored();
-//            previousPose = player.getPose();
-//            player.setGravity(false);
-//            player.setAllowFlight(false);
-//            player.setFlying(false);
-//            player.setSneaking(false);
-//            player.setSleepingIgnored(true);
-//            applyPose(player);
-//            poseTask = new BukkitRunnable() {
-//                @Override
-//                public void run() {
-//                    Player tracked = gamePlayer.getMinecraftPlayer();
-//                    if (tracked == null || !tracked.isOnline()) {
-//                        restore(gamePlayer, false);
-//                        cancel();
-//                        return;
-//                    }
-//                    if (validator != null && !validator.getAsBoolean()) {
-//                        restore(gamePlayer, false);
-//                        cancel();
-//                        return;
-//                    }
-//                    applyPose(tracked);
-//                }
-//            }.runTaskTimer(plugin, 0L, 1L);
-//        }
-//
-//        void stop(GamePlayer gamePlayer) {
-//            restore(gamePlayer, true);
-//        }
-//
-//        boolean isActive() {
-//            return active;
-//        }
-//
-//        private void restore(GamePlayer gamePlayer, boolean cancelTask) {
-//            if (poseTask != null && cancelTask) {
-//                poseTask.cancel();
-//            }
-//            poseTask = null;
-//            if (!active) {
-//                return;
-//            }
-//            active = false;
-//            Player player = gamePlayer.getMinecraftPlayer();
-//            if (player == null) {
-//                return;
-//            }
-//            player.setGravity(hadGravity);
-//            player.setAllowFlight(allowedFlight);
-//            if (allowedFlight) {
-//                player.setFlying(wasFlying);
-//            }
-//            player.setSleepingIgnored(wasSleepingIgnored);
-//            try {
-//                player.setPose(previousPose != null ? previousPose : Pose.STANDING);
-//            } catch (NoSuchMethodError ignored) {
-//                // ignore
-//            }
-//        }
-//
-//        private void applyPose(Player player) {
-//            try {
-//                player.setPose(Pose.SLEEPING);
-//            } catch (NoSuchMethodError ignored) {
-//                try {
-//                    player.setPose(Pose.SWIMMING);
-//                } catch (NoSuchMethodError ignored2) {
-//                    player.setPose(Pose.SNEAKING);
-//                }
-//            }
-//        }
-//    }
+    public void refillVanillaHealth() {
+        Player player = MINECRAFT_PLAYER;
+        if (player == null) {
+            return;
+        }
+        double maxHealth = player.getMaxHealth();
+        player.setHealth(maxHealth);
+    }
 }

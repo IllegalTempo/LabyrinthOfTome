@@ -38,7 +38,7 @@ import java.util.UUID;
 public class BleedoutManager implements Listener {
     public static final int BLEED_OUT_SECONDS = 60;
     public static final int REVIVE_SECONDS = 5;
-    public static final double REVIVE_RADIUS = 1.75;
+    public static final double REVIVE_RADIUS = 3.5;
 
     private static final PotionEffectType EFFECT_SLOW = resolveEffect("SLOW", "SLOWNESS");
     private static final PotionEffectType EFFECT_WEAKNESS = resolveEffect("WEAKNESS");
@@ -243,14 +243,22 @@ public class BleedoutManager implements Listener {
 //    }
 //
     private GamePlayer findNearbyDowned(Player rescuer) {
-        for(Player p: Bukkit.getOnlinePlayers()) {
-            if(p != rescuer)
-            {
-                Location realLocation = p.getLocation().subtract(GamePlayer.Downed_WatchOffset);
-                if(realLocation.distanceSquared(rescuer.getLocation()) <= REVIVE_RADIUS)
-                {
-                    return Main.game.GetPlayer(p);
-                }
+        Location rescuerLocation = rescuer.getLocation();
+        double maxDistanceSquared = REVIVE_RADIUS * REVIVE_RADIUS;
+        for (Player targetPlayer : Bukkit.getOnlinePlayers()) {
+            if (targetPlayer.equals(rescuer)) {
+                continue;
+            }
+            GamePlayer targetState = Main.game.GetPlayer(targetPlayer);
+            if (targetState == null || targetState.CurrentState != GamePlayer.SurvivalState.DOWNED) {
+                continue;
+            }
+            if (!Objects.equals(targetPlayer.getWorld(), rescuerLocation.getWorld())) {
+                continue;
+            }
+            Location reviveLocation = targetPlayer.getLocation().clone().subtract(GamePlayer.Downed_WatchOffset);
+            if (reviveLocation.distanceSquared(rescuerLocation) <= maxDistanceSquared) {
+                return targetState;
             }
         }
         return null;
