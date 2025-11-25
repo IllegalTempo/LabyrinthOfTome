@@ -48,3 +48,8 @@ commands:
     usage: /skipwave
     permissions:
       labyrinthoftome.admin: true
+  damageself:
+    description: Deals damage to the player for testing purposes
+    usage: /damageself <amount>
+    permissions:
+      labyrinthoftome.admin: true

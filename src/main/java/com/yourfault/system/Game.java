@@ -40,6 +40,7 @@ public class Game {
     private void AddExistingPlayer()
     {
         Main.world.getPlayers().forEach(player -> {
+            player.setInvulnerable(true);
             var gamePlayer = new GamePlayer(player);
             PLAYER_LIST.put(player.getUniqueId(), gamePlayer);
             player.sendTitle("§aGame Started","§7Select your default weapon!",10,40,20);
@@ -87,11 +88,10 @@ public class Game {
 
     public void EndGame()
     {
-        //CleanPlayerList();
-        if (Main.bleedoutManager != null) {
-            Main.bleedoutManager.resetAll();
-        }
-        PLAYER_LIST.values().forEach(player -> player.PLAYER_PERKS.removePerks());
+
+        PLAYER_LIST.values().forEach((p) -> {
+            p.resetProgress();
+        });
         if (waveManager != null) {
             int cleared = waveManager.clearAllEnemiesInstantly(true);
             if (cleared > 0) {
@@ -106,6 +106,22 @@ public class Game {
             );
         }
         if(UpdateTask != null)UpdateTask.cancel();
+    }
+    public boolean WholeFamilyDies()
+    {
+        for (var player : PLAYER_LIST.values()) {
+            if(player.CurrentState == GamePlayer.SurvivalState.ALIVE) {
+                return false;
+            }
+        }
+        return true;
+    }
+    public void CheckWholeFamilyDies()
+    {
+        if (WholeFamilyDies())
+        {
+            EndGame();
+        }
     }
 //    private void CleanPlayerList()
 //    {

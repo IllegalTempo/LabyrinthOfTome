@@ -74,6 +74,7 @@ public class Main extends JavaPlugin {
         this.getCommand("createmap").setExecutor(new CreateMapCommand(mapManager));
         this.getCommand("clearmap").setExecutor(new ClearMapCommand(mapManager));
         this.getCommand("skipwave").setExecutor(new SkipWaveCommand(game));
+        this.getCommand("damageself").setExecutor(new changehealth());
 
     }
     private void RegisterPlayerActivity()
