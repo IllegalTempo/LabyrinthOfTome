@@ -8,7 +8,7 @@ import com.yourfault.npcinteraction.WeaponSelect;
 import com.yourfault.system.BleedoutManager;
 import com.yourfault.system.CustomHealthListener;
 import com.yourfault.system.PlayerActivity;
-import com.yourfault.wave.EnemyHealthDisplay;
+import com.yourfault.Enemy.EnemyHealthDisplay;
 import com.yourfault.wave.WaveCombatListener;
 import com.yourfault.wave.WaveManager;
 import org.bukkit.Bukkit;

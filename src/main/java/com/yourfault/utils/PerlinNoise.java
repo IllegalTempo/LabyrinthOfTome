@@ -1,4 +1,4 @@
-package com.yourfault.map;
+package com.yourfault.utils;
 
 import java.util.Random;
 

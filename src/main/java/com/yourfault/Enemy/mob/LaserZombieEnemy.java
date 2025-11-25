@@ -1,4 +1,4 @@
-package com.yourfault.Enemy;
+package com.yourfault.Enemy.mob;
 
 import com.yourfault.Main;
 import com.yourfault.system.GeneralPlayer.GamePlayer;

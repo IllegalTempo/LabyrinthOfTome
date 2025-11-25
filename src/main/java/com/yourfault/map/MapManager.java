@@ -1,6 +1,7 @@
 package com.yourfault.map;
 
 import com.yourfault.system.Game;
+import com.yourfault.utils.PerlinNoise;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;

@@ -1,5 +1,6 @@
-package com.yourfault.wave;
+package com.yourfault.Enemy;
 
+import com.yourfault.wave.WaveEnemyType;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.LivingEntity;

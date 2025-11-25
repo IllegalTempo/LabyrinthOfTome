@@ -11,7 +11,8 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.UUID;
 
-import com.yourfault.Enemy.LaserZombieEnemy;
+import com.yourfault.Enemy.EnemyHealthDisplay;
+import com.yourfault.Enemy.mob.LaserZombieEnemy;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
