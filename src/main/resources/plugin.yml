@@ -32,7 +32,7 @@ commands:
     description: Grants coins for testing perks and systems
     usage: /getcoins <amount> [player]
     permissions:
-        labyrinthoftome.admin: true
+      labyrinthoftome.admin: true
   createmap:
     description: Generates a circular PvE arena using procedural terrain
     usage: /createmap <x> <y> <z>
@@ -41,6 +41,21 @@ commands:
   clearmap:
     description: Restores the world state prior to the last PvE map generation
     usage: /clearmap
+    permissions:
+      labyrinthoftome.admin: true
+  generateboss:
+    description: Spawns the boss arena structure centered on world coordinates
+    usage: /generateboss <x> <y> <z>
+    permissions:
+      labyrinthoftome.admin: true
+  clearbossroom:
+    description: Clears the active boss room and restores previous blocks
+    usage: /clearbossroom
+    permissions:
+      labyrinthoftome.admin: true
+  startlot:
+    description: Runs the automated LOT scenario for QA
+    usage: /startLOT <x> <y> <z> [theme]
     permissions:
       labyrinthoftome.admin: true
   skipwave:
