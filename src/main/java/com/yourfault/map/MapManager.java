@@ -114,7 +114,7 @@ public class MapManager {
         noiseOffsetX = random.nextDouble() * 10_000d;
         noiseOffsetZ = random.nextDouble() * 10_000d;
 
-        int playerCount = Math.max(1, Math.max(game.GetPlayerCount(), activeWorld.getPlayers().size()));
+        int playerCount = Math.max(1, Math.max(game.GetPlayerCount(), activeWorld.getPlayers().size()))+10;
         int radius = computeRadius(playerCount);
         MapTheme theme = requestedTheme != null ? requestedTheme : MapTheme.pickRandom(random);
 
@@ -433,74 +433,78 @@ public class MapManager {
             return;
         }
 
-        MapTheme.StructureTemplate template = structureSettings.pickTemplate(random);
-        if (template == null) {
-            plugin.getLogger().log(Level.WARNING, "Structure settings provided no template for theme {0}", theme.name());
-            return;
-        }
-
-        String resourcePath = template.resourcePath();
-        if (resourcePath == null || resourcePath.isBlank()) {
-            plugin.getLogger().log(Level.WARNING, "Structure template path is not set for theme {0}", theme.name());
-            return;
-        }
-        if (!structureHelper.hasStructure(resourcePath)) {
-            plugin.getLogger().log(Level.WARNING, "Structure resource {0} could not be loaded; skipping placement.", resourcePath);
-            return;
-        }
-
-        List<Location> placed = new ArrayList<>(1);
-        int attempts = 12;
         int safeRadiusSquared = (radius - 6) * (radius - 6);
-        BlockVector templateSize = structureHelper.getStructureSize(resourcePath);
-        int footprintRadius = structureHelper.estimateFootprintRadius(templateSize, template.fallbackFootprintRadius());
-        int structureHeight = templateSize != null ? templateSize.getBlockY() : template.estimatedHeight();
 
-        while (placed.isEmpty() && attempts-- > 0) {
-            double distance = radius * (0.35 + random.nextDouble() * 0.4);
-            double angle = random.nextDouble() * Math.PI * 2;
-            int x = activeCenter.getBlockX() + (int) Math.round(distance * Math.cos(angle));
-            int z = activeCenter.getBlockZ() + (int) Math.round(distance * Math.sin(angle));
-            int dx = x - activeCenter.getBlockX();
-            int dz = z - activeCenter.getBlockZ();
-            if ((dx * dx) + (dz * dz) > safeRadiusSquared) {
-                continue;
-            }
-            if (!isTowerFarEnough(placed, x + 0.5, z + 0.5, 12.0)) {
-                continue;
-            }
-            Integer surfaceY = surfaceHeights.get(columnKey(x, z));
-            if (surfaceY == null) {
-                surfaceY = findNearestSurfaceY(x, z, activeCenter.getBlockY());
-            }
-            if (surfaceY == null) {
-                continue;
-            }
-            if (surfaceY + 24 >= activeWorld.getMaxHeight()) {
-                continue;
-            }
-            if (!canPlaceWatchtower(x, z, surfaceY, footprintRadius)) {
+        for (MapTheme.StructureTemplate template : structureSettings.templates()) {
+            int maxPlacements = Math.max(1, template.maxPlacements());
+            int desiredPlacements = random.nextInt(maxPlacements + 1);
+            if (desiredPlacements <= 0) {
                 continue;
             }
 
-            boolean placedStructure = structureHelper.placeStructure(
-                    resourcePath,
-                    activeWorld,
-                    x,
-                    surfaceY + 1,
-                    z,
-                    random,
-                    template.includeEntities()
-            );
-            if (!placedStructure) {
-                continue;
+            List<Location> placed = new ArrayList<>(desiredPlacements);
+            int attempts = Math.max(desiredPlacements * 12, 12);
+
+            while (placed.size() < desiredPlacements && attempts-- > 0) {
+                String resourcePath = template.resourcePath();
+                if (resourcePath == null || resourcePath.isBlank()) {
+                    plugin.getLogger().log(Level.WARNING, "Structure template path is not set for theme {0}", theme.name());
+                    break;
+                }
+                if (!structureHelper.hasStructure(resourcePath)) {
+                    plugin.getLogger().log(Level.WARNING, "Structure resource {0} could not be loaded; skipping placement.", resourcePath);
+                    break;
+                }
+
+                BlockVector templateSize = structureHelper.getStructureSize(resourcePath);
+                int footprintRadius = structureHelper.estimateFootprintRadius(templateSize, template.fallbackFootprintRadius());
+                int structureHeight = templateSize != null ? templateSize.getBlockY() : template.estimatedHeight();
+
+                double distance = radius * (0.35 + random.nextDouble() * 0.4);
+                double angle = random.nextDouble() * Math.PI * 2;
+                int x = activeCenter.getBlockX() + (int) Math.round(distance * Math.cos(angle));
+                int z = activeCenter.getBlockZ() + (int) Math.round(distance * Math.sin(angle));
+                int dx = x - activeCenter.getBlockX();
+                int dz = z - activeCenter.getBlockZ();
+                if ((dx * dx) + (dz * dz) > safeRadiusSquared) {
+                    continue;
+                }
+                if (!isTowerFarEnough(placed, x + 0.5, z + 0.5, 12.0)) {
+                    continue;
+                }
+                Integer surfaceY = surfaceHeights.get(columnKey(x, z));
+                if (surfaceY == null) {
+                    surfaceY = findNearestSurfaceY(x, z, activeCenter.getBlockY());
+                }
+                if (surfaceY == null) {
+                    continue;
+                }
+                if (surfaceY + 24 >= activeWorld.getMaxHeight()) {
+                    continue;
+                }
+                if (!canPlaceWatchtower(x, z, surfaceY, footprintRadius)) {
+                    continue;
+                }
+
+                boolean placedStructure = structureHelper.placeStructure(
+                        resourcePath,
+                        activeWorld,
+                        x,
+                        surfaceY + 1,
+                        z,
+                        random,
+                        template.includeEntities()
+                );
+                if (!placedStructure) {
+                    continue;
+                }
+
+                markStructureFootprint(x, z, footprintRadius);
+
+                placed.add(new Location(activeWorld, x + 0.5, surfaceY, z + 0.5));
+                regionMinY = Math.min(regionMinY, surfaceY - 2);
+                regionMaxY = Math.max(regionMaxY, surfaceY + 1 + structureHeight + 2);
             }
-
-            markStructureFootprint(x, z, footprintRadius);
-
-            placed.add(new Location(activeWorld, x + 0.5, surfaceY, z + 0.5));
-            regionMinY = Math.min(regionMinY, surfaceY - 2);
-            regionMaxY = Math.max(regionMaxY, surfaceY + 1 + structureHeight + 2);
         }
     }
 

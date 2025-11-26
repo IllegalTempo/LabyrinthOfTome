@@ -11,7 +11,7 @@ import java.util.Random;
  * Defines the available biome-inspired themes for procedurally generated PvE arenas.
  */
 public enum MapTheme {
-    FOREST(
+        FOREST(
             Material.GRASS_BLOCK,
             Material.DIRT,
             Material.MOSSY_COBBLESTONE,
@@ -21,9 +21,9 @@ public enum MapTheme {
             3,
             0.18,
             List.of(
-                    decoration(Material.OAK_SAPLING, 1.0),
-                    decoration(Material.FERN, 1.3),
-                    decoration(Material.FLOWERING_AZALEA, 0.7)
+                decoration(Material.OAK_SAPLING, 1.0),
+                decoration(Material.FERN, 1.3),
+                decoration(Material.FLOWERING_AZALEA, 0.7)
             ),
             TerrainProfile.DEFAULT,
             true,
@@ -33,22 +33,13 @@ public enum MapTheme {
             Material.GLASS,
             true,
             Material.MOSSY_COBBLESTONE,
-            // StructureSettings.ofTemplates(
-            //     StructureTemplate.template("structures/watchtower.nbt")
-            //         .withFootprintRadius(5)
-            //         .withEstimatedHeight(26)
-            //         .withWeight(0.7),
-            //     StructureTemplate.template("structures/ruined_watchtower.nbt")
-            //         .withIncludeEntities(true)
-            //         .withFootprintRadius(6)
-            //         .withEstimatedHeight(22)
-            //         .withWeight(0.3)
-            //     )
-            // for mult nbt files
-
-            StructureSettings.template("structures/watchtower.nbt")
-    ),
-    NETHER(
+            StructureSettings.ofTemplates(
+                    StructureTemplate.template("structures/watchtower.nbt", 1),
+                    StructureTemplate.template("structures/treeModel/oaktree_6_7_5.nbt", 10),
+                    StructureTemplate.template("structures/treeModel/oaktree_12_13_11.nbt", 10)
+            )
+        ),
+        NETHER(
             Material.CRIMSON_NYLIUM,
             Material.NETHERRACK,
             Material.POLISHED_BASALT,
@@ -58,9 +49,9 @@ public enum MapTheme {
             4,
             0.14,
             List.of(
-                    decoration(Material.NETHER_WART_BLOCK, 1.0),
-                    decoration(Material.SHROOMLIGHT, 0.8),
-                    decoration(Material.CRIMSON_FUNGUS, 0.6)
+                decoration(Material.NETHER_WART_BLOCK, 1.0),
+                decoration(Material.SHROOMLIGHT, 0.8),
+                decoration(Material.CRIMSON_FUNGUS, 0.6)
             ),
             TerrainProfile.DEFAULT,
             false,
@@ -70,9 +61,12 @@ public enum MapTheme {
             Material.BLACK_STAINED_GLASS,
             false,
             Material.POLISHED_BASALT,
-            StructureSettings.template("structures/watchtower.nbt")
-    ),
-    END(
+            StructureSettings.ofTemplates(
+            StructureTemplate.template("structures/watchtower.nbt", 2),
+            StructureTemplate.template("structures/treeModel/wintertree.nbt", 2)
+            )
+        ),
+        END(
             Material.END_STONE,
             Material.END_STONE,
             Material.OBSIDIAN,
@@ -82,8 +76,8 @@ public enum MapTheme {
             3,
             0.11,
             List.of(
-                    decoration(Material.CHORUS_PLANT, 1.0),
-                    decoration(Material.PURPUR_PILLAR, 0.9)
+                decoration(Material.CHORUS_PLANT, 1.0),
+                decoration(Material.PURPUR_PILLAR, 0.9)
             ),
             TerrainProfile.DEFAULT,
             false,
@@ -93,8 +87,11 @@ public enum MapTheme {
             Material.GLASS,
             true,
             Material.PURPUR_BLOCK,
-            StructureSettings.template("structures/watchtower.nbt")
-    ),
+            StructureSettings.ofTemplates(
+            StructureTemplate.template("structures/watchtower.nbt", 3),
+            StructureTemplate.template("structures/treeModel/wintertree.nbt", 5)
+            )
+        ),
     DESERT(
             Material.SAND,
             Material.SANDSTONE,
@@ -490,37 +487,48 @@ public enum MapTheme {
         private final int fallbackFootprintRadius;
         private final int estimatedHeight;
         private final double weight;
+        private final int maxPlacements;
 
         private StructureTemplate(String resourcePath,
                                   boolean includeEntities,
                                   int fallbackFootprintRadius,
                                   int estimatedHeight,
-                                  double weight) {
+                                  double weight,
+                                  int maxPlacements) {
             this.resourcePath = resourcePath;
             this.includeEntities = includeEntities;
             this.fallbackFootprintRadius = Math.max(1, fallbackFootprintRadius);
             this.estimatedHeight = Math.max(1, estimatedHeight);
             this.weight = weight <= 0 ? 1.0 : weight;
+            this.maxPlacements = Math.max(0, maxPlacements);
         }
 
         public static StructureTemplate template(String resourcePath) {
-            return new StructureTemplate(resourcePath, false, 4, 24, 1.0);
+            return new StructureTemplate(resourcePath, false, 4, 24, 1.0, 1);
+        }
+
+        public static StructureTemplate template(String resourcePath, int maxPlacements) {
+            return new StructureTemplate(resourcePath, false, 4, 24, 1.0, maxPlacements);
         }
 
         public StructureTemplate withIncludeEntities(boolean includeEntities) {
-            return new StructureTemplate(resourcePath, includeEntities, fallbackFootprintRadius, estimatedHeight, weight);
+            return new StructureTemplate(resourcePath, includeEntities, fallbackFootprintRadius, estimatedHeight, weight, maxPlacements);
         }
 
         public StructureTemplate withFootprintRadius(int radius) {
-            return new StructureTemplate(resourcePath, includeEntities, Math.max(1, radius), estimatedHeight, weight);
+            return new StructureTemplate(resourcePath, includeEntities, Math.max(1, radius), estimatedHeight, weight, maxPlacements);
         }
 
         public StructureTemplate withEstimatedHeight(int height) {
-            return new StructureTemplate(resourcePath, includeEntities, fallbackFootprintRadius, Math.max(1, height), weight);
+            return new StructureTemplate(resourcePath, includeEntities, fallbackFootprintRadius, Math.max(1, height), weight, maxPlacements);
         }
 
         public StructureTemplate withWeight(double weight) {
-            return new StructureTemplate(resourcePath, includeEntities, fallbackFootprintRadius, estimatedHeight, weight);
+            return new StructureTemplate(resourcePath, includeEntities, fallbackFootprintRadius, estimatedHeight, weight, maxPlacements);
+        }
+
+        public StructureTemplate withMaxPlacements(int maxPlacements) {
+            return new StructureTemplate(resourcePath, includeEntities, fallbackFootprintRadius, estimatedHeight, weight, maxPlacements);
         }
 
         public String resourcePath() {
@@ -541,6 +549,10 @@ public enum MapTheme {
 
         public double weight() {
             return weight;
+        }
+
+        public int maxPlacements() {
+            return maxPlacements;
         }
     }
 
