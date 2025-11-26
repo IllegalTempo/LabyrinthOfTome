@@ -1,14 +1,19 @@
 package com.yourfault;
 
 import com.yourfault.Commands.Debugs.*;
+import com.yourfault.Commands.map.ClearBossRoomCommand;
 import com.yourfault.Commands.map.ClearMapCommand;
 import com.yourfault.Commands.map.CreateMapCommand;
+import com.yourfault.Commands.map.GenerateBossCommand;
 import com.yourfault.map.MapManager;
+import com.yourfault.map.BossStructureSpawner;
+import com.yourfault.test.StartLOTCommand;
+import com.yourfault.test.LOTTestScenario;
 import com.yourfault.npcinteraction.WeaponSelect;
-import com.yourfault.system.BleedoutManager;
-import com.yourfault.system.CustomHealthListener;
-import com.yourfault.system.PlayerActivity;
+import com.yourfault.system.*;
+import com.yourfault.system.GeneralPlayer.TabManager;
 import com.yourfault.Enemy.EnemyHealthDisplay;
+import com.yourfault.test.StartLOTCommand;
 import com.yourfault.wave.WaveCombatListener;
 import com.yourfault.wave.WaveManager;
 import org.bukkit.Bukkit;
@@ -18,7 +23,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import com.yourfault.listener.PerkSelectionListener;
 import com.yourfault.perks.quickdraw.QuickdrawAbility;
 import com.yourfault.perks.sharpshooter.SharpshooterAbility;
-import com.yourfault.system.Game;
 import com.yourfault.weapon.Excalibur.Excalibur_Main;
 
 
@@ -30,9 +34,15 @@ public class Main extends JavaPlugin {
     public static World world;
     public static BleedoutManager bleedoutManager;
     public static EnemyHealthDisplay enemyHealthDisplay;
+    public static TabInfo tabInfo;
+
+
+
     private PerkSelectionListener perkSelectionListener;
     private WaveManager waveManager;
     private MapManager mapManager;
+    private BossStructureSpawner bossStructureSpawner;
+    private LOTTestScenario lotTestScenario;
     private BleedoutManager bleedManager;
     private EnemyHealthDisplay healthDisplay;
 
@@ -46,7 +56,10 @@ public class Main extends JavaPlugin {
         world = Bukkit.getWorld("world");
         game = new Game(this);
         mapManager = new MapManager(this, game);
+        bossStructureSpawner = new BossStructureSpawner(this);
+        lotTestScenario = new LOTTestScenario(this, game, mapManager, bossStructureSpawner);
         bleedManager = new BleedoutManager(this, game);
+        tabInfo = new TabInfo();
         bleedoutManager = bleedManager;
         this.getServer().getPluginManager().registerEvents(bleedManager, this);
         healthDisplay = new EnemyHealthDisplay(this);
@@ -75,6 +88,9 @@ public class Main extends JavaPlugin {
         this.getCommand("getcoins").setExecutor(new GetCoinsCommand());
         this.getCommand("createmap").setExecutor(new CreateMapCommand(mapManager));
         this.getCommand("clearmap").setExecutor(new ClearMapCommand(mapManager));
+        this.getCommand("generateboss").setExecutor(new GenerateBossCommand(bossStructureSpawner));
+        this.getCommand("clearbossroom").setExecutor(new ClearBossRoomCommand(bossStructureSpawner));
+        this.getCommand("startlot").setExecutor(new StartLOTCommand(lotTestScenario));
         this.getCommand("skipwave").setExecutor(new SkipWaveCommand(game));
         this.getCommand("damageself").setExecutor(new changehealth());
         this.getCommand("debugtab").setExecutor(new SetHeaderAndFooter());

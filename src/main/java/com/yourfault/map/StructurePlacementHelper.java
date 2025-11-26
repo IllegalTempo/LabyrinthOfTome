@@ -45,6 +45,10 @@ public final class StructurePlacementHelper {
                 .orElse(null);
     }
 
+    public Optional<Structure> loadStructureTemplate(String resourcePath) {
+        return load(resourcePath).map(LoadedStructure::structure);
+    }
+
     public int estimateFootprintRadius(BlockVector size, int fallbackRadius) {
         if (size == null) {
             return Math.max(1, fallbackRadius);

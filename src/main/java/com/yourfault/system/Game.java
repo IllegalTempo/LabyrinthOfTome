@@ -49,6 +49,7 @@ public class Game {
     }
     private WaveManager waveManager;
     private MapManager mapManager;
+
     private void AddExistingPlayer()
     {
         Main.world.getPlayers().forEach(player -> {

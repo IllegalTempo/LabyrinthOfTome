@@ -32,9 +32,9 @@ public class MapManager {
     private final StructurePlacementHelper structureHelper;
     private PerlinNoise noise;
     private static final int GENERATION_SLICE_INTERVAL_TICKS = 10; // 0.5 seconds
-    private static final int GENERATION_SLICE_WIDTH = 4;
+    private static final int GENERATION_COLUMNS_PER_SLICE = 256;
     private static final int CLEAR_SLICE_INTERVAL_TICKS = 10;
-    private static final int CLEAR_COLUMNS_PER_SLICE = 256;
+    private static final int CLEAR_COLUMNS_PER_SLICE = 512;
     private static final int CLEAR_RADIUS_PADDING = 6;
     private static final double MIN_SPAWN_MARKER_SPACING = 6.0;
 
@@ -114,7 +114,7 @@ public class MapManager {
         noiseOffsetX = random.nextDouble() * 10_000d;
         noiseOffsetZ = random.nextDouble() * 10_000d;
 
-        int playerCount = Math.max(1, Math.max(game.GetPlayerCount(), activeWorld.getPlayers().size()))+10;
+        int playerCount = Math.max(1, Math.max(game.GetPlayerCount(), activeWorld.getPlayers().size()));
         int radius = computeRadius(playerCount);
         MapTheme theme = requestedTheme != null ? requestedTheme : MapTheme.pickRandom(random);
 
@@ -935,31 +935,32 @@ public class MapManager {
 
     private List<List<ColumnWork>> buildSlices(int radius) {
         List<List<ColumnWork>> slices = new ArrayList<>();
-        if (activeCenter == null) {
+        if (activeCenter == null || radius <= 0) {
             return slices;
         }
         int centerX = activeCenter.getBlockX();
         int centerZ = activeCenter.getBlockZ();
         int radiusSquared = radius * radius;
-        for (int startDx = -radius; startDx <= radius; startDx += GENERATION_SLICE_WIDTH) {
-            int endDx = Math.min(radius, startDx + GENERATION_SLICE_WIDTH - 1);
-            List<ColumnWork> slice = new ArrayList<>();
-            for (int dx = startDx; dx <= endDx; dx++) {
-                for (int dz = -radius; dz <= radius; dz++) {
-                    int distanceSquared = dx * dx + dz * dz;
-                    if (distanceSquared > radiusSquared) {
-                        continue;
-                    }
-                    double normalizedDistance = Math.sqrt(distanceSquared) / radius;
-                    boolean edge = normalizedDistance > 0.9;
-                    int x = centerX + dx;
-                    int z = centerZ + dz;
-                    slice.add(new ColumnWork(x, z, normalizedDistance, edge));
+        List<ColumnWork> allColumns = new ArrayList<>();
+        for (int dx = -radius; dx <= radius; dx++) {
+            for (int dz = -radius; dz <= radius; dz++) {
+                int distanceSquared = dx * dx + dz * dz;
+                if (distanceSquared > radiusSquared) {
+                    continue;
                 }
+                double normalizedDistance = Math.sqrt(distanceSquared) / radius;
+                boolean edge = normalizedDistance > 0.9;
+                int x = centerX + dx;
+                int z = centerZ + dz;
+                allColumns.add(new ColumnWork(x, z, normalizedDistance, edge));
             }
-            if (!slice.isEmpty()) {
-                slices.add(slice);
-            }
+        }
+        allColumns.sort((a, b) -> Double.compare(a.normalizedDistance(), b.normalizedDistance()));
+        int index = 0;
+        while (index < allColumns.size()) {
+            int end = Math.min(allColumns.size(), index + GENERATION_COLUMNS_PER_SLICE);
+            slices.add(new ArrayList<>(allColumns.subList(index, end)));
+            index = end;
         }
         return slices;
     }
@@ -980,7 +981,18 @@ public class MapManager {
                 columns.add(new ColumnCoordinate(centerX + dx, centerZ + dz));
             }
         }
+        columns.sort((a, b) -> {
+            long distA = columnDistanceSquared(a, centerX, centerZ);
+            long distB = columnDistanceSquared(b, centerX, centerZ);
+            return Long.compare(distA, distB);
+        });
         return columns;
+    }
+
+    private long columnDistanceSquared(ColumnCoordinate column, int centerX, int centerZ) {
+        long dx = column.x() - centerX;
+        long dz = column.z() - centerZ;
+        return (dx * dx) + (dz * dz);
     }
 
     private void resetRegionState() {
