@@ -14,7 +14,7 @@ public class SetHeaderAndFooter implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String @NotNull [] strings) {
         GamePlayer p = Main.game.GetPlayer((Player) commandSender);
         p.PLAYER_TAB.setHeaderFooter(strings[0], strings[1]);
-        p.PLAYER_TAB.sendFakePlayer();
+
         return true;
     }
 }

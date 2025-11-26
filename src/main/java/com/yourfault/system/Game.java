@@ -2,6 +2,7 @@ package com.yourfault.system;
 
 import java.time.Duration;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.UUID;
 
 import com.yourfault.map.MapManager;
@@ -11,9 +12,11 @@ import com.yourfault.wave.WaveManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.title.Title;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.util.Vector;
 
 import com.yourfault.Main;
@@ -67,11 +70,19 @@ public class Game {
         if (perkSelectionListener != null) {
             perkSelectionListener.preparePlayer(gamePlayer);
         }
+        PlayerNumUpdate();
+    }
+    public void PlayerNumUpdate()
+    {
+        Scoreboard board = Bukkit.getScoreboardManager().getMainScoreboard();
+        Objects.requireNonNull(board.getTeam("00_PLAYERLIST_TOP")).suffix(Component.text(" [" + GetPlayerCount() + "]"));
+
     }
     public void RemovePlayer(Player player)
     {
         PLAYER_LIST.remove(player.getUniqueId());
-        
+        PlayerNumUpdate();
+
     }
     private void showGameStartTitle(Player player) {
         Title title = Title.title(

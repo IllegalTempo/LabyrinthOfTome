@@ -5,31 +5,24 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="18b9d33a-a1ab-4c7e-badb-df567bdbf954" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/build.gradle.kts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/gradle.properties" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/settings.gradle.kts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Commands/Debugs/SetHeaderAndFooter.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/TabManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/artifacts/LOT.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Commands/Debugs/changehealth.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Commands/Debugs/changehealth.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/managers/Manager.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/managers/PerkManager.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/checksums/checksums.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/checksums/checksums.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/checksums/sha1-checksums.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/checksums/sha1-checksums.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/executionHistory/executionHistory.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/executionHistory/executionHistory.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/executionHistory/executionHistory.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/executionHistory/executionHistory.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/fileHashes/fileHashes.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/fileHashes/fileHashes.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/fileHashes/fileHashes.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/fileHashes/fileHashes.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/fileHashes/resourceHashesCache.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/fileHashes/resourceHashesCache.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/caches/paperweight/taskCache/reobfMappings.tiny" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/caches/paperweight/taskCache/reobfMappings.tiny" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Commands/Debugs/SetHeaderAndFooter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Commands/Debugs/SetHeaderAndFooter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/Game.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/Game.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/GamePlayer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/GamePlayer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/General/Projectile.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/General/Projectile.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/plugin.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/plugin.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/TabManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/TabManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/PlayerActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/PlayerActivity.java" afterDir="false" />
     </list>
-    <list id="0b8010c2-5a42-4108-bc0a-2ffb1895d2ea" name="Changes by user" comment="">
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/map/MapManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/map/MapManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/map/MapTheme.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/map/MapTheme.java" afterDir="false" />
-    </list>
+    <list id="0b8010c2-5a42-4108-bc0a-2ffb1895d2ea" name="Changes by user" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -87,22 +80,22 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "IllegalTempo"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;IllegalTempo&quot;
   }
-}]]></component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/IllegalTempo/LabyrinthOfTome.git",
-    "accountId": "112ddd4e-714d-4256-9e6c-ae35ccb9cbbe"
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/IllegalTempo/LabyrinthOfTome.git&quot;,
+    &quot;accountId&quot;: &quot;112ddd4e-714d-4256-9e6c-ae35ccb9cbbe&quot;
   }
-}]]></component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "customColor": "",
-  "associatedIndex": 0
-}]]></component>
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 0
+}</component>
   <component name="ProjectId" id="35yhWnxY6S5nxoi339BoO1g9lMu" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -111,14 +104,16 @@
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "Gradle.Build LabyrinthOfTome.executor": "Run",
+    "Gradle.Download Sources.executor": "Run",
     "Gradle.LabyrinthOfTome [build].executor": "Run",
     "Gradle.LabyrinthOfTome [clean].executor": "Run",
     "Gradle.LabyrinthOfTome [init].executor": "Run",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "Remote JVM Debug.UpdateServerPLugin.executor": "Debug",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "572bd209",
+    "git-widget-placeholder": "master",
     "ignore.virus.scanning.warn.message": "true",
     "last_opened_file_path": "C:/ProjectFC/LabyrinthOfTome",
     "project.structure.last.edited": "Project",
@@ -194,10 +189,24 @@
       <RunAsTest>false</RunAsTest>
       <method v="2" />
     </configuration>
+    <configuration name="UpdateServerPLugin" type="Remote">
+      <option name="USE_SOCKET_TRANSPORT" value="true" />
+      <option name="SERVER_MODE" value="false" />
+      <option name="SHMEM_ADDRESS" />
+      <option name="HOST" value="localhost" />
+      <option name="PORT" value="5005" />
+      <option name="AUTO_RESTART" value="false" />
+      <RunnerSettings RunnerId="Debug">
+        <option name="DEBUG_PORT" value="5005" />
+        <option name="LOCAL" value="false" />
+      </RunnerSettings>
+      <method v="2" />
+    </configuration>
     <list>
       <item itemvalue="Gradle.LabyrinthOfTome [build]" />
       <item itemvalue="Gradle.LabyrinthOfTome [clean]" />
       <item itemvalue="Gradle.LabyrinthOfTome [init]" />
+      <item itemvalue="Remote JVM Debug.UpdateServerPLugin" />
     </list>
     <recent_temporary>
       <list>
@@ -215,6 +224,33 @@
       <updated>1764088253795</updated>
     </task>
     <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="master" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="switched to everything" />
+    <option name="LAST_COMMIT_MESSAGE" value="switched to everything" />
   </component>
   <component name="github-copilot-workspace">
     <instructionFileLocations>
