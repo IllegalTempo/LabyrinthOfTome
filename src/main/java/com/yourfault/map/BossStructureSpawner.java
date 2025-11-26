@@ -25,7 +25,7 @@ import java.util.function.Consumer;
  */
 public class BossStructureSpawner {
     private static final String[] STRUCTURE_RESOURCES = {
-            "structures/boss/BossRoom.nbt"
+            "structures/bossRoomModel/BossRoom.nbt"
     };
     private static final int PLACEMENTS_PER_TICK = 300;
 
