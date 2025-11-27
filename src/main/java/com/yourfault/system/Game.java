@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
+import com.yourfault.map.BossStructureSpawner;
 import com.yourfault.map.MapManager;
 import com.yourfault.perks.PerkType;
 import com.yourfault.perks.QuickdrawPerk;
@@ -17,6 +18,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Boss;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -32,6 +34,11 @@ public class Game {
             Duration.ofMillis(500),
             Duration.ofSeconds(2),
             Duration.ofMillis(1000)
+    );
+    private static final Title.Times WAVE_TITLE_TIMES = Title.Times.times(
+            Duration.ofMillis(250),
+            Duration.ofSeconds(2),
+            Duration.ofMillis(400)
     );
     public Game(JavaPlugin plugin)
     {
@@ -55,6 +62,7 @@ public class Game {
     }
     private WaveManager waveManager;
     private MapManager mapManager;
+    private BossStructureSpawner bossSpawner;
     public final Map<String,PerkType> ALL_PERKS = new HashMap<String,PerkType>();
 
     private void RegisterPerks()
@@ -152,6 +160,12 @@ public class Game {
                     error -> plugin.getLogger().warning(String.format("Failed to clear map after EndGame: %s", error))
             );
         }
+        if (bossSpawner != null && bossSpawner.hasActiveBossRoom()) {
+            bossSpawner.clearBossRoom(
+                    message -> plugin.getLogger().info("Cleared boss room"),
+                    error -> plugin.getLogger().info(String.format("Failed to clear boss room", error))
+            );
+        }
     }
     public boolean WholeFamilyDies()
     {
@@ -209,6 +223,25 @@ public class Game {
     public MapManager getMapManager() {
         return mapManager;
     }
+
+    public void setBossSpawner(BossStructureSpawner bossSpawner) {
+        this.bossSpawner = bossSpawner;
+    }
+
+    public void showWaveTitle(int waveNumber, int totalEnemies) {
+        Title title = Title.title(
+                Component.text("Wave " + waveNumber, NamedTextColor.GOLD),
+                Component.text(totalEnemies + "enemies incoming", NamedTextColor.GRAY),
+                WAVE_TITLE_TIMES
+        );
+        PLAYER_LIST.values().forEach(gamePlayer -> {
+            Player bukkitPlayer = gamePlayer.getMinecraftPlayer();
+            if (bukkitPlayer != null) {
+                bukkitPlayer.showTitle(title);
+            }
+        });
+    }
+
     public int GetPlayerCount()
     {
         return PLAYER_LIST.size();

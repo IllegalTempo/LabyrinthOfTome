@@ -27,7 +27,8 @@ public class BossStructureSpawner {
     private static final String[] STRUCTURE_RESOURCES = {
             "structures/bossRoomModel/BossRoom.nbt"
     };
-    private static final int PLACEMENTS_PER_TICK = 300;
+    private static final int PLACEMENTS_PER_TICK = 500;
+    private static final int CLEAR_PLACEMENTS_TICK = 1500;
 
     private final JavaPlugin plugin;
     private final StructurePlacementHelper structureHelper;
@@ -297,7 +298,7 @@ public class BossStructureSpawner {
                 }
                 World world = activeCenter.getWorld();
                 int operations = 0;
-                while (cursor < targets.size() && operations < PLACEMENTS_PER_TICK) {
+                while (cursor < targets.size() && operations < CLEAR_PLACEMENTS_TICK) {
                     BlockRestore restore = targets.get(cursor++);
                     Block block = world.getBlockAt(restore.position().getX(), restore.position().getY(), restore.position().getZ());
                     block.setBlockData(restore.data().clone(), false);

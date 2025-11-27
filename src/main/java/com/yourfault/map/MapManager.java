@@ -1,5 +1,10 @@
 package com.yourfault.map;
 
+import com.yourfault.map.build.RoadBuildContext;
+import com.yourfault.map.build.RoadBuilder;
+import com.yourfault.map.build.RoadPainter;
+import com.yourfault.map.build.RoadPath;
+import com.yourfault.map.build.RoadPoint;
 import com.yourfault.system.Game;
 import com.yourfault.utils.PerlinNoise;
 import org.bukkit.Location;
@@ -30,18 +35,22 @@ public class MapManager {
     private final Game game;
     private final Random random = new Random();
     private final StructurePlacementHelper structureHelper;
+    private final RoadBuilder roadBuilder;
     private PerlinNoise noise;
     private static final int GENERATION_SLICE_INTERVAL_TICKS = 10; // 0.5 seconds
     private static final int GENERATION_COLUMNS_PER_SLICE = 256;
     private static final int CLEAR_SLICE_INTERVAL_TICKS = 10;
-    private static final int CLEAR_COLUMNS_PER_SLICE = 512;
+    private static final int CLEAR_COLUMNS_PER_SLICE = 1024;
     private static final int CLEAR_RADIUS_PADDING = 6;
     private static final double MIN_SPAWN_MARKER_SPACING = 6.0;
+    private static final int FIXED_SPAWN_MARKER_COUNT = 9;
 
     private final Set<String> touchedBlocks = new HashSet<>();
     private final Map<Long, Integer> surfaceHeights = new HashMap<>();
     private final List<Location> spawnMarkerLocations = new ArrayList<>();
     private final Set<Long> reservedStructureColumns = new HashSet<>();
+    private final Set<Long> roadColumns = new HashSet<>();
+    private List<Material> activeRoadPalette = new ArrayList<>();
 
     private World activeWorld;
     private Location activeCenter;
@@ -53,12 +62,14 @@ public class MapManager {
     private ClearSession activeClear;
     private int regionMinY;
     private int regionMaxY;
+    private int lastRoadHalfWidth;
 
     public MapManager(JavaPlugin plugin, Game game) {
         this.plugin = plugin;
         this.game = game;
         this.noise = new PerlinNoise(System.currentTimeMillis());
         this.structureHelper = new StructurePlacementHelper(plugin);
+        this.roadBuilder = new RoadBuilder();
     }
 
     public synchronized boolean hasActiveMap() {
@@ -107,6 +118,9 @@ public class MapManager {
         spawnMarkerLocations.clear();
         touchedBlocks.clear();
         reservedStructureColumns.clear();
+        roadColumns.clear();
+        activeRoadPalette = new ArrayList<>();
+        lastRoadHalfWidth = 0;
         regionMinY = Integer.MAX_VALUE;
         regionMaxY = Integer.MIN_VALUE;
 
@@ -191,8 +205,26 @@ public class MapManager {
         if (playerCount >= 10) {
             base += 6;
         }
-        return Math.max(minRadius, Math.min(maxRadius, (int) Math.round(base)));
+        int radius = Math.max(minRadius, Math.min(maxRadius, (int) Math.round(base)));
+
+        final int lowThreshold = 4;
+        final int decayEnd = 16;
+        final double maxMultiplier = 2.5;
+        final double minMultiplier = 1.0;
+
+        double multiplier;
+        if (playerCount <= lowThreshold) {
+            multiplier = maxMultiplier;
+        } else if (playerCount >= decayEnd) {
+            multiplier = minMultiplier;
+        } else {
+            double scaledPlayerCount = Math.log(playerCount) / Math.log(decayEnd);
+            multiplier = minMultiplier + (maxMultiplier - minMultiplier) * (1 - scaledPlayerCount);
+        }
+
+        return Math.max(1, (int) Math.round(radius*multiplier));
     }
+
 
     private int calculateSurfaceY(int baseY, int x, int z, double normalizedDistance, MapTheme theme) {
         double falloff = 1.0 - Math.min(1.0, normalizedDistance * normalizedDistance);
@@ -228,10 +260,11 @@ public class MapManager {
         if (rimFactor <= 0.0) {
             return currentHeight;
         }
-        int baseline = baseY + 2;
-        int target = baseline + (int) Math.round(rimFactor * 3);
+        double desiredHeight = baseY + 0.6 + (rimFactor * 0.8);
+        int target = (int) Math.round(desiredHeight);
         target = Math.min(target, maxHeight - 1);
-        return Math.max(currentHeight, target);
+        int limitedTarget = Math.min(target, currentHeight + 1);
+        return Math.max(currentHeight, limitedTarget);
     }
 
     private void buildColumn(int x, int z, int surfaceY, MapTheme theme, boolean edge) {
@@ -345,40 +378,232 @@ public class MapManager {
         }
     }
 
-    private void placeSpawnMarkers(int playerCount, int radius) {
+    private void placeSpawnMarkers(int playerCount, RoadPath roadPath, int radius) {
         if (activeWorld == null || activeCenter == null) {
             return;
         }
         spawnMarkerLocations.clear();
-        int markerCount = Math.max(4, playerCount * 2);
+        int desiredMarkers = Math.max(9, 9 + Math.max(0, playerCount) * 2);
+        int remaining = desiredMarkers;
+        if (roadPath != null && !roadPath.isEmpty()) {
+            remaining = Math.max(0, remaining - placeMarkersAlongRoad(roadPath, radius, desiredMarkers));
+        }
+        if (remaining > 0) {
+            placeFallbackSpawnMarkers(radius, remaining);
+        }
+    }
+
+    private int placeMarkersAlongRoad(RoadPath roadPath, int radius, int desiredMarkers) {
+        if (roadPath == null || roadPath.isEmpty()) {
+            return 0;
+        }
+        double pathLength = roadPath.length();
+        if (pathLength <= 4.0) {
+            return 0;
+        }
+        int placed = 0;
+        double spacing = pathLength / (desiredMarkers + 1);
+        for (int i = 1; i <= desiredMarkers; i++) {
+            double targetDistance = spacing * i;
+            if (attemptPlaceMarkerNearRoad(roadPath, targetDistance, i, radius)) {
+                placed++;
+            }
+        }
+        return placed;
+    }
+
+    private boolean attemptPlaceMarkerNearRoad(RoadPath roadPath, double targetDistance, int index, int radius) {
+        if (roadPath == null || roadPath.isEmpty()) {
+            return false;
+        }
+        for (int attempt = 0; attempt < 5; attempt++) {
+            double jitter = (random.nextDouble() - 0.5) * 3.0;
+            double sampleDistance = Math.max(0.0, Math.min(roadPath.length(), targetDistance + jitter));
+            RoadPoint anchor = roadPath.sampleAtDistance(sampleDistance);
+            if (anchor == null) {
+                continue;
+            }
+            double aheadDistance = Math.min(roadPath.length(), sampleDistance + 2.0);
+            double behindDistance = Math.max(0.0, sampleDistance - 2.0);
+            RoadPoint ahead = roadPath.sampleAtDistance(aheadDistance);
+            RoadPoint behind = roadPath.sampleAtDistance(behindDistance);
+            if (ahead == null || behind == null) {
+                continue;
+            }
+            double dx = ahead.x() - behind.x();
+            double dz = ahead.z() - behind.z();
+            double length = Math.hypot(dx, dz);
+            if (length < 0.001) {
+                dx = 1.0;
+                dz = 0.0;
+                length = 1.0;
+            }
+            double perpX = -dz / length;
+            double perpZ = dx / length;
+            double side = (index + attempt) % 2 == 0 ? 1.0 : -1.0;
+            double baseOffset = Math.max(3.0, lastRoadHalfWidth + 2.0);
+            double offset = baseOffset + random.nextDouble() * (baseOffset * 0.75);
+            double candidateX = anchor.x() + perpX * offset * side;
+            double candidateZ = anchor.z() + perpZ * offset * side;
+            RoadPoint clamped = clampToArena(candidateX, candidateZ, radius);
+            int blockX = (int) Math.round(clamped.x());
+            int blockZ = (int) Math.round(clamped.z());
+            if (tryPlaceSpawnMarker(blockX, blockZ, MIN_SPAWN_MARKER_SPACING)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void placeFallbackSpawnMarkers(int radius, int remaining) {
+        if (activeCenter == null || activeWorld == null || remaining <= 0) {
+            return;
+        }
         double innerRadius = radius * 0.35;
-        double outerRadius = radius * 0.8;
+        double outerRadius = Math.max(innerRadius + 2.0, radius * 0.8);
         double spacing = MIN_SPAWN_MARKER_SPACING;
-        while (spawnMarkerLocations.size() < markerCount && spacing >= 3.0) {
-            int attempts = markerCount * 12;
-            while (spawnMarkerLocations.size() < markerCount && attempts-- > 0) {
+        while (remaining > 0 && spacing >= 3.0) {
+            int attempts = remaining * 14;
+            while (remaining > 0 && attempts-- > 0) {
                 double distance = innerRadius + random.nextDouble() * (outerRadius - innerRadius);
                 double angle = random.nextDouble() * Math.PI * 2;
                 int x = activeCenter.getBlockX() + (int) Math.round(distance * Math.cos(angle));
                 int z = activeCenter.getBlockZ() + (int) Math.round(distance * Math.sin(angle));
-                if (isStructureBlocked(x, z)) {
-                    continue;
+                if (tryPlaceSpawnMarker(x, z, spacing)) {
+                    remaining--;
                 }
-                if (!isMarkerFarEnough(x, z, spacing)) {
-                    continue;
-                }
-                Integer surfaceY = surfaceHeights.get(columnKey(x, z));
-                if (surfaceY == null) {
-                    surfaceY = findNearestSurfaceY(x, z, activeCenter.getBlockY());
-                }
-                if (surfaceY == null) {
-                    continue;
-                }
-                int markerY = surfaceY + 1;
-                setBlock(activeWorld, x, markerY, z, Material.YELLOW_WOOL);
-                spawnMarkerLocations.add(new Location(activeWorld, x + 0.5, markerY, z + 0.5));
             }
-            spacing -= 1.0;
+            spacing -= 0.5;
+        }
+    }
+
+    private boolean tryPlaceSpawnMarker(int blockX, int blockZ, double spacing) {
+        if (isStructureBlocked(blockX, blockZ)) {
+            return false;
+        }
+        if (isRoadTile(blockX, blockZ)) {
+            return false;
+        }
+        if (!isMarkerFarEnough(blockX, blockZ, spacing)) {
+            return false;
+        }
+        Integer surfaceY = surfaceHeights.get(columnKey(blockX, blockZ));
+        if (surfaceY == null && activeCenter != null) {
+            surfaceY = findNearestSurfaceY(blockX, blockZ, activeCenter.getBlockY());
+        }
+        if (surfaceY == null) {
+            return false;
+        }
+        int markerY = surfaceY + 1;
+        setBlock(activeWorld, blockX, markerY, blockZ, Material.YELLOW_WOOL);
+        spawnMarkerLocations.add(new Location(activeWorld, blockX + 0.5, markerY, blockZ + 0.5));
+        return true;
+    }
+
+    private RoadPoint clampToArena(double x, double z, int radius) {
+        if (activeCenter == null) {
+            return new RoadPoint(x, z);
+        }
+        double centerX = activeCenter.getBlockX();
+        double centerZ = activeCenter.getBlockZ();
+        double dx = x - centerX;
+        double dz = z - centerZ;
+        double limit = Math.max(2.0, radius - 1.5);
+        double distance = Math.hypot(dx, dz);
+        if (distance <= limit) {
+            return new RoadPoint(x, z);
+        }
+        double scale = limit / Math.max(distance, 0.0001);
+        return new RoadPoint(centerX + dx * scale, centerZ + dz * scale);
+    }
+
+    private boolean isRoadTile(int x, int z) {
+        return roadColumns.contains(columnKey(x, z));
+    }
+
+    private void placePathBeacons(RoadPath roadPath) {
+        if (roadPath == null || roadPath.isEmpty()) {
+            return;
+        }
+        placeBeaconAt(roadPath.start(), false);
+        placeBeaconAt(roadPath.end(), true);
+    }
+
+    private void placeBeaconAt(RoadPoint point, boolean bossBeacon) {
+        if (activeWorld == null || point == null) {
+            return;
+        }
+        int x = (int) Math.round(point.x());
+        int z = (int) Math.round(point.z());
+        Integer surfaceY = surfaceHeights.get(columnKey(x, z));
+        if (surfaceY == null && activeCenter != null) {
+            surfaceY = findNearestSurfaceY(x, z, activeCenter.getBlockY());
+        }
+        if (surfaceY == null) {
+            return;
+        }
+        Material baseMaterial = bossBeacon ? Material.NETHERITE_BLOCK : Material.IRON_BLOCK;
+        Material glassMaterial = bossBeacon ? Material.RED_STAINED_GLASS : Material.WHITE_STAINED_GLASS;
+        int layers = bossBeacon ? 2 : 1;
+        buildBeaconBase(x, z, surfaceY, baseMaterial, layers);
+        int beaconY = surfaceY + 1;
+        setBlock(activeWorld, x, beaconY, z, Material.BEACON);
+        int glassHeight = bossBeacon ? 4 : 2;
+        for (int i = 1; i <= glassHeight; i++) {
+            setBlock(activeWorld, x, beaconY + i, z, glassMaterial);
+        }
+        clearSkyColumn(x, z, beaconY + glassHeight + 1);
+        reservedStructureColumns.add(columnKey(x, z));
+        surfaceHeights.put(columnKey(x, z), surfaceY);
+        regionMinY = Math.min(regionMinY, surfaceY - (layers - 1));
+        regionMaxY = Math.max(regionMaxY, beaconY + glassHeight + 1);
+    }
+
+    private void buildBeaconBase(int centerX,
+                                 int centerZ,
+                                 int topY,
+                                 Material material,
+                                 int layers) {
+        if (activeWorld == null) {
+            return;
+        }
+        int minY = activeWorld.getMinHeight();
+        for (int layer = 0; layer < layers; layer++) {
+            int radius = 1 + layer;
+            int y = Math.max(minY, topY - layer);
+            for (int dx = -radius; dx <= radius; dx++) {
+                for (int dz = -radius; dz <= radius; dz++) {
+                    int blockX = centerX + dx;
+                    int blockZ = centerZ + dz;
+                    setBlock(activeWorld, blockX, y, blockZ, material);
+                    if (layer == 0) {
+                        clearAboveSurface(blockX, y + 1, blockZ);
+                    }
+                    surfaceHeights.put(columnKey(blockX, blockZ), y);
+                    reservedStructureColumns.add(columnKey(blockX, blockZ));
+                    regionMinY = Math.min(regionMinY, y);
+                    regionMaxY = Math.max(regionMaxY, y + 1);
+                }
+            }
+        }
+    }
+
+    private void clearSkyColumn(int x, int z, int startY) {
+        if (activeWorld == null) {
+            return;
+        }
+        int maxY = activeWorld.getMaxHeight();
+        int minY = Math.max(startY, activeWorld.getMinHeight());
+        int highestCleared = Integer.MIN_VALUE;
+        for (int y = minY; y <= maxY; y++) {
+            Block block = activeWorld.getBlockAt(x, y, z);
+            if (!block.isEmpty()) {
+                setBlock(activeWorld, x, y, z, Material.AIR);
+                highestCleared = Math.max(highestCleared, y);
+            }
+        }
+        if (highestCleared != Integer.MIN_VALUE) {
+            regionMaxY = Math.max(regionMaxY, highestCleared);
         }
     }
 
@@ -417,7 +642,7 @@ public class MapManager {
         }
     }
 
-    private void placeWatchtowers(MapTheme theme, int radius) {
+    private void placeStructures(MapTheme theme, int radius) {
         if (activeWorld == null || activeCenter == null) {
             return;
         }
@@ -425,11 +650,7 @@ public class MapManager {
         if (structureSettings == null || !structureSettings.enabled()) {
             return;
         }
-        if (radius < 24) {
-            return;
-        }
-        double spawnChance = 0.45;
-        if (random.nextDouble() > spawnChance) {
+        if (radius < 18) {
             return;
         }
 
@@ -437,13 +658,11 @@ public class MapManager {
 
         for (MapTheme.StructureTemplate template : structureSettings.templates()) {
             int maxPlacements = Math.max(1, template.maxPlacements());
-            int desiredPlacements = random.nextInt(maxPlacements + 1);
-            if (desiredPlacements <= 0) {
-                continue;
-            }
+            int desiredPlacements = Math.max(1, maxPlacements == 1 ? 1 : 1 + random.nextInt(maxPlacements));
+            double minSpacing = Math.max(8.0, template.fallbackFootprintRadius() * 1.5);
 
             List<Location> placed = new ArrayList<>(desiredPlacements);
-            int attempts = Math.max(desiredPlacements * 12, 12);
+            int attempts = Math.max(desiredPlacements * 18, 24);
 
             while (placed.size() < desiredPlacements && attempts-- > 0) {
                 String resourcePath = template.resourcePath();
@@ -469,7 +688,7 @@ public class MapManager {
                 if ((dx * dx) + (dz * dz) > safeRadiusSquared) {
                     continue;
                 }
-                if (!isTowerFarEnough(placed, x + 0.5, z + 0.5, 12.0)) {
+                if (!isStructureFarEnough(placed, x + 0.5, z + 0.5, minSpacing)) {
                     continue;
                 }
                 Integer surfaceY = surfaceHeights.get(columnKey(x, z));
@@ -482,7 +701,7 @@ public class MapManager {
                 if (surfaceY + 24 >= activeWorld.getMaxHeight()) {
                     continue;
                 }
-                if (!canPlaceWatchtower(x, z, surfaceY, footprintRadius)) {
+                if (!canPlaceStructure(x, z, surfaceY, footprintRadius)) {
                     continue;
                 }
 
@@ -508,7 +727,7 @@ public class MapManager {
         }
     }
 
-    private boolean canPlaceWatchtower(int centerX, int centerZ, int baseY, int radius) {
+    private boolean canPlaceStructure(int centerX, int centerZ, int baseY, int radius) {
         for (int dx = -radius; dx <= radius; dx++) {
             for (int dz = -radius; dz <= radius; dz++) {
                 if ((dx * dx) + (dz * dz) > radius * radius) {
@@ -540,14 +759,14 @@ public class MapManager {
         }
     }
 
-    private boolean isTowerFarEnough(List<Location> towers, double candidateX, double candidateZ, double minDistance) {
+    private boolean isStructureFarEnough(List<Location> placements, double candidateX, double candidateZ, double minDistance) {
         double minSquared = minDistance * minDistance;
-        for (Location tower : towers) {
-            if (tower.getWorld() != activeWorld) {
+        for (Location existing : placements) {
+            if (existing.getWorld() != activeWorld) {
                 continue;
             }
-            double dx = tower.getX() - candidateX;
-            double dz = tower.getZ() - candidateZ;
+            double dx = existing.getX() - candidateX;
+            double dz = existing.getZ() - candidateZ;
             if ((dx * dx) + (dz * dz) < minSquared) {
                 return false;
             }
@@ -739,47 +958,35 @@ public class MapManager {
         regionMaxY = Math.max(regionMaxY, coverY);
     }
 
-    private void buildRoadNetwork(MapTheme theme, int radius) {
+    private RoadPath buildRoadNetwork(MapTheme theme, int radius) {
         if (activeWorld == null || activeCenter == null) {
-            return;
+            return RoadPath.empty();
         }
         if (!theme.roadPathsEnabled()) {
-            return;
+            return RoadPath.empty();
         }
-        Material material = theme.getRoadMaterial();
-        if (material == null || material == Material.AIR) {
-            return;
+        List<Material> configuredMaterials = theme.getRoadMaterials();
+        Material primaryMaterial = configuredMaterials != null && !configuredMaterials.isEmpty()
+                ? configuredMaterials.get(0)
+                : resolveBorderMaterial(theme);
+        if (primaryMaterial == null || primaryMaterial == Material.AIR) {
+            primaryMaterial = Material.COBBLESTONE;
         }
-        int halfWidth = Math.max(1, (int) Math.round(radius * 0.04));
-        double angle = random.nextDouble() * Math.PI * 2.0;
-        carveRoadLine(radius, halfWidth, angle, material);
-    }
 
-    private void carveRoadLine(int radius, int halfWidth, double angle, Material material) {
-        if (activeCenter == null) {
-            return;
-        }
-        int centerX = activeCenter.getBlockX();
-        int centerZ = activeCenter.getBlockZ();
-        double dirX = Math.cos(angle);
-        double dirZ = Math.sin(angle);
-        double perpX = -dirZ;
-        double perpZ = dirX;
-        int radiusSquared = radius * radius;
-        for (int t = -radius; t <= radius; t++) {
-            int baseX = centerX + (int) Math.round(dirX * t);
-            int baseZ = centerZ + (int) Math.round(dirZ * t);
-            for (int offset = -halfWidth; offset <= halfWidth; offset++) {
-                int x = baseX + (int) Math.round(perpX * offset);
-                int z = baseZ + (int) Math.round(perpZ * offset);
-                int dx = x - centerX;
-                int dz = z - centerZ;
-                if ((dx * dx) + (dz * dz) > radiusSquared) {
-                    continue;
-                }
-                paintRoadTile(x, z, material);
-            }
-        }
+        int halfWidth = Math.max(1, (int) Math.round(radius * 0.04));
+        lastRoadHalfWidth = halfWidth;
+        activeRoadPalette = buildRoadPalette(configuredMaterials, primaryMaterial);
+        RoadPainter painter = this::paintRoadTile;
+        RoadBuildContext context = new RoadBuildContext(
+                activeCenter.clone(),
+                radius,
+                halfWidth,
+                primaryMaterial,
+                random,
+                painter
+        );
+        roadColumns.clear();
+        return roadBuilder.buildRoadNetwork(context);
     }
 
     private void paintRoadTile(int x, int z, Material material) {
@@ -793,20 +1000,55 @@ public class MapManager {
         if (surfaceY == null) {
             return;
         }
-        setBlock(activeWorld, x, surfaceY, z, material);
+        Material tileMaterial = pickRoadMaterial(material);
+        setBlock(activeWorld, x, surfaceY, z, tileMaterial);
         clearAboveSurface(x, surfaceY + 1, z);
+        roadColumns.add(columnKey(x, z));
         regionMinY = Math.min(regionMinY, surfaceY);
         regionMaxY = Math.max(regionMaxY, surfaceY + 1);
+    }
+
+    private List<Material> buildRoadPalette(List<Material> configuredMaterials, Material fallback) {
+        List<Material> palette = new ArrayList<>();
+        if (configuredMaterials != null) {
+            for (Material candidate : configuredMaterials) {
+                addPaletteEntry(palette, candidate);
+            }
+        }
+        palette.removeIf(mat -> mat == null || mat == Material.AIR);
+        if (palette.isEmpty()) {
+            addPaletteEntry(palette, fallback);
+        }
+        if (palette.isEmpty()) {
+            palette.add(Material.COBBLESTONE);
+        }
+        return palette;
+    }
+
+    private void addPaletteEntry(List<Material> palette, Material candidate) {
+        if (candidate == null || candidate == Material.AIR) {
+            return;
+        }
+        if (!palette.contains(candidate)) {
+            palette.add(candidate);
+        }
+    }
+
+    private Material pickRoadMaterial(Material fallback) {
+        if (activeRoadPalette == null || activeRoadPalette.isEmpty()) {
+            return fallback;
+        }
+        return activeRoadPalette.get(random.nextInt(activeRoadPalette.size()));
     }
 
     private void tryPlacePool(Material fluid, int radius, MapTheme theme) {
         if (activeCenter == null) {
             return;
         }
-        int tries = 10;
+        int tries = 12;
         while (tries-- > 0) {
             double angle = random.nextDouble() * Math.PI * 2;
-            double distance = radius * 0.2 + random.nextDouble() * radius * 0.4;
+            double distance = radius * (0.2 + random.nextDouble() * 0.45);
             int x = activeCenter.getBlockX() + (int) Math.round(distance * Math.cos(angle));
             int z = activeCenter.getBlockZ() + (int) Math.round(distance * Math.sin(angle));
             Integer surfaceY = surfaceHeights.get(columnKey(x, z));
@@ -816,33 +1058,51 @@ public class MapManager {
             if (surfaceY == null) {
                 continue;
             }
-            carvePoolAt(x, surfaceY, z, fluid, theme);
+            int maxRadius = Math.max(3, radius / 18);
+            int majorRadius = 3 + random.nextInt(Math.max(2, maxRadius));
+            int minorRadius = Math.max(2, majorRadius - 1 - random.nextInt(3));
+            double rotation = random.nextDouble() * Math.PI * 2;
+            carvePoolAt(x, surfaceY, z, fluid, theme, majorRadius, minorRadius, rotation);
             break;
         }
     }
 
-    private void carvePoolAt(int centerX, int surfaceY, int centerZ, Material fluid, MapTheme theme) {
+    private void carvePoolAt(int centerX,
+                             int surfaceY,
+                             int centerZ,
+                             Material fluid,
+                             MapTheme theme,
+                             int majorRadius,
+                             int minorRadius,
+                             double rotation) {
         if (activeWorld == null) {
             return;
         }
-        int poolRadius = 2 + random.nextInt(2);
-        int radiusSquared = poolRadius * poolRadius;
-        int innerRadiusSquared = Math.max(1, (poolRadius - 1) * (poolRadius - 1));
-        for (int dx = -poolRadius; dx <= poolRadius; dx++) {
-            for (int dz = -poolRadius; dz <= poolRadius; dz++) {
-                int distSq = dx * dx + dz * dz;
-                if (distSq > radiusSquared) {
+        double cos = Math.cos(rotation);
+        double sin = Math.sin(rotation);
+        int rimRadius = Math.max(majorRadius, minorRadius) + 1;
+        List<BlockPosition> fluidSurfaces = new ArrayList<>();
+        for (int dx = -rimRadius; dx <= rimRadius; dx++) {
+            for (int dz = -rimRadius; dz <= rimRadius; dz++) {
+                double rotatedX = dx * cos - dz * sin;
+                double rotatedZ = dx * sin + dz * cos;
+                double normalized = (rotatedX * rotatedX) / (majorRadius * majorRadius)
+                        + (rotatedZ * rotatedZ) / (minorRadius * minorRadius);
+                double jitter = (random.nextDouble() - 0.5) * 0.35;
+                if (normalized > 1.0 + jitter) {
                     continue;
                 }
+                double depthCurve = Math.max(0.15, 1.15 - normalized + (random.nextDouble() - 0.5) * 0.2);
+                int depth = Math.max(1, (int) Math.round(depthCurve * 4));
                 int x = centerX + dx;
                 int z = centerZ + dz;
-                int depth = distSq <= innerRadiusSquared ? 2 : 1;
-                placeFluidColumn(x, surfaceY, z, depth, fluid, theme);
+                placeFluidColumn(x, surfaceY, z, depth, fluid, theme, fluidSurfaces);
                 clearAboveSurface(x, surfaceY + 1, z);
             }
         }
-        reinforcePoolRim(centerX, centerZ, surfaceY, poolRadius, theme);
-        regionMinY = Math.min(regionMinY, surfaceY - 3);
+        reinforcePoolRim(centerX, centerZ, surfaceY, rimRadius, theme);
+        sealPoolPerimeter(fluidSurfaces, theme);
+        regionMinY = Math.min(regionMinY, surfaceY - 4);
     }
 
     private void reinforcePoolRim(int centerX, int centerZ, int surfaceY, int poolRadius, MapTheme theme) {
@@ -881,22 +1141,68 @@ public class MapManager {
         }
     }
 
-    private void placeFluidColumn(int x, int surfaceY, int z, int depth, Material fluid, MapTheme theme) {
+    private void placeFluidColumn(int x,
+                                  int surfaceY,
+                                  int z,
+                                  int depth,
+                                  Material fluid,
+                                  MapTheme theme,
+                                  List<BlockPosition> fluidSurfaces) {
         if (activeWorld == null) {
             return;
         }
         int minY = activeWorld.getMinHeight();
-        setBlock(activeWorld, x, surfaceY, z, fluid);
-        if (surfaceY - 1 >= minY && depth >= 1) {
-            setBlock(activeWorld, x, surfaceY - 1, z, fluid);
+        int layers = Math.max(1, depth);
+        for (int i = 0; i < layers; i++) {
+            int targetY = surfaceY - i;
+            if (targetY < minY) {
+                break;
+            }
+            setBlock(activeWorld, x, targetY, z, fluid);
+            if (i == 0 && fluidSurfaces != null) {
+                fluidSurfaces.add(new BlockPosition(x, targetY, z));
+            }
         }
-        if (surfaceY - 2 >= minY && depth >= 2) {
-            setBlock(activeWorld, x, surfaceY - 2, z, theme.getFillerMaterial());
+        int baseY = surfaceY - layers;
+        Material filler = theme.getFillerMaterial();
+        if (filler == null || filler == Material.AIR) {
+            filler = Material.STONE;
         }
-        int baseY = surfaceY - (depth + 1);
         if (baseY >= minY) {
-            setBlock(activeWorld, x, baseY, z, theme.getFillerMaterial());
-            regionMinY = Math.min(regionMinY, baseY);
+            setBlock(activeWorld, x, baseY, z, filler);
+            if (baseY - 1 >= minY) {
+                setBlock(activeWorld, x, baseY - 1, z, filler);
+                regionMinY = Math.min(regionMinY, baseY - 1);
+            } else {
+                regionMinY = Math.min(regionMinY, baseY);
+            }
+        }
+    }
+
+    private void sealPoolPerimeter(List<BlockPosition> fluidSurfaces, MapTheme theme) {
+        if (activeWorld == null || fluidSurfaces == null || fluidSurfaces.isEmpty()) {
+            return;
+        }
+        Material rimMaterial = theme.getTopMaterial();
+        if (rimMaterial == null || rimMaterial == Material.AIR) {
+            rimMaterial = resolveBorderMaterial(theme);
+        }
+        if (rimMaterial == null || rimMaterial == Material.AIR) {
+            rimMaterial = Material.COBBLESTONE;
+        }
+        int[][] offsets = {
+                {1, 0}, {-1, 0}, {0, 1}, {0, -1},
+                {1, 1}, {1, -1}, {-1, 1}, {-1, -1}
+        };
+        for (BlockPosition pos : fluidSurfaces) {
+            for (int[] offset : offsets) {
+                int nx = pos.x + offset[0];
+                int nz = pos.z + offset[1];
+                Block neighbor = activeWorld.getBlockAt(nx, pos.y, nz);
+                if (neighbor.isEmpty()) {
+                    setBlock(activeWorld, nx, pos.y, nz, rimMaterial);
+                }
+            }
         }
     }
 
@@ -1000,6 +1306,9 @@ public class MapManager {
         surfaceHeights.clear();
         spawnMarkerLocations.clear();
         reservedStructureColumns.clear();
+        roadColumns.clear();
+        activeRoadPalette = new ArrayList<>();
+        lastRoadHalfWidth = 0;
         activeCenter = null;
         activeWorld = null;
         lastTheme = null;
@@ -1058,11 +1367,12 @@ public class MapManager {
             activeGeneration = null;
             buildBorderWall(theme, radius, baseY);
             buildContainmentRidge(theme, radius, baseY);
-            buildRoadNetwork(theme, radius);
+            RoadPath roadPath = buildRoadNetwork(theme, radius);
             buildTopCover(theme, radius, baseY);
             placePools(theme, radius);
-            placeWatchtowers(theme, radius);
-            placeSpawnMarkers(playerCount, radius);
+            placeStructures(theme, radius);
+            placePathBeacons(roadPath);
+            placeSpawnMarkers(playerCount, roadPath, radius);
             lastTheme = theme;
             lastRadius = radius;
             plugin.getLogger().info(String.format("Generated %s PvE map (radius=%d, blocks=%d)", theme.name(), radius, touchedBlocks.size()));
@@ -1157,6 +1467,9 @@ public class MapManager {
     }
 
     private record ColumnCoordinate(int x, int z) {
+    }
+
+    private record BlockPosition(int x, int y, int z) {
     }
 
     private static String blockKey(UUID worldId, int x, int y, int z) {

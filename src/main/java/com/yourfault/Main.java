@@ -63,6 +63,7 @@ public class Main extends JavaPlugin {
         this.getServer().getPluginManager().registerEvents(healthDisplay, this);
         waveManager = new WaveManager(game, mapManager, healthDisplay);
         game.setWaveManager(waveManager);
+        game.setBossSpawner(bossStructureSpawner);
 
         perkSelectionListener = new PerkSelectionListener(this);
 

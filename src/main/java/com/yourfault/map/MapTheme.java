@@ -11,7 +11,7 @@ import java.util.Random;
  * Defines the available biome-inspired themes for procedurally generated PvE arenas.
  */
 public enum MapTheme {
-        FOREST(
+    FOREST(
             Material.GRASS_BLOCK,
             Material.DIRT,
             Material.MOSSY_COBBLESTONE,
@@ -21,9 +21,9 @@ public enum MapTheme {
             3,
             0.18,
             List.of(
-                decoration(Material.OAK_SAPLING, 1.0),
-                decoration(Material.FERN, 1.3),
-                decoration(Material.FLOWERING_AZALEA, 0.7)
+                    decoration(Material.DIRT_PATH, 0),
+                    decoration(Material.FERN, 0.5),
+                    decoration(Material.FLOWERING_AZALEA, 0.7)
             ),
             TerrainProfile.DEFAULT,
             true,
@@ -32,14 +32,14 @@ public enum MapTheme {
             true,
             Material.GLASS,
             true,
-            Material.MOSSY_COBBLESTONE,
+            roadMaterials(Material.MOSSY_COBBLESTONE, Material.COARSE_DIRT, Material.DIRT_PATH),
             StructureSettings.ofTemplates(
                     StructureTemplate.template("structures/watchtower.nbt", 1),
                     StructureTemplate.template("structures/treeModel/oaktree_6_7_5.nbt", 10),
                     StructureTemplate.template("structures/treeModel/oaktree_12_13_11.nbt", 10)
             )
-        ),
-        NETHER(
+    ),
+    NETHER(
             Material.CRIMSON_NYLIUM,
             Material.NETHERRACK,
             Material.POLISHED_BASALT,
@@ -49,9 +49,9 @@ public enum MapTheme {
             4,
             0.14,
             List.of(
-                decoration(Material.NETHER_WART_BLOCK, 1.0),
-                decoration(Material.SHROOMLIGHT, 0.8),
-                decoration(Material.CRIMSON_FUNGUS, 0.6)
+                    decoration(Material.NETHER_WART_BLOCK, 1.0),
+                    decoration(Material.SHROOMLIGHT, 0.8),
+                    decoration(Material.CRIMSON_FUNGUS, 0.6)
             ),
             TerrainProfile.DEFAULT,
             false,
@@ -60,13 +60,13 @@ public enum MapTheme {
             false,
             Material.BLACK_STAINED_GLASS,
             false,
-            Material.POLISHED_BASALT,
+            roadMaterials(Material.POLISHED_BASALT, Material.BLACKSTONE, Material.CRIMSON_NYLIUM),
             StructureSettings.ofTemplates(
-            StructureTemplate.template("structures/watchtower.nbt", 2),
-            StructureTemplate.template("structures/treeModel/wintertree.nbt", 2)
+                    StructureTemplate.template("structures/watchtower.nbt", 2),
+                    StructureTemplate.template("structures/treeModel/wintertree.nbt", 2)
             )
-        ),
-        END(
+    ),
+    END(
             Material.END_STONE,
             Material.END_STONE,
             Material.OBSIDIAN,
@@ -76,8 +76,8 @@ public enum MapTheme {
             3,
             0.11,
             List.of(
-                decoration(Material.CHORUS_PLANT, 1.0),
-                decoration(Material.PURPUR_PILLAR, 0.9)
+                    decoration(Material.CHORUS_PLANT, 1.0),
+                    decoration(Material.PURPUR_PILLAR, 0.9)
             ),
             TerrainProfile.DEFAULT,
             false,
@@ -86,12 +86,12 @@ public enum MapTheme {
             false,
             Material.GLASS,
             true,
-            Material.PURPUR_BLOCK,
+            roadMaterials(Material.OBSIDIAN, Material.PURPUR_BLOCK, Material.END_STONE_BRICKS),
             StructureSettings.ofTemplates(
-            StructureTemplate.template("structures/watchtower.nbt", 3),
-            StructureTemplate.template("structures/treeModel/wintertree.nbt", 5)
+                    StructureTemplate.template("structures/watchtower.nbt", 3),
+                    StructureTemplate.template("structures/treeModel/wintertree.nbt", 5)
             )
-        ),
+    ),
     DESERT(
             Material.SAND,
             Material.SANDSTONE,
@@ -113,7 +113,7 @@ public enum MapTheme {
             true,
             Material.GLASS,
             true,
-            Material.SMOOTH_SANDSTONE,
+            roadMaterials(Material.SMOOTH_SANDSTONE, Material.CUT_SANDSTONE, Material.SANDSTONE),
             StructureSettings.template("structures/watchtower.nbt")
     ),
     MOUNTAINS(
@@ -137,7 +137,7 @@ public enum MapTheme {
             false,
             Material.GLASS,
             true,
-            Material.COBBLESTONE,
+            roadMaterials(Material.COBBLESTONE, Material.COBBLED_DEEPSLATE, Material.POLISHED_ANDESITE),
             StructureSettings.template("structures/watchtower.nbt")
     ),
     GLACIER(
@@ -161,7 +161,7 @@ public enum MapTheme {
             false,
             Material.BLUE_STAINED_GLASS,
             true,
-            Material.PACKED_ICE,
+            roadMaterials(Material.PACKED_ICE, Material.BLUE_ICE, Material.SNOW_BLOCK),
             StructureSettings.template("structures/watchtower.nbt")
     ),
     TROPICAL_RAINFOREST(
@@ -185,7 +185,7 @@ public enum MapTheme {
             true,
             Material.JUNGLE_LEAVES,
             true,
-            Material.MOSS_CARPET,
+            roadMaterials(Material.MOSSY_STONE_BRICKS, Material.MOSS_BLOCK, Material.JUNGLE_PLANKS),
             StructureSettings.template("structures/watchtower.nbt")
     ),
     SAVANNA(
@@ -209,7 +209,7 @@ public enum MapTheme {
             false,
             Material.GLASS,
             true,
-            Material.SMOOTH_SANDSTONE,
+            roadMaterials(Material.CUT_SANDSTONE, Material.SMOOTH_SANDSTONE, Material.TERRACOTTA),
             StructureSettings.template("structures/watchtower.nbt")
     ),
     WETLANDS(
@@ -233,7 +233,7 @@ public enum MapTheme {
             false,
             Material.GLASS,
             true,
-            Material.MUD_BRICKS,
+            roadMaterials(Material.MUD_BRICKS, Material.MUD, Material.ROOTED_DIRT),
             StructureSettings.template("structures/watchtower.nbt")
     ),
     REAL_MOUNTAIN(
@@ -257,7 +257,7 @@ public enum MapTheme {
             false,
             Material.PACKED_ICE,
             true,
-            Material.POLISHED_DEEPSLATE,
+            roadMaterials(Material.POLISHED_DEEPSLATE, Material.COBBLED_DEEPSLATE, Material.STONE),
             StructureSettings.template("structures/watchtower.nbt")
     );
 
@@ -278,7 +278,7 @@ public enum MapTheme {
     private final boolean topCoverEnabled;
     private final Material topCoverMaterial;
     private final boolean roadPathsEnabled;
-    private final Material roadMaterial;
+    private final List<Material> roadMaterials;
     private final StructureSettings structureSettings;
 
     MapTheme(Material topMaterial,
@@ -297,7 +297,7 @@ public enum MapTheme {
              boolean topCoverEnabled,
              Material topCoverMaterial,
              boolean roadPathsEnabled,
-             Material roadMaterial,
+             List<Material> roadMaterials,
              StructureSettings structureSettings) {
         this.topMaterial = topMaterial;
         this.fillerMaterial = fillerMaterial;
@@ -315,7 +315,7 @@ public enum MapTheme {
         this.topCoverEnabled = topCoverEnabled;
         this.topCoverMaterial = topCoverMaterial;
         this.roadPathsEnabled = roadPathsEnabled;
-        this.roadMaterial = roadMaterial;
+        this.roadMaterials = roadMaterials == null ? List.of() : List.copyOf(roadMaterials);
         this.structureSettings = structureSettings == null ? StructureSettings.disabled() : structureSettings;
     }
 
@@ -379,8 +379,8 @@ public enum MapTheme {
         return roadPathsEnabled;
     }
 
-    public Material getRoadMaterial() {
-        return roadMaterial;
+    public List<Material> getRoadMaterials() {
+        return roadMaterials;
     }
 
     public StructureSettings getStructureSettings() {
@@ -584,6 +584,22 @@ public enum MapTheme {
 
     public static DecorationOption decoration(Material material, double weight) {
         return new DecorationOption(material, weight);
+    }
+
+    public static List<Material> roadMaterials(Material... materials) {
+        if (materials == null || materials.length == 0) {
+            return List.of();
+        }
+        List<Material> list = new ArrayList<>();
+        for (Material material : materials) {
+            if (material == null || material == Material.AIR) {
+                continue;
+            }
+            if (!list.contains(material)) {
+                list.add(material);
+            }
+        }
+        return list.isEmpty() ? List.of() : List.copyOf(list);
     }
 
     public static final class DecorationOption {

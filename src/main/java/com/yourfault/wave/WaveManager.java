@@ -62,6 +62,10 @@ public class WaveManager {
         return currentWave;
     }
 
+    public void overrideCurrentWaveCounter(int waveNumber) {
+        this.currentWave = Math.max(0, waveNumber);
+    }
+
     public boolean isActive() {
         return active;
     }
@@ -103,6 +107,7 @@ public class WaveManager {
         WaveContext context = buildWaveContext(playersReady);
         Bukkit.broadcastMessage(ChatColor.AQUA + "Wave " + currentWave + " incoming! Weight budget: " + String.format("%.1f", context.totalWeightBudget()));
         List<WaveEnemyType> composition = planComposition(context);
+        game.showWaveTitle(currentWave, composition.size());
         spawnWave(composition, context);
         if (activeWaveEnemyIds.isEmpty()) {
             waveInProgress = false;
