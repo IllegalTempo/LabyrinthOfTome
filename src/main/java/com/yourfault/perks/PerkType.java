@@ -1,74 +1,69 @@
 package com.yourfault.perks;
 
-import java.util.function.BiFunction;
-import java.util.function.Supplier;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.bukkit.NamespacedKey;
+import com.yourfault.NBT_namespace;
+import org.bukkit.ChatColor;
+import org.bukkit.Material;
+import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 
-import com.yourfault.perks.quickdraw.QuickdrawPerk;
-import com.yourfault.perks.sharpshooter.SharpshooterPerk;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
 
-public enum PerkType {
-    QUICKDRAW(
-        QuickdrawPerk.DISPLAY_NAME,
-        QuickdrawPerk.DESCRIPTION,
-        QuickdrawPerk.MENU_SLOT,
-        QuickdrawPerk::buildMenuIcon,
-        QuickdrawPerk::buildIndicatorIcon,
-        1500
-    ),
-    SHARPSHOOTER(
-        SharpshooterPerk.DISPLAY_NAME,
-        SharpshooterPerk.DESCRIPTION,
-        SharpshooterPerk.MENU_SLOT,
-        SharpshooterPerk::buildMenuIcon,
-        SharpshooterPerk::buildIndicatorIcon,
-        400
-    );
 
-    private final String displayName;
-    private final String description;
-    private final int menuSlot;
-    private final BiFunction<NamespacedKey, String, ItemStack> menuIconFactory;
-    private final Supplier<ItemStack> indicatorSupplier;
-    private final int cost;
+public class PerkType implements Listener {
 
-    PerkType(String displayName,
-         String description,
+    public final String displayName;
+    public final List<String> description;
+    public final int menuSlot;
+    public final ItemStack Icon;
+    public final int cost;
+
+    public PerkType(String displayName,
+         List<String> description,
          int menuSlot,
-         BiFunction<NamespacedKey, String, ItemStack> menuIconFactory,
-         Supplier<ItemStack> indicatorSupplier,
          int cost) {
         this.displayName = displayName;
         this.description = description;
         this.menuSlot = menuSlot;
-        this.menuIconFactory = menuIconFactory;
-        this.indicatorSupplier = indicatorSupplier;
+        this.Icon = GetIcon();
         this.cost = cost;
     }
-
-    public int menuSlot() {
-        return menuSlot;
+    public ItemStack shop_getPerkIcon() {
+        ItemStack item = Icon.clone();
+        ItemMeta meta = item.getItemMeta();
+        if(meta != null)
+        {
+            List<String> lore = meta.getLore() == null ? new ArrayList<>() : new ArrayList<>(meta.getLore());
+            lore.add(" ");
+            lore.add(ChatColor.GOLD + "Cost: " + cost + " coins");
+            meta.setLore(lore);
+            meta.getPersistentDataContainer().set(NBT_namespace.PERK_TYPE, PersistentDataType.STRING,displayName);
+        }
+        item.setItemMeta(meta);
+        return item;
     }
-
-    public String displayName() {
-        return displayName;
+    private ItemStack GetIcon()
+    {
+        ItemStack stack = new ItemStack(Material.LIME_DYE);
+        ItemMeta meta = stack.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.GREEN + displayName);
+            meta.setLore(description);
+            stack.setItemMeta(meta);
+        }
+        return stack;
     }
+    // Registry of all perk types — list all concrete PerkType implementations here.
+    // Add new perks to this array so callers can iterate through every perk.
 
-    public String description() {
-        return description;
-    }
 
-    public ItemStack buildMenuIcon(NamespacedKey key) {
-        return menuIconFactory.apply(key, name());
-    }
 
-    public ItemStack buildIndicatorIcon() {
-        return indicatorSupplier.get();
-    }
 
-    public int coinCost() {
-        return cost;
-    }
+
 }
+
+
+

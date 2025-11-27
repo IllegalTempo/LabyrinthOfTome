@@ -9,6 +9,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 
+import java.util.List;
+
 public class Excalibur_Main implements Listener {
     @EventHandler
     public void OnRightClick(PlayerInteractEvent e)
@@ -20,7 +22,9 @@ public class Excalibur_Main implements Listener {
             WeaponType selectedWeapon = gamePlayer.SELECTED_WEAPON;
             if(selectedWeapon != WeaponType.Excalibur) return;
             if(e.getPlayer().getInventory().getItemInMainHand().getItemMeta() == null) return;
-            String itemname = e.getPlayer().getInventory().getItemInMainHand().getItemMeta().getCustomModelDataComponent().getStrings().get(0);
+            List<String> customData = e.getPlayer().getInventory().getItemInMainHand().getItemMeta().getCustomModelDataComponent().getStrings();
+            if(customData.size() == 0) return;
+            String itemname = customData.get(0);
             if(itemname.equals("excalibur"))
             {
                 gamePlayer.ChangeMana(-5f);

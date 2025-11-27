@@ -2,10 +2,14 @@ package com.yourfault.system;
 
 import java.time.Duration;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
 import com.yourfault.map.MapManager;
+import com.yourfault.perks.PerkType;
+import com.yourfault.perks.QuickdrawPerk;
+import com.yourfault.perks.SharpshooterPerk;
 import com.yourfault.system.GeneralPlayer.GamePlayer;
 import com.yourfault.wave.WaveDifficulty;
 import com.yourfault.wave.WaveManager;
@@ -34,6 +38,8 @@ public class Game {
         this.plugin = plugin;
         AddExistingPlayer();
         Main_Update();
+        RegisterPerks();
+        RegisterPerksListener();
 
     }
     private final JavaPlugin plugin;
@@ -49,7 +55,19 @@ public class Game {
     }
     private WaveManager waveManager;
     private MapManager mapManager;
+    public final Map<String,PerkType> ALL_PERKS = new HashMap<String,PerkType>();
 
+    private void RegisterPerks()
+    {
+        ALL_PERKS.put("Sharpshooter",new SharpshooterPerk());
+        ALL_PERKS.put("Quickdraw",new QuickdrawPerk());
+    }
+    private void RegisterPerksListener()
+    {
+        for (PerkType perk : ALL_PERKS.values()) {
+            plugin.getServer().getPluginManager().registerEvents(perk, plugin);
+        }
+    }
     private void AddExistingPlayer()
     {
         Main.world.getPlayers().forEach(player -> {

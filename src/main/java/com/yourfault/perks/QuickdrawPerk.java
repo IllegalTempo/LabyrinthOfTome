@@ -1,10 +1,6 @@
-package com.yourfault.perks.quickdraw;
+package com.yourfault.perks;
 
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import com.yourfault.Main;
 import com.yourfault.system.GeneralPlayer.GamePlayer;
@@ -23,17 +19,23 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
-import com.yourfault.perks.PerkType;
-
-public class QuickdrawAbility implements Listener {
-    private static final long COOLDOWN_MS = 1000L;
-    private static final double ARROW_SPEED = 3.0;
-    private static final Set<Material> SUPPORTED_ARROWS = EnumSet.of(
+public final class QuickdrawPerk extends PerkType {
+    private final long COOLDOWN_MS = 1000L;
+    private final double ARROW_SPEED = 3.0;
+    private final Set<Material> SUPPORTED_ARROWS = EnumSet.of(
             Material.ARROW,
             Material.SPECTRAL_ARROW,
             Material.TIPPED_ARROW
     );
-
+    public QuickdrawPerk() {
+        super("Quickdraw",
+                List.of(
+                ChatColor.GRAY + "Speed over precision",
+                ChatColor.GRAY + "Perk Ability:",
+                ChatColor.WHITE + "Bow fires instantly at full power.",
+                ChatColor.WHITE + "1s cooldown between arrows."
+        ),13,1500);
+    }
     private final Map<UUID, Long> cooldowns = new HashMap<>();
 
 
@@ -50,7 +52,7 @@ public class QuickdrawAbility implements Listener {
             return;
         }
         UUID uuid = player.getUniqueId();
-        if (!gamePlayer.PLAYER_PERKS.hasPerk(PerkType.QUICKDRAW)) return;
+        if (!gamePlayer.PLAYER_PERKS.hasPerk(this)) return;
 
         long now = System.currentTimeMillis();
         long lastUse = cooldowns.getOrDefault(uuid, 0L);
@@ -63,7 +65,7 @@ public class QuickdrawAbility implements Listener {
         }
 
         if (!hasArrow(player)) {
-            player.sendMessage(ChatColor.RED + "You need arrows to use " + PerkType.QUICKDRAW.displayName() + ".");
+            player.sendMessage(ChatColor.RED + "You need arrows to use " + displayName + ".");
             return;
         }
 

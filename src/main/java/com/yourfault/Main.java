@@ -11,9 +11,7 @@ import com.yourfault.test.StartLOTCommand;
 import com.yourfault.test.LOTTestScenario;
 import com.yourfault.npcinteraction.WeaponSelect;
 import com.yourfault.system.*;
-import com.yourfault.system.GeneralPlayer.TabManager;
 import com.yourfault.Enemy.EnemyHealthDisplay;
-import com.yourfault.test.StartLOTCommand;
 import com.yourfault.wave.WaveCombatListener;
 import com.yourfault.wave.WaveManager;
 import org.bukkit.Bukkit;
@@ -21,8 +19,6 @@ import org.bukkit.World;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.yourfault.listener.PerkSelectionListener;
-import com.yourfault.perks.quickdraw.QuickdrawAbility;
-import com.yourfault.perks.sharpshooter.SharpshooterAbility;
 import com.yourfault.weapon.Excalibur.Excalibur_Main;
 
 
@@ -73,7 +69,6 @@ public class Main extends JavaPlugin {
         game.setPerkSelectionListener(perkSelectionListener);
         RegisterCommands();
         RegisterWeapons();
-        RegisterAbilityListeners();
         RegisterNPCInteraction();
         RegisterPlayerActivity();
         RegisterCustomHealthSystem();
@@ -99,18 +94,14 @@ public class Main extends JavaPlugin {
     private void RegisterPlayerActivity()
     {
         this.getServer().getPluginManager().registerEvents(new PlayerActivity(),this);
+        this.getServer().getPluginManager().registerEvents(new WaveCombatListener(game), this);
+
     }
     private void RegisterNPCInteraction()
     {
         this.getServer().getPluginManager().registerEvents(new WeaponSelect(),this);
     }
-    private void RegisterAbilityListeners() {
-        this.getServer().getPluginManager().registerEvents(new QuickdrawAbility(), this);
-        this.getServer().getPluginManager().registerEvents(new SharpshooterAbility(), this);
-        this.getServer().getPluginManager().registerEvents(new WaveCombatListener(game), this);
 
-
-    }
     private void RegisterCustomHealthSystem() {
         this.getServer().getPluginManager().registerEvents(new CustomHealthListener(game), this);
     }

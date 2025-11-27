@@ -1,8 +1,6 @@
-package com.yourfault.perks.sharpshooter;
+package com.yourfault.perks;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import com.yourfault.Main;
 import com.yourfault.system.GeneralPlayer.GamePlayer;
@@ -17,9 +15,18 @@ import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.util.Vector;
 
-import com.yourfault.perks.PerkType;
+public final class SharpshooterPerk extends PerkType{
 
-public class SharpshooterAbility implements Listener {
+
+    public SharpshooterPerk() {
+        super("Sharpshooter",
+                List.of(
+                ChatColor.GRAY + "A steady hand and a keen eye",
+                ChatColor.GRAY + "Perk Ability:",
+                ChatColor.WHITE + "Arrows travel 25% faster",
+                ChatColor.WHITE + "Deal +3 bow damage"
+        ),15,400);
+    }
     private static final double VELOCITY_MULTIPLIER = 1.25;
     private static final double BONUS_DAMAGE = 3.0;
 
@@ -34,8 +41,7 @@ public class SharpshooterAbility implements Listener {
         if (gamePlayer == null) {
             return;
         }
-        UUID uuid = player.getUniqueId();
-        if (!gamePlayer.PLAYER_PERKS.hasPerk(PerkType.SHARPSHOOTER)) return;
+        if (!gamePlayer.PLAYER_PERKS.hasPerk(this)) return;
 
         Vector current = arrow.getVelocity();
         arrow.setVelocity(current.multiply(VELOCITY_MULTIPLIER));
@@ -53,9 +59,8 @@ public class SharpshooterAbility implements Listener {
         if (gamePlayer == null) {
             return;
         }
-        UUID uuid = player.getUniqueId();
 
-        if (!gamePlayer.PLAYER_PERKS.hasPerk(PerkType.SHARPSHOOTER)) return;
+        if (!gamePlayer.PLAYER_PERKS.hasPerk(this)) return;
         event.setDamage(event.getDamage() + BONUS_DAMAGE);
         player.sendMessage(ChatColor.AQUA + "Sharpshooter bonus applied! +3 damage");
     }

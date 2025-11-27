@@ -8,7 +8,7 @@ import org.bukkit.persistence.PersistentDataType;
 import java.util.function.Supplier;
 
 public enum WeaponType {
-        Excalibur(weapons.EXCALIBUR::clone, 100.0f, 50.0f, 20.0f),;
+        Excalibur(weapons.ITEM_MAP.get("excalibur")::clone, 100.0f, 50.0f, 20.0f),;
 
         private final Supplier<ItemStack> templateSupplier;
         public float Health;

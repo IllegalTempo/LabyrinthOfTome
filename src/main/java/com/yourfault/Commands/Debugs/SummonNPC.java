@@ -36,7 +36,7 @@ public class SummonNPC implements CommandExecutor {
         Main.world.spawn(loc, Mannequin.class, mannequin -> {
             mannequin.setCustomName("§bExcalibur");
             mannequin.setCustomNameVisible(true);
-            mannequin.getEquipment().setItemInMainHand(weapons.EXCALIBUR);
+            mannequin.getEquipment().setItemInMainHand(weapons.ITEM_MAP.get("excalibur").clone());
             mannequin.setInvulnerable(true);
             mannequin.setCollidable(false);
             mannequin.getPersistentDataContainer().set(NBT_namespace.SELECT_NPC_Weapon, PersistentDataType.STRING, WeaponType.Excalibur.toString());
