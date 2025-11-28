@@ -62,7 +62,8 @@ public final class StructurePlacementHelper {
                                   int baseY,
                                   int centerZ,
                                   Random random,
-                                  boolean includeEntities) {
+                                  boolean includeEntities,
+                                  MapTheme.StructureTemplate.Rotation rotationOption) {
         if (world == null) {
             return false;
         }
@@ -71,19 +72,50 @@ public final class StructurePlacementHelper {
             return false;
         }
         BlockVector size = template.get().size();
-        int offsetX = size.getBlockX() / 2;
-        int offsetZ = size.getBlockZ() / 2;
+        StructureRotation rotation = toBukkitRotation(rotationOption);
+        BlockVector rotatedSize = rotatedSize(size, rotation);
+        int offsetX = rotatedSize.getBlockX() / 2;
+        int offsetZ = rotatedSize.getBlockZ() / 2;
         Location origin = new Location(world, centerX - offsetX, baseY, centerZ - offsetZ);
         template.get().structure().place(
                 origin,
                 includeEntities,
-                StructureRotation.NONE,
+                rotation,
                 Mirror.NONE,
                 -1,
                 1.0f,
                 random
         );
         return true;
+    }
+
+    private StructureRotation toBukkitRotation(MapTheme.StructureTemplate.Rotation rotation) {
+        if (rotation == null) {
+            return StructureRotation.NONE;
+        }
+        switch (rotation) {
+            case CLOCKWISE_90:
+                return StructureRotation.CLOCKWISE_90;
+            case CLOCKWISE_180:
+                return StructureRotation.CLOCKWISE_180;
+            case COUNTERCLOCKWISE_90:
+                return StructureRotation.COUNTERCLOCKWISE_90;
+            default:
+                return StructureRotation.NONE;
+        }
+    }
+
+    private BlockVector rotatedSize(BlockVector size, StructureRotation rotation) {
+        if (size == null) {
+            return new BlockVector(1, 1, 1);
+        }
+        int width = Math.max(1, size.getBlockX());
+        int height = Math.max(1, size.getBlockY());
+        int depth = Math.max(1, size.getBlockZ());
+        if (rotation == StructureRotation.CLOCKWISE_90 || rotation == StructureRotation.COUNTERCLOCKWISE_90) {
+            return new BlockVector(depth, height, width);
+        }
+        return size.clone();
     }
 
     private Optional<LoadedStructure> load(String resourcePath) {

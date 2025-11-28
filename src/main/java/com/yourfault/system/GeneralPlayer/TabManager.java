@@ -6,6 +6,7 @@ import com.mojang.authlib.properties.PropertyMap;
 import com.yourfault.Main;
 import com.yourfault.perks.PerkObject;
 import com.yourfault.perks.PerkType;
+import com.yourfault.system.TabInfo;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoRemovePacket;
@@ -21,12 +22,10 @@ import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import static com.yourfault.Main.tabInfo;
+import static com.yourfault.system.TabInfo.TAB_HEIGHT;
 
 public class TabManager {
     public final GamePlayer player;
@@ -38,13 +37,45 @@ public class TabManager {
 
     // track fake perk players: UUID -> name
     private final Map<UUID, String> TAB_PERKLIST = new LinkedHashMap<>();
-
+    private final List<UUID> PLAYERLIST_PLACEHOLDERS = new ArrayList<>();
     public void initTab() {
         setHeaderFooter("Labyrinth Of Tome","Minecraft No.1 Roguelike PVE");
         FILL_PLAYER_LIST();
+        InitPerkTabDisplay();
+        updatePerkTabDisplay();
+        BuildWaveInfoTabDisplay();
 
     }
+    public void playerlist_addPlaceholder()
+    {
+        Scoreboard board = Bukkit.getScoreboardManager().getMainScoreboard();
+        UUID placeholderUuid = sendFakePlayer();
+        PLAYERLIST_PLACEHOLDERS.add(placeholderUuid);
 
+
+    }
+    public void playerlist_removePlaceholder()
+    {
+        Scoreboard board = Bukkit.getScoreboardManager().getMainScoreboard();
+        if (PLAYERLIST_PLACEHOLDERS.isEmpty()) return;
+        UUID placeholderuuid = PLAYERLIST_PLACEHOLDERS.removeLast();
+        removeFakePlayer(placeholderuuid);
+
+    }
+    private void BuildWaveInfoTabDisplay()
+    {
+        Scoreboard board = Bukkit.getScoreboardManager().getMainScoreboard();
+
+        sendFakePlayer("Wave Info");
+        Team waveTop = board.getTeam("20_WAVEINFO_TOP");
+        sendFakePlayer("Current Wave");
+        if (waveTop != null) waveTop.addEntry("Wave Info");
+        for(int i = 0 ; i < TAB_HEIGHT-2;i++)
+        {
+            sendFakePlayer("　　　　　　　　　　　　　");
+
+        }
+    }
     private void FILL_PLAYER_LIST()
     {
         Scoreboard board = Bukkit.getScoreboardManager().getMainScoreboard();
@@ -66,45 +97,67 @@ public class TabManager {
             }
         }
         // add a single placeholder entry string to the placeholder team
-        Team placeholder = board.getTeam("04_PLAYERLIST_PLACEHOLDER");
-        if (placeholder != null) placeholder.addEntry("　　　　　　　　　　　　　　　　");
 
         // send blank fake players (these don't add scoreboard entries here)
-        for (int i = 0; i < 14 - Main.game.PLAYER_LIST.size(); i++) {
-            sendFakePlayer();
+        for (int i = 0; i < TAB_HEIGHT - Main.game.PLAYER_LIST.size(); i++) {
+            playerlist_addPlaceholder();
 
         }
 
     }
+    public void removeFakePlayer(UUID uuid)
+    {
+        Scoreboard board = Bukkit.getScoreboardManager().getMainScoreboard();
 
-    private void updatePerkTabDisplay()
+        // send player remove packet (packet expects a List)
+        player.sendPacket(new ClientboundPlayerInfoRemovePacket(Collections.singletonList(uuid)));
+        // remove the scoreboard entry(s) that match the name
+        String name = TAB_PERKLIST.get(uuid);
+        if(name != null)
+        {
+            for (Team team : board.getTeams()) {
+                if (team != null && team.hasEntry(name)) team.removeEntry(name);
+            }
+            TAB_PERKLIST.remove(uuid);
+        }
+
+    }
+    private void InitPerkTabDisplay()
+    {
+        Scoreboard board = Bukkit.getScoreboardManager().getMainScoreboard();
+
+        sendFakePlayer("Perks");
+        Team perkTop = board.getTeam("10_PERKLIST_TOP");
+        if (perkTop != null) perkTop.addEntry("Perks");
+    }
+
+    public void updatePerkTabDisplay()
     {
         Scoreboard board = Bukkit.getScoreboardManager().getMainScoreboard();
 
         // remove existing perk fake players from the client and scoreboard
         if (!TAB_PERKLIST.isEmpty()) {
             for (Map.Entry<UUID, String> e : TAB_PERKLIST.entrySet()) {
-                UUID uuid = e.getKey();
-                String name = e.getValue();
-                // send player remove packet (packet expects a List)
-                player.sendPacket(new ClientboundPlayerInfoRemovePacket(Collections.singletonList(uuid)));
-                // remove the scoreboard entry(s) that match the name
-                for (Team team : board.getTeams()) {
-                    if (team != null && team.hasEntry(name)) team.removeEntry(name);
-                }
+                removeFakePlayer(e.getKey());
             }
             TAB_PERKLIST.clear();
         }
 
         // create new Perks fake player and add it to the team
-        UUID perksId = sendFakePlayer("Perks");
-        Team perkTop = board.getTeam("10_PERKLIST_TOP");
-        if (perkTop != null) perkTop.addEntry("Perks");
+
 
         // (additional perk list population would go here)
         for(PerkObject p:player.PLAYER_PERKS.perks)
         {
-            //todo show perk list in tab
+            UUID perkUuid = sendFakePlayer(p.perkType.displayName);
+            Team perkTeam = board.getTeam("11_PERKLIST");
+            if (perkTeam != null) perkTeam.addEntry(p.perkType.displayName);
+            TAB_PERKLIST.put(perkUuid, p.perkType.displayName);
+        }
+        for(int i = 0; i < TAB_HEIGHT - player.PLAYER_PERKS.perks.size()-1;i++)
+        {
+            UUID perkUuid = sendFakePlayer("　　　　　　　　　　　　　　　");
+            TAB_PERKLIST.put(perkUuid, "　　　　　　　　　　　　　　　");
         }
 
     }

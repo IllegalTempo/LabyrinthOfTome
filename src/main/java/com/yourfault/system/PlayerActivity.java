@@ -15,6 +15,10 @@ public class PlayerActivity implements Listener {
         Main.game.AddPlayer(player);
         GamePlayer gp = Main.game.GetPlayer(player);
         gp.PLAYER_TAB.initTab();
+        for(GamePlayer p: Main.game.PLAYER_LIST.values())
+        {
+            p.PLAYER_TAB.playerlist_removePlaceholder();
+        }
 
     }
     @EventHandler
@@ -22,5 +26,9 @@ public class PlayerActivity implements Listener {
     {
         Player player = e.getPlayer();
         Main.game.RemovePlayer(player);
+        for(GamePlayer p: Main.game.PLAYER_LIST.values())
+        {
+            p.PLAYER_TAB.playerlist_addPlaceholder();
+        }
     }
 }

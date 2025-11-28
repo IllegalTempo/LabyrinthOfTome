@@ -108,7 +108,8 @@ public class BossStructureSpawner {
                 bounds.minY,
                 center.getBlockZ(),
                 random,
-                true
+                true,
+                MapTheme.StructureTemplate.Rotation.NONE
         );
         if (!placed) {
             restoreOriginalSnapshot(world);

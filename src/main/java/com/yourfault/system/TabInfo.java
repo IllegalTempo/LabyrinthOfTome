@@ -8,6 +8,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
 
 public class TabInfo {
     private final String BLACK_VALUE = "ewogICJ0aW1lc3RhbXAiIDogMTY4MzM0NTk1ODU0NSwKICAicHJvZmlsZUlkIiA6ICIzYjgwOTg1YWU4ODY0ZWZlYjA3ODg2MmZkOTRhMTVkOSIsCiAgInByb2ZpbGVOYW1lIiA6ICJLaWVyYW5fVmF4aWxpYW4iLAogICJzaWduYXR1cmVSZXF1aXJlZCIgOiB0cnVlLAogICJ0ZXh0dXJlcyIgOiB7CiAgICAiU0tJTiIgOiB7CiAgICAgICJ1cmwiIDogImh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZTgwZmMwNDNlYTgwMDNjOTBjYTEzOTUzYTAzNTY3NjAxOTk2YTE3NDMyMzgyMWY2Y2QwOGRjZDQ1MDdiY2VlMiIsCiAgICAgICJtZXRhZGF0YSIgOiB7CiAgICAgICAgIm1vZGVsIiA6ICJzbGltIgogICAgICB9CiAgICB9CiAgfQp9";
@@ -23,8 +24,10 @@ public class TabInfo {
             "10_PERKLIST_TOP",
             "11_PERKLIST",
             "20_WAVEINFO_TOP",
-            "21_WAVEINFO"
+            "21_WAVEINFO_CURRENTWAVE",
+            "22_WAVEINFO"
     };
+    public static int TAB_HEIGHT = 14;
     public TabInfo()
     {
         InitOrderTeam();
@@ -48,6 +51,11 @@ public class TabInfo {
         board.getTeam("02_PLAYERLIST_DOWN").suffix(Component.text(" DOWN").color(NamedTextColor.RED));
         board.getTeam("03_PLAYERLIST_DEAD").color(NamedTextColor.DARK_RED);
         board.getTeam("03_PLAYERLIST_DEAD").suffix(Component.text(" DEAD").color(NamedTextColor.DARK_RED));
+        board.getTeam("21_WAVEINFO_CURRENTWAVE").suffix(Component.text(": 0"));
+        board.getTeam("04_PLAYERLIST_PLACEHOLDER").addEntry("　　　　　　　　　　　　　　　　");
+        board.getTeam("11_PERKLIST").addEntry("　　　　　　　　　　　　　　　");
+        board.getTeam("21_WAVEINFO_CURRENTWAVE").addEntry("Current Wave");
+        board.getTeam("22_WAVEINFO").addEntry("　　　　　　　　　　　　　");
 
     }
 }

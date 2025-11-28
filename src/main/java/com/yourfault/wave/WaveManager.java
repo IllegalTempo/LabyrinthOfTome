@@ -13,6 +13,7 @@ import java.util.UUID;
 
 import com.yourfault.Enemy.EnemyHealthDisplay;
 import com.yourfault.Enemy.mob.LaserZombieEnemy;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -101,6 +102,7 @@ public class WaveManager {
         waveInProgress = true;
         nextWaveScheduled = false;
         currentWave++;
+        Bukkit.getScoreboardManager().getMainScoreboard().getTeam("21_WAVEINFO_CURRENTWAVE").suffix(Component.text(": " + currentWave));
         activeWaveEnemyIds.clear();
         activeWaveEnemies.clear();
         lastSpawnedEnemies.clear();

@@ -3,6 +3,7 @@ package com.yourfault.map;
 import org.bukkit.Material;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
@@ -22,21 +23,44 @@ public enum MapTheme {
             0.18,
             List.of(
                     decoration(Material.DIRT_PATH, 0),
-                    decoration(Material.FERN, 0.5),
-                    decoration(Material.FLOWERING_AZALEA, 0.7)
+                    decoration(Material.FERN, 0.2),
+                    decoration(Material.FLOWERING_AZALEA, 0.15)
             ),
             TerrainProfile.DEFAULT,
             true,
             false,
             true,
-            true,
+            false,
             Material.GLASS,
             true,
             roadMaterials(Material.MOSSY_COBBLESTONE, Material.COARSE_DIRT, Material.DIRT_PATH),
             StructureSettings.ofTemplates(
-                    StructureTemplate.template("structures/watchtower.nbt", 1),
+                    StructureTemplate.template("structures/watchtower.nbt", 10),
                     StructureTemplate.template("structures/treeModel/oaktree_6_7_5.nbt", 10),
-                    StructureTemplate.template("structures/treeModel/oaktree_12_13_11.nbt", 10)
+                    StructureTemplate.template("structures/treeModel/oaktree_12_13_11.nbt", 10),
+                    StructureTemplate.template("structures/decoration/well.nbt", 10),
+                    StructureTemplate.template("structures/decoration/smallshop.nbt", 10)
+            ),
+            true,
+            List.of(
+                    StructureTemplate.template("structures/lampPost/light1.nbt", 64)
+                            .withFootprintRadius(2)
+                            .withEstimatedHeight(7)
+                            .withRotations(
+                                    StructureTemplate.Rotation.NONE,
+                                    StructureTemplate.Rotation.CLOCKWISE_90,
+                                    StructureTemplate.Rotation.CLOCKWISE_180,
+                                    StructureTemplate.Rotation.COUNTERCLOCKWISE_90
+                            ),
+                    StructureTemplate.template("structures/lampPost/light2.nbt", 64)
+                            .withFootprintRadius(2)
+                            .withEstimatedHeight(7)
+                            .withRotations(
+                                    StructureTemplate.Rotation.NONE,
+                                    StructureTemplate.Rotation.CLOCKWISE_90,
+                                    StructureTemplate.Rotation.CLOCKWISE_180,
+                                    StructureTemplate.Rotation.COUNTERCLOCKWISE_90
+                            )
             )
     ),
     NETHER(
@@ -59,11 +83,23 @@ public enum MapTheme {
             true,
             false,
             Material.BLACK_STAINED_GLASS,
-            false,
+            true,
             roadMaterials(Material.POLISHED_BASALT, Material.BLACKSTONE, Material.CRIMSON_NYLIUM),
             StructureSettings.ofTemplates(
                     StructureTemplate.template("structures/watchtower.nbt", 2),
                     StructureTemplate.template("structures/treeModel/wintertree.nbt", 2)
+            ),
+            true,
+            List.of(
+                    StructureTemplate.template("structures/lampPost/light3nether.nbt", 64)
+                            .withFootprintRadius(2)
+                            .withEstimatedHeight(7)
+                            .withRotations(
+                                    StructureTemplate.Rotation.NONE,
+                                    StructureTemplate.Rotation.CLOCKWISE_90,
+                                    StructureTemplate.Rotation.CLOCKWISE_180,
+                                    StructureTemplate.Rotation.COUNTERCLOCKWISE_90
+                            )
             )
     ),
     END(
@@ -90,7 +126,9 @@ public enum MapTheme {
             StructureSettings.ofTemplates(
                     StructureTemplate.template("structures/watchtower.nbt", 3),
                     StructureTemplate.template("structures/treeModel/wintertree.nbt", 5)
-            )
+            ),
+            false,
+            List.of()
     ),
     DESERT(
             Material.SAND,
@@ -114,7 +152,9 @@ public enum MapTheme {
             Material.GLASS,
             true,
             roadMaterials(Material.SMOOTH_SANDSTONE, Material.CUT_SANDSTONE, Material.SANDSTONE),
-            StructureSettings.template("structures/watchtower.nbt")
+            StructureSettings.template("structures/watchtower.nbt"),
+            false,
+            List.of()
     ),
     MOUNTAINS(
             Material.STONE,
@@ -138,7 +178,9 @@ public enum MapTheme {
             Material.GLASS,
             true,
             roadMaterials(Material.COBBLESTONE, Material.COBBLED_DEEPSLATE, Material.POLISHED_ANDESITE),
-            StructureSettings.template("structures/watchtower.nbt")
+            StructureSettings.template("structures/watchtower.nbt"),
+            false,
+            List.of()
     ),
     GLACIER(
             Material.SNOW_BLOCK,
@@ -162,7 +204,9 @@ public enum MapTheme {
             Material.BLUE_STAINED_GLASS,
             true,
             roadMaterials(Material.PACKED_ICE, Material.BLUE_ICE, Material.SNOW_BLOCK),
-            StructureSettings.template("structures/watchtower.nbt")
+            StructureSettings.template("structures/watchtower.nbt"),
+            false,
+            List.of()
     ),
     TROPICAL_RAINFOREST(
             Material.GRASS_BLOCK,
@@ -186,7 +230,9 @@ public enum MapTheme {
             Material.JUNGLE_LEAVES,
             true,
             roadMaterials(Material.MOSSY_STONE_BRICKS, Material.MOSS_BLOCK, Material.JUNGLE_PLANKS),
-            StructureSettings.template("structures/watchtower.nbt")
+            StructureSettings.template("structures/watchtower.nbt"),
+            false,
+            List.of()
     ),
     SAVANNA(
             Material.GRASS_BLOCK,
@@ -210,7 +256,9 @@ public enum MapTheme {
             Material.GLASS,
             true,
             roadMaterials(Material.CUT_SANDSTONE, Material.SMOOTH_SANDSTONE, Material.TERRACOTTA),
-            StructureSettings.template("structures/watchtower.nbt")
+            StructureSettings.template("structures/watchtower.nbt"),
+            false,
+            List.of()
     ),
     WETLANDS(
             Material.MUD,
@@ -234,7 +282,9 @@ public enum MapTheme {
             Material.GLASS,
             true,
             roadMaterials(Material.MUD_BRICKS, Material.MUD, Material.ROOTED_DIRT),
-            StructureSettings.template("structures/watchtower.nbt")
+            StructureSettings.template("structures/watchtower.nbt"),
+            false,
+            List.of()
     ),
     REAL_MOUNTAIN(
             Material.STONE,
@@ -258,7 +308,9 @@ public enum MapTheme {
             Material.PACKED_ICE,
             true,
             roadMaterials(Material.POLISHED_DEEPSLATE, Material.COBBLED_DEEPSLATE, Material.STONE),
-            StructureSettings.template("structures/watchtower.nbt")
+            StructureSettings.template("structures/watchtower.nbt"),
+            false,
+            List.of()
     );
 
 
@@ -280,6 +332,8 @@ public enum MapTheme {
     private final boolean roadPathsEnabled;
     private final List<Material> roadMaterials;
     private final StructureSettings structureSettings;
+    private final boolean lampPostsEnabled;
+    private final List<StructureTemplate> lampPostTemplates;
 
     MapTheme(Material topMaterial,
              Material fillerMaterial,
@@ -298,7 +352,9 @@ public enum MapTheme {
              Material topCoverMaterial,
              boolean roadPathsEnabled,
              List<Material> roadMaterials,
-             StructureSettings structureSettings) {
+             StructureSettings structureSettings,
+             boolean lampPostsEnabled,
+             List<StructureTemplate> lampPostTemplates) {
         this.topMaterial = topMaterial;
         this.fillerMaterial = fillerMaterial;
         this.borderMaterial = borderMaterial;
@@ -317,6 +373,8 @@ public enum MapTheme {
         this.roadPathsEnabled = roadPathsEnabled;
         this.roadMaterials = roadMaterials == null ? List.of() : List.copyOf(roadMaterials);
         this.structureSettings = structureSettings == null ? StructureSettings.disabled() : structureSettings;
+        this.lampPostsEnabled = lampPostsEnabled;
+        this.lampPostTemplates = lampPostTemplates == null ? List.of() : List.copyOf(lampPostTemplates);
     }
 
     public Material getTopMaterial() {
@@ -385,6 +443,14 @@ public enum MapTheme {
 
     public StructureSettings getStructureSettings() {
         return structureSettings;
+    }
+
+    public boolean lampPostsEnabled() {
+        return lampPostsEnabled && !lampPostTemplates.isEmpty();
+    }
+
+    public List<StructureTemplate> getLampPostTemplates() {
+        return lampPostTemplates;
     }
 
     public Material pickRandomDecoration(Random random) {
@@ -488,47 +554,59 @@ public enum MapTheme {
         private final int estimatedHeight;
         private final double weight;
         private final int maxPlacements;
+        private final EnumSet<Rotation> rotations;
+        private final Rotation[] rotationPool;
 
         private StructureTemplate(String resourcePath,
                                   boolean includeEntities,
                                   int fallbackFootprintRadius,
                                   int estimatedHeight,
                                   double weight,
-                                  int maxPlacements) {
+                                  int maxPlacements,
+                                  EnumSet<Rotation> rotations) {
             this.resourcePath = resourcePath;
             this.includeEntities = includeEntities;
             this.fallbackFootprintRadius = Math.max(1, fallbackFootprintRadius);
             this.estimatedHeight = Math.max(1, estimatedHeight);
             this.weight = weight <= 0 ? 1.0 : weight;
             this.maxPlacements = Math.max(0, maxPlacements);
+            EnumSet<Rotation> normalized = rotations == null || rotations.isEmpty()
+                    ? EnumSet.of(Rotation.NONE)
+                    : EnumSet.copyOf(rotations);
+            this.rotations = normalized;
+            this.rotationPool = normalized.toArray(new Rotation[0]);
         }
 
         public static StructureTemplate template(String resourcePath) {
-            return new StructureTemplate(resourcePath, false, 4, 24, 1.0, 1);
+            return new StructureTemplate(resourcePath, false, 4, 24, 1.0, 1, EnumSet.of(Rotation.NONE));
         }
 
         public static StructureTemplate template(String resourcePath, int maxPlacements) {
-            return new StructureTemplate(resourcePath, false, 4, 24, 1.0, maxPlacements);
+            return new StructureTemplate(resourcePath, false, 4, 24, 1.0, maxPlacements, EnumSet.of(Rotation.NONE));
         }
 
         public StructureTemplate withIncludeEntities(boolean includeEntities) {
-            return new StructureTemplate(resourcePath, includeEntities, fallbackFootprintRadius, estimatedHeight, weight, maxPlacements);
+            return new StructureTemplate(resourcePath, includeEntities, fallbackFootprintRadius, estimatedHeight, weight, maxPlacements, rotations);
         }
 
         public StructureTemplate withFootprintRadius(int radius) {
-            return new StructureTemplate(resourcePath, includeEntities, Math.max(1, radius), estimatedHeight, weight, maxPlacements);
+            return new StructureTemplate(resourcePath, includeEntities, Math.max(1, radius), estimatedHeight, weight, maxPlacements, rotations);
         }
 
         public StructureTemplate withEstimatedHeight(int height) {
-            return new StructureTemplate(resourcePath, includeEntities, fallbackFootprintRadius, Math.max(1, height), weight, maxPlacements);
+            return new StructureTemplate(resourcePath, includeEntities, fallbackFootprintRadius, Math.max(1, height), weight, maxPlacements, rotations);
         }
 
         public StructureTemplate withWeight(double weight) {
-            return new StructureTemplate(resourcePath, includeEntities, fallbackFootprintRadius, estimatedHeight, weight, maxPlacements);
+            return new StructureTemplate(resourcePath, includeEntities, fallbackFootprintRadius, estimatedHeight, weight, maxPlacements, rotations);
         }
 
         public StructureTemplate withMaxPlacements(int maxPlacements) {
-            return new StructureTemplate(resourcePath, includeEntities, fallbackFootprintRadius, estimatedHeight, weight, maxPlacements);
+            return new StructureTemplate(resourcePath, includeEntities, fallbackFootprintRadius, estimatedHeight, weight, maxPlacements, rotations);
+        }
+
+        public StructureTemplate withRotations(Rotation... rotations) {
+            return new StructureTemplate(resourcePath, includeEntities, fallbackFootprintRadius, estimatedHeight, weight, maxPlacements, normalizeRotations(rotations));
         }
 
         public String resourcePath() {
@@ -553,6 +631,40 @@ public enum MapTheme {
 
         public int maxPlacements() {
             return maxPlacements;
+        }
+
+        public EnumSet<Rotation> rotations() {
+            return EnumSet.copyOf(rotations);
+        }
+
+        public Rotation pickRotation(Random random) {
+            if (rotationPool.length == 0) {
+                return Rotation.NONE;
+            }
+            if (rotationPool.length == 1 || random == null) {
+                return rotationPool[0];
+            }
+            return rotationPool[random.nextInt(rotationPool.length)];
+        }
+
+        private static EnumSet<Rotation> normalizeRotations(Rotation... candidates) {
+            if (candidates == null || candidates.length == 0) {
+                return EnumSet.of(Rotation.NONE);
+            }
+            EnumSet<Rotation> set = EnumSet.noneOf(Rotation.class);
+            for (Rotation candidate : candidates) {
+                if (candidate != null) {
+                    set.add(candidate);
+                }
+            }
+            return set.isEmpty() ? EnumSet.of(Rotation.NONE) : set;
+        }
+
+        public enum Rotation {
+            NONE,
+            CLOCKWISE_90,
+            CLOCKWISE_180,
+            COUNTERCLOCKWISE_90
         }
     }
 

@@ -40,7 +40,7 @@ public class MapManager {
     private static final int GENERATION_SLICE_INTERVAL_TICKS = 10; // 0.5 seconds
     private static final int GENERATION_COLUMNS_PER_SLICE = 256;
     private static final int CLEAR_SLICE_INTERVAL_TICKS = 10;
-    private static final int CLEAR_COLUMNS_PER_SLICE = 1024;
+    private static final int CLEAR_COLUMNS_PER_SLICE = 512;
     private static final int CLEAR_RADIUS_PADDING = 6;
     private static final double MIN_SPAWN_MARKER_SPACING = 6.0;
     private static final int FIXED_SPAWN_MARKER_COUNT = 9;
@@ -378,6 +378,209 @@ public class MapManager {
         }
     }
 
+    private TemplateResolved resolveTemplate(MapTheme theme, MapTheme.StructureTemplate template) {
+        return resolveTemplate(theme, template, "structure");
+    }
+
+    private TemplateResolved resolveTemplate(MapTheme theme,
+                                             MapTheme.StructureTemplate template,
+                                             String usageLabel) {
+        if (template == null) {
+            return null;
+        }
+        String resourcePath = template.resourcePath();
+        if (resourcePath == null || resourcePath.isBlank()) {
+            plugin.getLogger().log(Level.WARNING,
+                    "Structure template path is not set for theme {0} ({1})",
+                    new Object[]{theme.name(), usageLabel});
+            return null;
+        }
+        if (!structureHelper.hasStructure(resourcePath)) {
+            plugin.getLogger().log(Level.WARNING,
+                    "Structure resource {0} could not be loaded for theme {1} ({2}); skipping placement.",
+                    new Object[]{resourcePath, theme.name(), usageLabel});
+            return null;
+        }
+        BlockVector templateSize = structureHelper.getStructureSize(resourcePath);
+        int footprintRadius = structureHelper.estimateFootprintRadius(templateSize, template.fallbackFootprintRadius());
+        int structureHeight = templateSize != null ? templateSize.getBlockY() : template.estimatedHeight();
+        return new TemplateResolved(template, resourcePath, footprintRadius, structureHeight);
+    }
+
+    private boolean placeResolvedStructure(TemplateResolved resolved, int x, int z, int surfaceY) {
+        if (resolved == null || activeWorld == null) {
+            return false;
+        }
+        MapTheme.StructureTemplate.Rotation rotation = resolved.template().pickRotation(random);
+        boolean placedStructure = structureHelper.placeStructure(
+                resolved.resourcePath(),
+                activeWorld,
+                x,
+                surfaceY + 1,
+                z,
+                random,
+                resolved.template().includeEntities(),
+                rotation
+        );
+        if (!placedStructure) {
+            return false;
+        }
+        markStructureFootprint(x, z, resolved.footprintRadius());
+        regionMinY = Math.min(regionMinY, surfaceY - 2);
+        regionMaxY = Math.max(regionMaxY, surfaceY + 1 + resolved.structureHeight() + 2);
+        return true;
+    }
+
+    private void placeRoadsideStructures(MapTheme theme, RoadPath roadPath, int radius) {
+        if (activeWorld == null || activeCenter == null) {
+            return;
+        }
+        if (roadPath == null || roadPath.isEmpty()) {
+            return;
+        }
+        if (!theme.lampPostsEnabled()) {
+            return;
+        }
+        List<MapTheme.StructureTemplate> lampTemplates = theme.getLampPostTemplates();
+        if (lampTemplates == null || lampTemplates.isEmpty()) {
+            return;
+        }
+        List<TemplateResolved> resolvedTemplates = new ArrayList<>();
+        for (MapTheme.StructureTemplate template : lampTemplates) {
+            TemplateResolved resolved = resolveTemplate(theme, template, "road-side structure");
+            if (resolved != null) {
+                resolvedTemplates.add(resolved);
+            }
+        }
+        if (resolvedTemplates.isEmpty()) {
+            return;
+        }
+        double pathLength = Math.max(0.0, roadPath.length());
+        if (pathLength <= 0.01) {
+            return;
+        }
+        double spacing = Math.max(10.0, Math.max(6.0, lastRoadHalfWidth * 4.0));
+        int slots = Math.max(1, (int) Math.round(pathLength / spacing));
+        Map<MapTheme.StructureTemplate, Integer> usageCounts = new HashMap<>();
+        List<Location> placedStructures = new ArrayList<>();
+        for (int i = 0; i < slots; i++) {
+            double offset = random.nextDouble() * (spacing * 0.5);
+            double sampleDistance = Math.min(pathLength, i * spacing + offset);
+            placeLampPairAlongRoad(roadPath, resolvedTemplates, usageCounts, placedStructures, radius, sampleDistance);
+        }
+    }
+
+    private void placeLampPairAlongRoad(RoadPath roadPath,
+                                        List<TemplateResolved> templates,
+                                        Map<MapTheme.StructureTemplate, Integer> usageCounts,
+                                        List<Location> placedStructures,
+                                        int radius,
+                                        double sampleDistance) {
+        if (templates.isEmpty()) {
+            return;
+        }
+        RoadPoint anchor = roadPath.sampleAtDistance(sampleDistance);
+        if (anchor == null) {
+            return;
+        }
+        double aheadDistance = Math.min(roadPath.length(), sampleDistance + 1.4);
+        double behindDistance = Math.max(0.0, sampleDistance - 1.4);
+        RoadPoint ahead = roadPath.sampleAtDistance(aheadDistance);
+        RoadPoint behind = roadPath.sampleAtDistance(behindDistance);
+        if (ahead == null || behind == null) {
+            return;
+        }
+        double dirX = ahead.x() - behind.x();
+        double dirZ = ahead.z() - behind.z();
+        double length = Math.hypot(dirX, dirZ);
+        if (length < 0.0001) {
+            return;
+        }
+        dirX /= length;
+        dirZ /= length;
+        double perpX = -dirZ;
+        double perpZ = dirX;
+        double offset = Math.max(3.0, lastRoadHalfWidth + 2.5);
+        double[] sides = {1.0, -1.0};
+        for (double side : sides) {
+            int blockX = (int) Math.round(anchor.x() + perpX * offset * side);
+            int blockZ = (int) Math.round(anchor.z() + perpZ * offset * side);
+            TemplateResolved resolved = templates.get(random.nextInt(templates.size()));
+            MapTheme.StructureTemplate template = resolved.template();
+            int maxPlacements = Math.max(0, template.maxPlacements());
+            if (maxPlacements > 0 && usageCounts.getOrDefault(template, 0) >= maxPlacements) {
+                continue;
+            }
+            Location placed = tryPlaceRoadStructure(resolved, blockX, blockZ, radius, placedStructures);
+            if (placed != null) {
+                usageCounts.merge(template, 1, Integer::sum);
+                placedStructures.add(placed);
+            }
+        }
+    }
+
+    private Location tryPlaceRoadStructure(TemplateResolved resolved,
+                                           int blockX,
+                                           int blockZ,
+                                           int radius,
+                                           List<Location> placedStructures) {
+        if (resolved == null || activeCenter == null) {
+            return null;
+        }
+        int effectiveRadius = Math.max(2, radius - 2);
+        if (!withinArenaRadius(blockX, blockZ, effectiveRadius)) {
+            return null;
+        }
+        if (isRoadTile(blockX, blockZ) || isStructureBlocked(blockX, blockZ)) {
+            return null;
+        }
+        Integer surfaceY = surfaceHeights.get(columnKey(blockX, blockZ));
+        if (surfaceY == null) {
+            surfaceY = findNearestSurfaceY(blockX, blockZ, activeCenter.getBlockY());
+        }
+        if (surfaceY == null) {
+            return null;
+        }
+        double minSpacing = Math.max(6.0, resolved.footprintRadius() * 2.0 + lastRoadHalfWidth);
+        if (!isRoadStructureFarEnough(placedStructures, blockX + 0.5, blockZ + 0.5, minSpacing)) {
+            return null;
+        }
+        if (!canPlaceStructure(blockX, blockZ, surfaceY, resolved.footprintRadius())) {
+            return null;
+        }
+        if (!placeResolvedStructure(resolved, blockX, blockZ, surfaceY)) {
+            return null;
+        }
+        return new Location(activeWorld, blockX + 0.5, surfaceY + 1, blockZ + 0.5);
+    }
+
+    private boolean withinArenaRadius(int x, int z, int radius) {
+        if (activeCenter == null || radius <= 0) {
+            return false;
+        }
+        int dx = x - activeCenter.getBlockX();
+        int dz = z - activeCenter.getBlockZ();
+        return (dx * dx) + (dz * dz) <= radius * radius;
+    }
+
+    private boolean isRoadStructureFarEnough(List<Location> placed,
+                                             double candidateX,
+                                             double candidateZ,
+                                             double minDistance) {
+        double minSquared = minDistance * minDistance;
+        for (Location location : placed) {
+            if (location.getWorld() != activeWorld) {
+                continue;
+            }
+            double dx = location.getX() - candidateX;
+            double dz = location.getZ() - candidateZ;
+            if ((dx * dx) + (dz * dz) < minSquared) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private void placeSpawnMarkers(int playerCount, RoadPath roadPath, int radius) {
         if (activeWorld == null || activeCenter == null) {
             return;
@@ -657,28 +860,18 @@ public class MapManager {
         int safeRadiusSquared = (radius - 6) * (radius - 6);
 
         for (MapTheme.StructureTemplate template : structureSettings.templates()) {
+            TemplateResolved resolved = resolveTemplate(theme, template);
+            if (resolved == null) {
+                continue;
+            }
             int maxPlacements = Math.max(1, template.maxPlacements());
             int desiredPlacements = Math.max(1, maxPlacements == 1 ? 1 : 1 + random.nextInt(maxPlacements));
-            double minSpacing = Math.max(8.0, template.fallbackFootprintRadius() * 1.5);
+            double minSpacing = Math.max(8.0, resolved.footprintRadius() * 1.5);
 
             List<Location> placed = new ArrayList<>(desiredPlacements);
             int attempts = Math.max(desiredPlacements * 18, 24);
 
             while (placed.size() < desiredPlacements && attempts-- > 0) {
-                String resourcePath = template.resourcePath();
-                if (resourcePath == null || resourcePath.isBlank()) {
-                    plugin.getLogger().log(Level.WARNING, "Structure template path is not set for theme {0}", theme.name());
-                    break;
-                }
-                if (!structureHelper.hasStructure(resourcePath)) {
-                    plugin.getLogger().log(Level.WARNING, "Structure resource {0} could not be loaded; skipping placement.", resourcePath);
-                    break;
-                }
-
-                BlockVector templateSize = structureHelper.getStructureSize(resourcePath);
-                int footprintRadius = structureHelper.estimateFootprintRadius(templateSize, template.fallbackFootprintRadius());
-                int structureHeight = templateSize != null ? templateSize.getBlockY() : template.estimatedHeight();
-
                 double distance = radius * (0.35 + random.nextDouble() * 0.4);
                 double angle = random.nextDouble() * Math.PI * 2;
                 int x = activeCenter.getBlockX() + (int) Math.round(distance * Math.cos(angle));
@@ -701,28 +894,14 @@ public class MapManager {
                 if (surfaceY + 24 >= activeWorld.getMaxHeight()) {
                     continue;
                 }
-                if (!canPlaceStructure(x, z, surfaceY, footprintRadius)) {
+                if (!canPlaceStructure(x, z, surfaceY, resolved.footprintRadius())) {
                     continue;
                 }
-
-                boolean placedStructure = structureHelper.placeStructure(
-                        resourcePath,
-                        activeWorld,
-                        x,
-                        surfaceY + 1,
-                        z,
-                        random,
-                        template.includeEntities()
-                );
-                if (!placedStructure) {
+                if (!placeResolvedStructure(resolved, x, z, surfaceY)) {
                     continue;
                 }
-
-                markStructureFootprint(x, z, footprintRadius);
 
                 placed.add(new Location(activeWorld, x + 0.5, surfaceY, z + 0.5));
-                regionMinY = Math.min(regionMinY, surfaceY - 2);
-                regionMaxY = Math.max(regionMaxY, surfaceY + 1 + structureHeight + 2);
             }
         }
     }
@@ -1368,6 +1547,7 @@ public class MapManager {
             buildBorderWall(theme, radius, baseY);
             buildContainmentRidge(theme, radius, baseY);
             RoadPath roadPath = buildRoadNetwork(theme, radius);
+            placeRoadsideStructures(theme, roadPath, radius);
             buildTopCover(theme, radius, baseY);
             placePools(theme, radius);
             placeStructures(theme, radius);
@@ -1392,6 +1572,12 @@ public class MapManager {
             lastRadius = 0;
             error.accept("Failed to generate map. Check server logs.");
         }
+    }
+
+    private record TemplateResolved(MapTheme.StructureTemplate template,
+                                    String resourcePath,
+                                    int footprintRadius,
+                                    int structureHeight) {
     }
 
     private record ColumnWork(int x, int z, double normalizedDistance, boolean edge) {

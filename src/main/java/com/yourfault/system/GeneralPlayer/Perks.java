@@ -66,8 +66,11 @@ public class Perks {
         }
         bukkitPlayer.getInventory().addItem(indicator.clone());
     }
-    public boolean addPerk(PerkType perk) {
-        return perks.add(new PerkObject(perk));
+    public boolean addPerk(PerkType perk)
+    {
+        Boolean suc = perks.add(new PerkObject(perk));;
+        gamePlayer.PLAYER_TAB.updatePerkTabDisplay();
+        return suc;
     }
     public boolean removePerk(PerkType perk) {
         PerkObject toRemove = null;
