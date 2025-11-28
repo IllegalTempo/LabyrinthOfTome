@@ -35,7 +35,7 @@ public enum MapTheme {
             true,
             roadMaterials(Material.MOSSY_COBBLESTONE, Material.COARSE_DIRT, Material.DIRT_PATH),
             StructureSettings.ofTemplates(
-                    StructureTemplate.template("structures/watchtower.nbt", 10),
+                    StructureTemplate.template("structures/decoration/watchtower.nbt", 10),
                     StructureTemplate.template("structures/treeModel/oaktree_6_7_5.nbt", 10),
                     StructureTemplate.template("structures/treeModel/oaktree_12_13_11.nbt", 10),
                     StructureTemplate.template("structures/decoration/well.nbt", 10),
@@ -86,7 +86,7 @@ public enum MapTheme {
             true,
             roadMaterials(Material.POLISHED_BASALT, Material.BLACKSTONE, Material.CRIMSON_NYLIUM),
             StructureSettings.ofTemplates(
-                    StructureTemplate.template("structures/watchtower.nbt", 2),
+                    StructureTemplate.template("structures/decoration/watchtower.nbt", 2),
                     StructureTemplate.template("structures/treeModel/wintertree.nbt", 2)
             ),
             true,
@@ -124,7 +124,7 @@ public enum MapTheme {
             true,
             roadMaterials(Material.OBSIDIAN, Material.PURPUR_BLOCK, Material.END_STONE_BRICKS),
             StructureSettings.ofTemplates(
-                    StructureTemplate.template("structures/watchtower.nbt", 3),
+                    StructureTemplate.template("structures/decoration/watchtower.nbt", 3),
                     StructureTemplate.template("structures/treeModel/wintertree.nbt", 5)
             ),
             false,
@@ -152,7 +152,7 @@ public enum MapTheme {
             Material.GLASS,
             true,
             roadMaterials(Material.SMOOTH_SANDSTONE, Material.CUT_SANDSTONE, Material.SANDSTONE),
-            StructureSettings.template("structures/watchtower.nbt"),
+            StructureSettings.template("structures/decoration/watchtower.nbt"),
             false,
             List.of()
     ),
@@ -178,7 +178,7 @@ public enum MapTheme {
             Material.GLASS,
             true,
             roadMaterials(Material.COBBLESTONE, Material.COBBLED_DEEPSLATE, Material.POLISHED_ANDESITE),
-            StructureSettings.template("structures/watchtower.nbt"),
+            StructureSettings.template("structures/decoration/watchtower.nbt"),
             false,
             List.of()
     ),
@@ -204,7 +204,7 @@ public enum MapTheme {
             Material.BLUE_STAINED_GLASS,
             true,
             roadMaterials(Material.PACKED_ICE, Material.BLUE_ICE, Material.SNOW_BLOCK),
-            StructureSettings.template("structures/watchtower.nbt"),
+            StructureSettings.template("structures/decoration/watchtower.nbt"),
             false,
             List.of()
     ),
@@ -230,7 +230,7 @@ public enum MapTheme {
             Material.JUNGLE_LEAVES,
             true,
             roadMaterials(Material.MOSSY_STONE_BRICKS, Material.MOSS_BLOCK, Material.JUNGLE_PLANKS),
-            StructureSettings.template("structures/watchtower.nbt"),
+            StructureSettings.template("structures/decoration/watchtower.nbt"),
             false,
             List.of()
     ),
@@ -256,7 +256,7 @@ public enum MapTheme {
             Material.GLASS,
             true,
             roadMaterials(Material.CUT_SANDSTONE, Material.SMOOTH_SANDSTONE, Material.TERRACOTTA),
-            StructureSettings.template("structures/watchtower.nbt"),
+            StructureSettings.template("structures/decoration/watchtower.nbt"),
             false,
             List.of()
     ),
@@ -282,7 +282,7 @@ public enum MapTheme {
             Material.GLASS,
             true,
             roadMaterials(Material.MUD_BRICKS, Material.MUD, Material.ROOTED_DIRT),
-            StructureSettings.template("structures/watchtower.nbt"),
+            StructureSettings.template("structures/decoration/watchtower.nbt"),
             false,
             List.of()
     ),
@@ -308,7 +308,7 @@ public enum MapTheme {
             Material.PACKED_ICE,
             true,
             roadMaterials(Material.POLISHED_DEEPSLATE, Material.COBBLED_DEEPSLATE, Material.STONE),
-            StructureSettings.template("structures/watchtower.nbt"),
+            StructureSettings.template("structures/decoration/watchtower.nbt"),
             false,
             List.of()
     );
