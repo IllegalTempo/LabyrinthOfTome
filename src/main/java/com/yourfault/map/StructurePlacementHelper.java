@@ -58,10 +58,13 @@ public final class StructurePlacementHelper {
                                   boolean includeEntities,
                                   MapTheme.StructureTemplate.Rotation rotationOption) {
         if (world == null) {
+            logger.log(Level.WARNING, "placeStructure called with null world for resource {0}", resourcePath);
             return false;
         }
+        logger.log(Level.INFO, "placeStructure start: resource={0} at {1},{2},{3}", new Object[]{resourcePath, centerX, baseY, centerZ});
         Optional<LoadedStructure> template = load(resourcePath);
         if (template.isEmpty()) {
+            logger.log(Level.WARNING, "Template not found: {0}", resourcePath);
             return false;
         }
         BlockVector size = template.get().size();
@@ -70,15 +73,63 @@ public final class StructurePlacementHelper {
         int offsetX = rotatedSize.getBlockX() / 2;
         int offsetZ = rotatedSize.getBlockZ() / 2;
         Location origin = new Location(world, centerX - offsetX, baseY, centerZ - offsetZ);
-        template.get().structure().place(
-                origin,
-                includeEntities,
-                rotation,
-                Mirror.NONE,
-                0,
-                1.0f,
-                random
-        );
+
+        // Snapshot non-air blocks inside the structure footprint so AIR in the template doesn't erase them.
+        Map<String, org.bukkit.Material> preExisting = new HashMap<>();
+        int ox = origin.getBlockX();
+        int oy = origin.getBlockY();
+        int oz = origin.getBlockZ();
+        int rx = Math.max(1, rotatedSize.getBlockX());
+        int ry = Math.max(1, rotatedSize.getBlockY());
+        int rz = Math.max(1, rotatedSize.getBlockZ());
+        for (int dx = 0; dx < rx; dx++) {
+            for (int dy = 0; dy < ry; dy++) {
+                int wy = oy + dy;
+                if (wy < world.getMinHeight() || wy > world.getMaxHeight()) continue;
+                for (int dz = 0; dz < rz; dz++) {
+                    int wx = ox + dx;
+                    int wz = oz + dz;
+                    org.bukkit.block.Block b = world.getBlockAt(wx, wy, wz);
+                    if (b != null && !b.isEmpty() && b.getType() != org.bukkit.Material.AIR) {
+                        preExisting.put(wx + ":" + wy + ":" + wz, b.getType());
+                    }
+                }
+            }
+        }
+        logger.log(Level.INFO, "placeStructure: origin={0},{1},{2} rotatedSize={3}x{4}x{5} preExistingCount={6}",
+                new Object[]{ox, oy, oz, rx, ry, rz, preExisting.size()});
+
+        try {
+            template.get().structure().place(
+                    origin,
+                    includeEntities,
+                    rotation,
+                    Mirror.NONE,
+                    0,
+                    1.0f,
+                    random
+            );
+        } catch (Exception ex) {
+            logger.log(Level.WARNING, "structure.place threw for {0} at {1},{2},{3}: {4}", new Object[]{resourcePath, ox, oy, oz, ex.toString()});
+            return false;
+        }
+
+        // Restore any pre-existing non-air blocks that were replaced by AIR during placement
+        int restored = 0;
+        for (Map.Entry<String, org.bukkit.Material> e : preExisting.entrySet()) {
+            String[] parts = e.getKey().split(":");
+            int wx = Integer.parseInt(parts[0]);
+            int wy = Integer.parseInt(parts[1]);
+            int wz = Integer.parseInt(parts[2]);
+            if (wy < world.getMinHeight() || wy > world.getMaxHeight()) continue;
+            org.bukkit.block.Block after = world.getBlockAt(wx, wy, wz);
+            if (after != null && after.isEmpty()) {
+                after.setType(e.getValue(), false);
+                restored++;
+            }
+        }
+        logger.log(Level.INFO, "placeStructure finished: resource={0} restored={1}", new Object[]{resourcePath, restored});
+
         return true;
     }
 

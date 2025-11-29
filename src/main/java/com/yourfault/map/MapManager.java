@@ -1360,24 +1360,24 @@ public class MapManager {
 
         for (int dx = -floorRadius; dx <= floorRadius; dx++) {
             for (int dz = -floorRadius; dz <= floorRadius; dz++) {
+                int x = centerX + dx;
+                int z = centerZ + dz;
                 int distanceSquared = dx * dx + dz * dz;
                 if (distanceSquared <= innerRadiusSquared || distanceSquared > floorRadiusSquared) {
                     continue;
                 }
-                if(distanceSquared == floorRadiusSquared && random.nextBoolean())
-                {
-                    //todo place tree
+
+                // determine surfaceY (may be null) and try inner-surface fallback before placing trees
+                Integer surfaceY = surfaceHeights.get(columnKey(x, z));
+                if (surfaceY == null) {
+                    surfaceY = findNearestSurfaceY(x, z, baseY);
                 }
-                int x = centerX + dx;
-                int z = centerZ + dz;
 
                 int innerX = centerX + (int) Math.round(dx * (radius / (double) floorRadius));
                 int innerZ = centerZ + (int) Math.round(dz * (radius / (double) floorRadius));
                 Integer innerSurface = surfaceHeights.get(columnKey(innerX, innerZ));
-
-                Integer surfaceY = surfaceHeights.get(columnKey(x, z));
-                if (surfaceY == null) {
-                    surfaceY = findNearestSurfaceY(x, z, baseY);
+                if (innerSurface == null) {
+                    innerSurface = findNearestSurfaceY(innerX, innerZ, baseY);
                 }
                 if (innerSurface != null) {
                     if (surfaceY == null) {
@@ -1386,10 +1386,54 @@ public class MapManager {
                         surfaceY = Math.max(surfaceY, innerSurface);
                     }
                 }
+
+                // tree placement handled by dedicated angular sampling after wall construction
+
                 if (surfaceY == null) {
                     surfaceY = baseY;
                 }
                 buildBorderColumn(x, z, surfaceY, fillerMaterial, floorMaterial, wallMaterial, wallHeight);
+            }
+        }
+
+        // place border trees on an evenly spaced circle (angular sampling)
+        String treeResource = "structures/treeModel/bordertree.nbt";
+        if (structureHelper.hasStructure(treeResource)) {
+            int treeOffset = 1; // inward offset from floorRadius — smaller -> closer to wall
+            int treeRadius = Math.max(1, floorRadius - treeOffset);
+            int samples = Math.max(48, floorRadius * 8); // more samples -> denser ring
+            Set<Long> placedTreeKeys = new HashSet<>();
+            for (int i = 0; i < samples; i++) {
+                double angle = (Math.PI * 2 * i) / samples;
+                int tx = centerX + (int) Math.round(treeRadius * Math.cos(angle));
+                int tz = centerZ + (int) Math.round(treeRadius * Math.sin(angle));
+                long key = columnKey(tx, tz);
+                if (placedTreeKeys.contains(key)) {
+                    continue; // deduplicate multiple samples mapping to same block
+                }
+                if (reservedStructureColumns.contains(key) || roadColumns.contains(key) || mountainColumns.contains(key) || poolColumns.contains(key)) {
+                    continue;
+                }
+                Integer treeSurface = surfaceHeights.get(key);
+                if (treeSurface == null) {
+                    treeSurface = findNearestSurfaceY(tx, tz, baseY);
+                }
+                if (treeSurface == null) {
+                    continue;
+                }
+                try {
+                    boolean placed = structureHelper.placeStructure(treeResource, activeWorld, tx, treeSurface + 1, tz, random, false, null);
+                    plugin.getLogger().log(Level.INFO, "Border tree placement at {0},{1} result={2}", new Object[]{tx, tz, placed});
+                    if (placed) {
+                        BlockVector size = structureHelper.getStructureSize(treeResource);
+                        int footprint = structureHelper.estimateFootprintRadius(size, 3);
+                        markStructureFootprint(tx, tz, footprint);
+                        reservedStructureColumns.add(key);
+                        placedTreeKeys.add(key);
+                    }
+                } catch (Exception ex) {
+                    plugin.getLogger().log(Level.WARNING, "Failed to place border tree at {0},{1}: {2}", new Object[]{tx, tz, ex.getMessage()});
+                }
             }
         }
     }
