@@ -50,7 +50,7 @@ public class SummonNPC implements CommandExecutor {
                 throw new RuntimeException(e);
             }
             displaySkin.getTextures().setSkin(skinurl);
-            ResolvableProfile profile = (ResolvableProfile) displaySkin;
+            ResolvableProfile profile = ResolvableProfile.resolvableProfile((com.destroystokyo.paper.profile.PlayerProfile) displaySkin);
             mannequin.setProfile(profile);
             //mannequin.setPlayerProfile(displaySkin);
 

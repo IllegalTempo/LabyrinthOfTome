@@ -4,8 +4,17 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="18b9d33a-a1ab-4c7e-badb-df567bdbf954" name="Changes" comment="Restructured">
+    <list default="true" id="18b9d33a-a1ab-4c7e-badb-df567bdbf954" name="Changes" comment="Tab Formatted">
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/utils/ItemUtil.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/structures/decoration/ballista.nbt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/structures/decoration/cherrytower.nbt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/structures/decoration/farmcontainer.nbt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/structures/decoration/farmturbine.nbt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/structures/decoration/stable.nbt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/structures/lampPost/light5auto.nbt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/structures/treeModel/bordertree.nbt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/checksums/checksums.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/checksums/checksums.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/checksums/sha1-checksums.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/checksums/sha1-checksums.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/executionHistory/executionHistory.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/executionHistory/executionHistory.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/executionHistory/executionHistory.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/executionHistory/executionHistory.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/fileHashes/fileHashes.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/fileHashes/fileHashes.bin" afterDir="false" />
@@ -14,17 +23,39 @@
       <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/Perks.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/Perks.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/TabManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/TabManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/PlayerActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/PlayerActivity.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/TabInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/TabInfo.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/wave/WaveManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/wave/WaveManager.java" afterDir="false" />
-    </list>
-    <list id="ed4ece3f-9002-43c6-988a-0eb8110adc25" name="Changes by user" comment="">
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Commands/Debugs/GetCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Commands/Debugs/GetCommand.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Commands/Debugs/ReadyForNextWave.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Commands/Debugs/ReadyForNextWave.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Commands/Debugs/SummonNPC.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Commands/Debugs/SummonNPC.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Items/weapons.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Items/weapons.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/listener/PerkSelectionListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/listener/PerkSelectionListener.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/map/BossStructureSpawner.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/map/BossStructureSpawner.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/map/MapManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/map/MapManager.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/map/MapTheme.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/map/MapTheme.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/map/StructurePlacementHelper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/map/StructurePlacementHelper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/perks/PerkType.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/perks/PerkType.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/perks/QuickdrawPerk.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/perks/QuickdrawPerk.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/perks/SharpshooterPerk.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/perks/SharpshooterPerk.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/BleedoutManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/BleedoutManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/Enemy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/Enemy.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/Game.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/Game.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/GamePlayer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/GamePlayer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/Perks.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/Perks.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/TabManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/TabManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/PlayerActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/PlayerActivity.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/TabInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/TabInfo.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/test/LOTTestScenario.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/test/LOTTestScenario.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/wave/WaveEnemyInstance.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/wave/WaveEnemyInstance.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/wave/WaveManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/wave/WaveManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/Excalibur/Excalibur_Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/Excalibur/Excalibur_Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/Excalibur/Sword_Aura.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/Excalibur/Sword_Aura.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/General/Projectile.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/General/Projectile.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/WeaponType.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/WeaponType.java" afterDir="false" />
+    </list>
+    <list id="ed4ece3f-9002-43c6-988a-0eb8110adc25" name="Changes by user" comment="Changes by user">
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/map/BossStructureSpawner.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/map/BossStructureSpawner.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/map/MapManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/map/MapManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/map/MapTheme.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/map/MapTheme.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -113,6 +144,116 @@
     &quot;accountId&quot;: &quot;112ddd4e-714d-4256-9e6c-ae35ccb9cbbe&quot;
   }
 }</component>
+  <component name="LineStatusTrackerManager">
+    <file path="$PROJECT_DIR$/src/main/java/com/yourfault/map/BossStructureSpawner.java">
+      <ranges>
+        <range start1="11" end1="20" start2="11" end2="12" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="27" end1="28" start2="19" end2="21" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="169" end1="169" start2="162" end2="163" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="171" end1="172" start2="165" end2="166" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="174" end1="175" start2="168" end2="172" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+      </ranges>
+    </file>
+    <file path="$PROJECT_DIR$/src/main/java/com/yourfault/map/MapTheme.java">
+      <ranges>
+        <range start1="4" end1="9" start2="4" end2="5" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="22" end1="23" start2="18" end2="19" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="25" end1="27" start2="21" end2="23" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="29" end1="29" start2="25" end2="26" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="37" end1="38" start2="34" end2="35" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="40" end1="41" start2="37" end2="39" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="43" end1="43" start2="41" end2="42" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="80" end1="80" start2="79" end2="80" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="88" end1="89" start2="88" end2="89" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="91" end1="91" start2="91" end2="92" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="118" end1="118" start2="119" end2="120" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="126" end1="127" start2="128" end2="129" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="129" end1="129" start2="131" end2="132" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="147" end1="147" start2="150" end2="151" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="154" end1="155" start2="158" end2="160" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="173" end1="173" start2="178" end2="179" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="180" end1="181" start2="186" end2="188" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="199" end1="199" start2="206" end2="207" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="206" end1="207" start2="214" end2="216" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="225" end1="225" start2="234" end2="235" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="232" end1="233" start2="242" end2="244" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="251" end1="251" start2="262" end2="263" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="258" end1="259" start2="270" end2="272" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="277" end1="277" start2="290" end2="291" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="284" end1="285" start2="298" end2="300" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="303" end1="303" start2="318" end2="319" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="310" end1="311" start2="326" end2="328" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="326" end1="326" start2="343" end2="344" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="336" end1="336" start2="354" end2="355" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="347" end1="347" start2="366" end2="367" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="355" end1="355" start2="375" end2="376" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="367" end1="367" start2="388" end2="389" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="377" end1="377" start2="399" end2="400" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="415" end1="415" start2="438" end2="442" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="455" end1="455" start2="482" end2="486" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="731" end1="731" start2="762" end2="820" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+      </ranges>
+    </file>
+    <file path="$PROJECT_DIR$/src/main/java/com/yourfault/map/MapManager.java">
+      <ranges>
+        <range start1="2" end1="7" start2="2" end2="3" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="17" end1="25" start2="13" end2="14" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="27" end1="28" start2="16" end2="16" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="46" end1="46" start2="34" end2="36" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="52" end1="52" start2="42" end2="44" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="121" end1="121" start2="113" end2="115" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="229" end1="229" start2="223" end2="224" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="340" end1="340" start2="335" end2="338" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="409" end1="410" start2="407" end2="408" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="413" end1="413" start2="411" end2="412" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="428" end1="428" start2="427" end2="429" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="433" end1="433" start2="434" end2="522" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="468" end1="469" start2="557" end2="558" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="472" end1="473" start2="561" end2="563" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="513" end1="514" start2="603" end2="604" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="521" end1="522" start2="611" end2="613" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="550" end1="551" start2="641" end2="642" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="740" end1="740" start2="831" end2="832" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="763" end1="763" start2="855" end2="878" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="838" end1="839" start2="953" end2="956" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="840" end1="841" start2="957" end2="958" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="843" end1="844" start2="960" end2="962" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="899" end1="900" start2="1017" end2="1018" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="917" end1="918" start2="1035" end2="1039" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="940" end1="940" start2="1061" end2="1137" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="956" end1="957" start2="1153" end2="1157" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="959" end1="960" start2="1159" end2="1164" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="961" end1="962" start2="1165" end2="1166" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="989" end1="989" start2="1193" end2="1337" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="1018" end1="1018" start2="1366" end2="1370" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="1222" end1="1223" start2="1574" end2="1578" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="1227" end1="1227" start2="1582" end2="1584" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="1232" end1="1232" start2="1589" end2="1593" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="1239" end1="1242" start2="1600" end2="1607" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="1261" end1="1265" start2="1626" end2="1633" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="1269" end1="1271" start2="1637" end2="1640" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="1273" end1="1305" start2="1642" end2="1644" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="1309" end1="1312" start2="1648" end2="1657" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="1313" end1="1320" start2="1658" end2="1690" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="1327" end1="1329" start2="1697" end2="1698" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="1340" end1="1343" start2="1709" end2="1711" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="1351" end1="1358" start2="1719" end2="1723" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="1360" end1="1362" start2="1725" end2="1734" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="1364" end1="1367" start2="1736" end2="1784" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="1368" end1="1370" start2="1785" end2="1802" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="1375" end1="1376" start2="1807" end2="1808" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="1377" end1="1382" start2="1809" end2="1831" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="1488" end1="1488" start2="1937" end2="1939" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="1548" end1="1548" start2="1999" end2="2000" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="1568" end1="1568" start2="2020" end2="2028" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="1657" end1="1658" start2="2117" end2="2118" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="1659" end1="1660" start2="2119" end2="2119" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+      </ranges>
+    </file>
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
   <component name="ProjectColorInfo">{
   &quot;customColor&quot;: &quot;&quot;,
   &quot;associatedIndex&quot;: 0
@@ -122,30 +263,33 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Gradle.Build LabyrinthOfTome.executor": "Run",
-    "Gradle.Download Sources.executor": "Run",
-    "Gradle.LabyrinthOfTome [build].executor": "Run",
-    "Gradle.LabyrinthOfTome [clean].executor": "Run",
-    "Gradle.LabyrinthOfTome [init].executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "Remote JVM Debug.UpdateServerPLugin.executor": "Debug",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "git-widget-placeholder": "master",
-    "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "C:/ProjectFC/LabyrinthOfTome",
-    "project.structure.last.edited": "Project",
-    "project.structure.proportion": "0.15",
-    "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "reference.settingsdialog.project.gradle"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Gradle.Build LabyrinthOfTome.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.Download Sources.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.LabyrinthOfTome [build].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.LabyrinthOfTome [clean].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.LabyrinthOfTome [init].executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;Remote JVM Debug.UpdateServerPLugin.executor&quot;: &quot;Debug&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/ProjectFC/LabyrinthOfTome&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settingsdialog.project.gradle&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\ProjectFC\LabyrinthOfTome\src\main\resources\structures\lampPost" />
+      <recent name="C:\ProjectFC\LabyrinthOfTome\src\main\resources\structures\treeModel" />
+      <recent name="C:\ProjectFC\LabyrinthOfTome\src\main\resources\structures\decoration" />
       <recent name="C:\ProjectFC\LabyrinthOfTome\src\main\resources\structures\bossRoomModel" />
     </key>
   </component>
@@ -293,7 +437,15 @@
       <option name="project" value="LOCAL" />
       <updated>1764207972085</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="Tab Formatted">
+      <option name="closed" value="true" />
+      <created>1764296646568</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1764296646568</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -325,7 +477,8 @@
     <MESSAGE value="yml fix" />
     <MESSAGE value="strcutre path fix" />
     <MESSAGE value="Restructured" />
-    <option name="LAST_COMMIT_MESSAGE" value="Restructured" />
+    <MESSAGE value="Tab Formatted" />
+    <option name="LAST_COMMIT_MESSAGE" value="Tab Formatted" />
   </component>
   <component name="github-copilot-workspace">
     <instructionFileLocations>

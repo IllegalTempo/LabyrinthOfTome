@@ -11,11 +11,7 @@ import org.bukkit.util.BlockVector;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -29,9 +25,6 @@ public final class StructurePlacementHelper {
         this.plugin = Objects.requireNonNull(plugin, "plugin");
         this.logger = plugin.getLogger();
         this.structureManager = plugin.getServer().getStructureManager();
-        if (structureManager == null) {
-            logger.warning("Server does not expose a StructureManager; structure placement disabled.");
-        }
     }
 
     public boolean hasStructure(String resourcePath) {
@@ -82,7 +75,7 @@ public final class StructurePlacementHelper {
                 includeEntities,
                 rotation,
                 Mirror.NONE,
-                -1,
+                0,
                 1.0f,
                 random
         );

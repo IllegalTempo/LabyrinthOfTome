@@ -2,11 +2,7 @@ package com.yourfault.map;
 
 import org.bukkit.Material;
 
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Random;
+import java.util.*;
 
 /**
  * Defines the available biome-inspired themes for procedurally generated PvE arenas.
@@ -20,13 +16,14 @@ public enum MapTheme {
             0.07,
             3.5,
             3,
-            0.18,
+            0.01,
             List.of(
                     decoration(Material.DIRT_PATH, 0),
-                    decoration(Material.FERN, 0.2),
-                    decoration(Material.FLOWERING_AZALEA, 0.15)
+                    decoration(Material.FERN, 0.01),
+                    decoration(Material.FLOWERING_AZALEA, 0.01)
             ),
             TerrainProfile.DEFAULT,
+            PoolSettings.of(1.0, 1.2),
             true,
             false,
             true,
@@ -35,12 +32,14 @@ public enum MapTheme {
             true,
             roadMaterials(Material.MOSSY_COBBLESTONE, Material.COARSE_DIRT, Material.DIRT_PATH),
             StructureSettings.ofTemplates(
-                    StructureTemplate.template("structures/watchtower.nbt", 10),
+                    StructureTemplate.template("structures/decoration/watchtower.nbt", 10),
                     StructureTemplate.template("structures/treeModel/oaktree_6_7_5.nbt", 10),
                     StructureTemplate.template("structures/treeModel/oaktree_12_13_11.nbt", 10),
-                    StructureTemplate.template("structures/decoration/well.nbt", 10),
+                    StructureTemplate.template("structures/treeModel/willotree_9_10_10.nbt", 10),
+                    StructureTemplate.template("structures/treeModel/cherrytree_12_10_12.nbt", 10),
                     StructureTemplate.template("structures/decoration/smallshop.nbt", 10)
             ),
+            MountainSettings.of(3, 35),
             true,
             List.of(
                     StructureTemplate.template("structures/lampPost/light1.nbt", 64)
@@ -78,6 +77,7 @@ public enum MapTheme {
                     decoration(Material.CRIMSON_FUNGUS, 0.6)
             ),
             TerrainProfile.DEFAULT,
+            PoolSettings.of(0.7, 1.1),
             false,
             true,
             true,
@@ -86,9 +86,10 @@ public enum MapTheme {
             true,
             roadMaterials(Material.POLISHED_BASALT, Material.BLACKSTONE, Material.CRIMSON_NYLIUM),
             StructureSettings.ofTemplates(
-                    StructureTemplate.template("structures/watchtower.nbt", 2),
+                    StructureTemplate.template("structures/decoration/watchtower.nbt", 2),
                     StructureTemplate.template("structures/treeModel/wintertree.nbt", 2)
             ),
+            MountainSettings.disabled(),
             true,
             List.of(
                     StructureTemplate.template("structures/lampPost/light3nether.nbt", 64)
@@ -116,6 +117,7 @@ public enum MapTheme {
                     decoration(Material.PURPUR_PILLAR, 0.9)
             ),
             TerrainProfile.DEFAULT,
+            PoolSettings.of(0.4, 0.9),
             false,
             false,
             true,
@@ -124,9 +126,10 @@ public enum MapTheme {
             true,
             roadMaterials(Material.OBSIDIAN, Material.PURPUR_BLOCK, Material.END_STONE_BRICKS),
             StructureSettings.ofTemplates(
-                    StructureTemplate.template("structures/watchtower.nbt", 3),
+                    StructureTemplate.template("structures/decoration/watchtower.nbt", 3),
                     StructureTemplate.template("structures/treeModel/wintertree.nbt", 5)
             ),
+            MountainSettings.disabled(),
             false,
             List.of()
     ),
@@ -145,6 +148,7 @@ public enum MapTheme {
                     decoration(Material.DEAD_BUSH, 1.2)
             ),
             TerrainProfile.DEFAULT,
+            PoolSettings.of(0.6, 1.5),
             true,
             false,
             true,
@@ -152,7 +156,8 @@ public enum MapTheme {
             Material.GLASS,
             true,
             roadMaterials(Material.SMOOTH_SANDSTONE, Material.CUT_SANDSTONE, Material.SANDSTONE),
-            StructureSettings.template("structures/watchtower.nbt"),
+            StructureSettings.template("structures/decoration/watchtower.nbt"),
+            MountainSettings.disabled(),
             false,
             List.of()
     ),
@@ -171,6 +176,7 @@ public enum MapTheme {
                     decoration(Material.COBBLESTONE_STAIRS, 0.6)
             ),
             TerrainProfile.DEFAULT,
+            PoolSettings.of(0.8, 0.9),
             true,
             false,
             true,
@@ -178,7 +184,8 @@ public enum MapTheme {
             Material.GLASS,
             true,
             roadMaterials(Material.COBBLESTONE, Material.COBBLED_DEEPSLATE, Material.POLISHED_ANDESITE),
-            StructureSettings.template("structures/watchtower.nbt"),
+            StructureSettings.template("structures/decoration/watchtower.nbt"),
+            MountainSettings.of(3, 36),
             false,
             List.of()
     ),
@@ -197,6 +204,7 @@ public enum MapTheme {
                     decoration(Material.BLUE_ICE, 0.5)
             ),
             TerrainProfile.REAL_MOUNTAIN,
+            PoolSettings.of(0.9, 1.3),
             true,
             false,
             true,
@@ -204,7 +212,8 @@ public enum MapTheme {
             Material.BLUE_STAINED_GLASS,
             true,
             roadMaterials(Material.PACKED_ICE, Material.BLUE_ICE, Material.SNOW_BLOCK),
-            StructureSettings.template("structures/watchtower.nbt"),
+            StructureSettings.template("structures/decoration/watchtower.nbt"),
+            MountainSettings.of(2, 34),
             false,
             List.of()
     ),
@@ -223,6 +232,7 @@ public enum MapTheme {
                     decoration(Material.VINE, 0.6)
             ),
             TerrainProfile.DEFAULT,
+            PoolSettings.of(1.5, 1.8),
             true,
             false,
             true,
@@ -230,7 +240,8 @@ public enum MapTheme {
             Material.JUNGLE_LEAVES,
             true,
             roadMaterials(Material.MOSSY_STONE_BRICKS, Material.MOSS_BLOCK, Material.JUNGLE_PLANKS),
-            StructureSettings.template("structures/watchtower.nbt"),
+            StructureSettings.template("structures/decoration/watchtower.nbt"),
+            MountainSettings.disabled(),
             false,
             List.of()
     ),
@@ -249,6 +260,7 @@ public enum MapTheme {
                     decoration(Material.HAY_BLOCK, 0.6)
             ),
             TerrainProfile.DEFAULT,
+            PoolSettings.of(0.5, 1.0),
             true,
             false,
             true,
@@ -256,7 +268,8 @@ public enum MapTheme {
             Material.GLASS,
             true,
             roadMaterials(Material.CUT_SANDSTONE, Material.SMOOTH_SANDSTONE, Material.TERRACOTTA),
-            StructureSettings.template("structures/watchtower.nbt"),
+            StructureSettings.template("structures/decoration/watchtower.nbt"),
+            MountainSettings.disabled(),
             false,
             List.of()
     ),
@@ -275,6 +288,7 @@ public enum MapTheme {
                     decoration(Material.TALL_GRASS, 0.7)
             ),
             TerrainProfile.DEFAULT,
+            PoolSettings.of(1.8, 2.0),
             true,
             false,
             true,
@@ -282,7 +296,8 @@ public enum MapTheme {
             Material.GLASS,
             true,
             roadMaterials(Material.MUD_BRICKS, Material.MUD, Material.ROOTED_DIRT),
-            StructureSettings.template("structures/watchtower.nbt"),
+            StructureSettings.template("structures/decoration/watchtower.nbt"),
+            MountainSettings.disabled(),
             false,
             List.of()
     ),
@@ -301,6 +316,7 @@ public enum MapTheme {
                     decoration(Material.PACKED_ICE, 0.5)
             ),
             TerrainProfile.REAL_MOUNTAIN,
+            PoolSettings.of(0.7, 1.0),
             true,
             false,
             true,
@@ -308,7 +324,8 @@ public enum MapTheme {
             Material.PACKED_ICE,
             true,
             roadMaterials(Material.POLISHED_DEEPSLATE, Material.COBBLED_DEEPSLATE, Material.STONE),
-            StructureSettings.template("structures/watchtower.nbt"),
+            StructureSettings.template("structures/decoration/watchtower.nbt"),
+            MountainSettings.of(4, 44),
             false,
             List.of()
     );
@@ -324,6 +341,7 @@ public enum MapTheme {
     private final double decorationChance;
     private final List<DecorationOption> decorations;
     private final TerrainProfile terrainProfile;
+    private final PoolSettings poolSettings;
     private final boolean waterPools;
     private final boolean lavaPools;
     private final boolean borderEnabled;
@@ -334,6 +352,7 @@ public enum MapTheme {
     private final StructureSettings structureSettings;
     private final boolean lampPostsEnabled;
     private final List<StructureTemplate> lampPostTemplates;
+    private final MountainSettings mountainSettings;
 
     MapTheme(Material topMaterial,
              Material fillerMaterial,
@@ -345,6 +364,7 @@ public enum MapTheme {
              double decorationChance,
              List<DecorationOption> decorations,
              TerrainProfile terrainProfile,
+             PoolSettings poolSettings,
              boolean waterPools,
              boolean lavaPools,
              boolean borderEnabled,
@@ -353,6 +373,7 @@ public enum MapTheme {
              boolean roadPathsEnabled,
              List<Material> roadMaterials,
              StructureSettings structureSettings,
+             MountainSettings mountainSettings,
              boolean lampPostsEnabled,
              List<StructureTemplate> lampPostTemplates) {
         this.topMaterial = topMaterial;
@@ -365,6 +386,7 @@ public enum MapTheme {
         this.decorationChance = decorationChance;
         this.decorations = decorations;
         this.terrainProfile = terrainProfile;
+        this.poolSettings = poolSettings == null ? PoolSettings.defaultSettings() : poolSettings;
         this.waterPools = waterPools;
         this.lavaPools = lavaPools;
         this.borderEnabled = borderEnabled;
@@ -375,6 +397,7 @@ public enum MapTheme {
         this.structureSettings = structureSettings == null ? StructureSettings.disabled() : structureSettings;
         this.lampPostsEnabled = lampPostsEnabled;
         this.lampPostTemplates = lampPostTemplates == null ? List.of() : List.copyOf(lampPostTemplates);
+        this.mountainSettings = mountainSettings == null ? MountainSettings.disabled() : mountainSettings;
     }
 
     public Material getTopMaterial() {
@@ -411,6 +434,10 @@ public enum MapTheme {
 
     public TerrainProfile getTerrainProfile() {
         return terrainProfile;
+    }
+
+    public PoolSettings getPoolSettings() {
+        return poolSettings;
     }
 
     public boolean allowsWaterPools() {
@@ -451,6 +478,10 @@ public enum MapTheme {
 
     public List<StructureTemplate> getLampPostTemplates() {
         return lampPostTemplates;
+    }
+
+    public MountainSettings getMountainSettings() {
+        return mountainSettings;
     }
 
     public Material pickRandomDecoration(Random random) {
@@ -729,6 +760,64 @@ public enum MapTheme {
 
         public double weight() {
             return weight;
+        }
+    }
+
+    public static final class PoolSettings {
+        private final double spawnWeight;
+        private final double sizeVariance;
+
+        private PoolSettings(double spawnWeight, double sizeVariance) {
+            this.spawnWeight = Math.max(0.1, spawnWeight);
+            this.sizeVariance = Math.max(0.5, sizeVariance);
+        }
+
+        public static PoolSettings defaultSettings() {
+            return new PoolSettings(1.0, 1.0);
+        }
+
+        public static PoolSettings of(double spawnWeight, double sizeVariance) {
+            return new PoolSettings(spawnWeight, sizeVariance);
+        }
+
+        public double spawnWeight() {
+            return spawnWeight;
+        }
+
+        public double sizeVariance() {
+            return sizeVariance;
+        }
+    }
+
+    public static final class MountainSettings {
+        private final boolean enabled;
+        private final int peakCount;
+        private final int maxHeight;
+
+        private MountainSettings(boolean enabled, int peakCount, int maxHeight) {
+            this.enabled = enabled;
+            this.peakCount = enabled ? Math.max(1, peakCount) : 0;
+            this.maxHeight = enabled ? Math.max(20, maxHeight) : 0;
+        }
+
+        public static MountainSettings disabled() {
+            return new MountainSettings(false, 0, 0);
+        }
+
+        public static MountainSettings of(int peakCount, int maxHeight) {
+            return new MountainSettings(true, peakCount, maxHeight);
+        }
+
+        public boolean enabled() {
+            return enabled;
+        }
+
+        public int peakCount() {
+            return peakCount;
+        }
+
+        public int maxHeight() {
+            return maxHeight;
         }
     }
 }

@@ -1,14 +1,8 @@
 package com.yourfault.listener;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
 import com.yourfault.Items.gui.General;
 import com.yourfault.Main;
-import com.yourfault.NBT_namespace;
+import com.yourfault.perks.PerkType;
 import com.yourfault.system.GeneralPlayer.GamePlayer;
 import com.yourfault.system.GeneralPlayer.Perks;
 import org.bukkit.Bukkit;
@@ -19,11 +13,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
@@ -33,7 +26,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.yourfault.perks.PerkType;
+import java.util.List;
 
 import static com.yourfault.NBT_namespace.PERK_TYPE;
 

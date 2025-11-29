@@ -1,8 +1,6 @@
 package com.yourfault.system;
 
 import com.yourfault.Main;
-import org.bukkit.EntityEffect;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 
 public abstract class Enemy {

@@ -1,16 +1,15 @@
 package com.yourfault.perks;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.yourfault.NBT_namespace;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
-
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class PerkType implements Listener {

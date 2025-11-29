@@ -1,12 +1,11 @@
 package com.yourfault.Commands.Debugs;
 
+import com.yourfault.Items.weapons;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-
-import com.yourfault.Items.weapons;
 
 public class GetCommand implements CommandExecutor {
 

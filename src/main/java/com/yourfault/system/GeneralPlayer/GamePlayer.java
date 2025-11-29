@@ -5,9 +5,7 @@ import com.yourfault.weapon.WeaponType;
 import io.papermc.paper.datacomponent.item.ResolvableProfile;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.title.Title;
-import net.kyori.adventure.title.TitlePart;
 import net.md_5.bungee.api.ChatColor;
 import net.minecraft.network.protocol.Packet;
 import org.bukkit.Bukkit;
@@ -22,7 +20,6 @@ import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
 import java.time.Duration;
-import java.util.Locale;
 
 import static com.yourfault.Main.plugin;
 import static com.yourfault.system.BleedoutManager.BLEED_OUT_SECONDS;

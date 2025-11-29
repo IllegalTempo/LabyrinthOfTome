@@ -5,16 +5,14 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.PropertyMap;
 import com.yourfault.Main;
 import com.yourfault.perks.PerkObject;
-import com.yourfault.perks.PerkType;
-import com.yourfault.system.TabInfo;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.minecraft.network.protocol.game.ClientboundPlayerInfoRemovePacket;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.level.ClientInformation;
-import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
-import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.PacketFlow;
+import net.minecraft.network.protocol.game.ClientboundPlayerInfoRemovePacket;
+import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
+import net.minecraft.server.level.ClientInformation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import org.bukkit.Bukkit;
@@ -60,6 +58,7 @@ public class TabManager {
         if (PLAYERLIST_PLACEHOLDERS.isEmpty()) return;
         UUID placeholderuuid = PLAYERLIST_PLACEHOLDERS.removeLast();
         removeFakePlayer(placeholderuuid);
+
 
     }
     private void BuildWaveInfoTabDisplay()
@@ -112,14 +111,7 @@ public class TabManager {
         // send player remove packet (packet expects a List)
         player.sendPacket(new ClientboundPlayerInfoRemovePacket(Collections.singletonList(uuid)));
         // remove the scoreboard entry(s) that match the name
-        String name = TAB_PERKLIST.get(uuid);
-        if(name != null)
-        {
-            for (Team team : board.getTeams()) {
-                if (team != null && team.hasEntry(name)) team.removeEntry(name);
-            }
-            TAB_PERKLIST.remove(uuid);
-        }
+
 
     }
     private void InitPerkTabDisplay()
@@ -137,8 +129,10 @@ public class TabManager {
 
         // remove existing perk fake players from the client and scoreboard
         if (!TAB_PERKLIST.isEmpty()) {
-            for (Map.Entry<UUID, String> e : TAB_PERKLIST.entrySet()) {
-                removeFakePlayer(e.getKey());
+            Set<UUID> keys = new HashSet<>(TAB_PERKLIST.keySet());
+            for (UUID e : keys) {
+                removeFakePlayer(e);
+
             }
             TAB_PERKLIST.clear();
         }

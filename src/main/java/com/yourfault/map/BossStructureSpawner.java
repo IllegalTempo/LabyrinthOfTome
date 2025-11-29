@@ -9,15 +9,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.BlockVector;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 import java.util.function.Consumer;
 
 /**
@@ -25,7 +17,8 @@ import java.util.function.Consumer;
  */
 public class BossStructureSpawner {
     private static final String[] STRUCTURE_RESOURCES = {
-            "structures/bossRoomModel/BossRoom.nbt"
+            "structures/bossRoomModel/BossRoom.nbt",
+            "structures/bossRoomModel/BossRoom2.nbt"
     };
     private static final int PLACEMENTS_PER_TICK = 500;
     private static final int CLEAR_PLACEMENTS_TICK = 1500;
@@ -167,12 +160,16 @@ public class BossStructureSpawner {
     }
 
     private Optional<String> resolveTemplateResource() {
+        List<String> available = new ArrayList<>();
         for (String resource : STRUCTURE_RESOURCES) {
             if (structureHelper.hasStructure(resource)) {
-                return Optional.of(resource);
+                available.add(resource);
             }
         }
-        return Optional.empty();
+        if (available.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(available.get(random.nextInt(available.size())));
     }
 
     private void snapshotOriginalBlocks(World world, Bounds bounds) {

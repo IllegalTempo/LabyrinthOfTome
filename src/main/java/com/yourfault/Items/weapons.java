@@ -1,13 +1,14 @@
 package com.yourfault.Items;
 
+import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.components.CustomModelDataComponent;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 
 public class weapons {
     public static final Map<String, ItemStack> ITEM_MAP = new HashMap<>();
@@ -16,7 +17,7 @@ public class weapons {
     }
     private static void REG_EXCALIBUR()
     {
-        ItemStack result = new ItemStack(org.bukkit.Material.DIAMOND_SWORD);
+        ItemStack result = new ItemStack(Material.DIAMOND_SWORD);
         ItemMeta meta = result.getItemMeta();
         if (meta != null) {
             // Set multi-colored display name using hex color codes (Spigot 1.16+)

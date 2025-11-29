@@ -1,7 +1,5 @@
 package com.yourfault.perks;
 
-import java.util.*;
-
 import com.yourfault.Main;
 import com.yourfault.system.GeneralPlayer.GamePlayer;
 import org.bukkit.ChatColor;
@@ -9,11 +7,15 @@ import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.util.Vector;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 public final class SharpshooterPerk extends PerkType{
 

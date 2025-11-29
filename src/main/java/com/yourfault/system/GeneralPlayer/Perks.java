@@ -6,10 +6,7 @@ import com.yourfault.perks.PerkType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.Collections;
-import java.util.EnumSet;
 import java.util.List;
-import java.util.Set;
 
 public class Perks {
     public final GamePlayer gamePlayer;

@@ -20,6 +20,7 @@ public class PlayerActivity implements Listener {
             p.PLAYER_TAB.playerlist_removePlaceholder();
         }
 
+
     }
     @EventHandler
     public void OnPlayerLeave(org.bukkit.event.player.PlayerQuitEvent e)

@@ -1,11 +1,10 @@
 package com.yourfault.Commands.Debugs;
 
+import com.yourfault.Main;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-
-import com.yourfault.Main;
 
 public class ReadyForNextWave implements CommandExecutor {
     @Override

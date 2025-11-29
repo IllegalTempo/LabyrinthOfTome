@@ -1,11 +1,7 @@
 package com.yourfault.system;
 
-import java.time.Duration;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
-
+import com.yourfault.Main;
+import com.yourfault.listener.PerkSelectionListener;
 import com.yourfault.map.BossStructureSpawner;
 import com.yourfault.map.MapManager;
 import com.yourfault.perks.PerkType;
@@ -14,20 +10,22 @@ import com.yourfault.perks.SharpshooterPerk;
 import com.yourfault.system.GeneralPlayer.GamePlayer;
 import com.yourfault.wave.WaveDifficulty;
 import com.yourfault.wave.WaveManager;
+import com.yourfault.weapon.General.Projectile;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Boss;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.util.Vector;
 
-import com.yourfault.Main;
-import com.yourfault.listener.PerkSelectionListener;
-import com.yourfault.weapon.General.Projectile;
+import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 
 public class Game {
     private static final Title.Times GAME_START_TITLE_TIMES = Title.Times.times(

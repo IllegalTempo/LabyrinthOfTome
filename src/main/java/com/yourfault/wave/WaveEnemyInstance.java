@@ -1,8 +1,7 @@
 package com.yourfault.wave;
 
-import org.bukkit.entity.LivingEntity;
-
 import com.yourfault.system.Enemy;
+import org.bukkit.entity.LivingEntity;
 
 public class WaveEnemyInstance extends Enemy {
     private final WaveEnemyType type;

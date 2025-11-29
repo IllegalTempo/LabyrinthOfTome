@@ -1,9 +1,7 @@
 package com.yourfault.weapon;
 
 import com.yourfault.Items.weapons;
-import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.persistence.PersistentDataType;
 
 import java.util.function.Supplier;
 
