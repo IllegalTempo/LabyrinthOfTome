@@ -29,7 +29,7 @@ public class MapManager {
     private static final int GENERATION_COLUMNS_PER_SLICE = 256;
     private static final int CLEAR_SLICE_INTERVAL_TICKS = 10;
     private static final int CLEAR_COLUMNS_PER_SLICE = 512;
-    private static final int CLEAR_RADIUS_PADDING = 6;
+    private static final int CLEAR_RADIUS_PADDING = 12;
     private static final double MIN_SPAWN_MARKER_SPACING = 6.0;
     private static final int FIXED_SPAWN_MARKER_COUNT = 9;
     private static final int POOL_FLOOR_LIFT_BLOCKS = 5;
@@ -1399,7 +1399,7 @@ public class MapManager {
         // place border trees on an evenly spaced circle (angular sampling)
         String treeResource = "structures/treeModel/bordertree.nbt";
         if (structureHelper.hasStructure(treeResource)) {
-            int treeOffset = 1; // inward offset from floorRadius — smaller -> closer to wall
+            int treeOffset = 4; // inward offset from floorRadius — smaller -> closer to wall
             int treeRadius = Math.max(1, floorRadius - treeOffset);
             int samples = Math.max(48, floorRadius * 8); // more samples -> denser ring
             Set<Long> placedTreeKeys = new HashSet<>();

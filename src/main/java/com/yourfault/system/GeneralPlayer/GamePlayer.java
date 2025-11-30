@@ -1,20 +1,28 @@
 package com.yourfault.system.GeneralPlayer;
 
 import com.yourfault.Main;
+import com.yourfault.utils.AnimationInfo;
+import com.yourfault.utils.ItemUtil;
 import com.yourfault.weapon.WeaponType;
 import io.papermc.paper.datacomponent.item.ResolvableProfile;
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.title.Title;
 import net.md_5.bungee.api.ChatColor;
 import net.minecraft.network.protocol.Packet;
 import org.bukkit.Bukkit;
+import org.bukkit.Color;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
+import org.bukkit.entity.Display;
 import org.bukkit.entity.Mannequin;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Pose;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
@@ -24,6 +32,7 @@ import java.time.Duration;
 import static com.yourfault.Main.plugin;
 import static com.yourfault.system.BleedoutManager.BLEED_OUT_SECONDS;
 import static com.yourfault.system.BleedoutManager.REVIVE_SECONDS;
+import static com.yourfault.utils.ItemUtil.PlayAnimation;
 
 public class GamePlayer
 {
@@ -45,9 +54,9 @@ public class GamePlayer
         DEAD
     }
 
-    public Player MINECRAFT_PLAYER;
+    public final Player MINECRAFT_PLAYER;
     public Perks PLAYER_PERKS;
-    public TabManager PLAYER_TAB;
+    public final TabManager PLAYER_TAB;
     private final float MAX_HEALTH;
     private final float MAX_MANA;
     private float HEALTH;
@@ -57,7 +66,7 @@ public class GamePlayer
     private int coins = 0;
     private int level = 1;
     private int experience = 0;
-
+    public long inActionTicks = 0;
     public SurvivalState CurrentState = SurvivalState.ALIVE;
     public GamePlayer Reviving_Someone = null;
     public GamePlayer Being_Revived = null;
@@ -79,6 +88,14 @@ public class GamePlayer
         PLAYER_TAB = new TabManager(this);
         refillVanillaHealth();
     }
+    public void Update()
+    {
+        DisplayStatToPlayer();
+        if(inActionTicks > 0)
+        {
+            inActionTicks--;
+        }
+    }
     public void sendPacket(Packet packet)
     {
         ((CraftPlayer) MINECRAFT_PLAYER).getHandle().connection.send(packet);
@@ -98,7 +115,23 @@ public class GamePlayer
                 })
                 .orElse(WeaponType.Excalibur);
     }
-
+    public void playAnimation(String animationName, long durationTicks)
+    {
+        inActionTicks = durationTicks;
+        ItemStack itemInHand = MINECRAFT_PLAYER.getInventory().getItemInMainHand();
+        if (itemInHand == null || itemInHand.getItemMeta() == null) {
+            return;
+        }
+        ItemMeta meta = PlayAnimation(itemInHand.getItemMeta(), animationName, durationTicks);
+        MINECRAFT_PLAYER.getInventory().getItemInMainHand().setItemMeta(meta);
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            itemInHand.setItemMeta(ItemUtil.SetCustomModelData(itemInHand.getItemMeta(),1,"0"));
+        }, durationTicks);
+    }
+    public void playAnimation(AnimationInfo info)
+    {
+        playAnimation(info.animationName(), info.durationTicks());
+    }
     public void DisplayStatToPlayer()
     {
         Player player = MINECRAFT_PLAYER;
@@ -112,19 +145,22 @@ public class GamePlayer
         int manaCodePoint   = 0xe000 + manaPercent;
 
         //String Preset = ChatColor.of("#000000") + "\u1f01";
-        String healthChar = ChatColor.of("#000000") + new String(Character.toChars(healthCodePoint));
-        String manaChar   = ChatColor.of("#000000") + new String(Character.toChars(manaCodePoint));
-
+        String healthChar = new String(Character.toChars(healthCodePoint));
+        String manaChar   = new String(Character.toChars(manaCodePoint));
+        String weaponicon = SELECTED_WEAPON.weaponIcon;
 
 
 
         String message =  "\uff00" + String.join("\uff00",manaChar,healthChar) + "\uff00";
-
 //        Component component = GsonComponentSerializer.gson().deserialize(
 //                "{\"text\":\"" + message + "\",\"shadow_color\":0}"
 //        );
         //MINECRAFT_PLAYER.sendActionBar(component);
-        MINECRAFT_PLAYER.sendActionBar(Component.text(message));
+        MINECRAFT_PLAYER.sendActionBar(
+                Component.text(message, TextColor.color(78,124,128)).font(Key.key("minecraft:bitmaps")).append(
+                        Component.text(SELECTED_WEAPON.weaponIcon + "\uff00",TextColor.color(78,128,128))
+                )
+        );
     }
 
     public void ChangeMana(float amount)
@@ -366,9 +402,6 @@ public class GamePlayer
         }
     }
 
-    public void setMinecraftPlayer(Player minecraftPlayer) {
-        this.MINECRAFT_PLAYER = minecraftPlayer;
-    }
 
     public Player getMinecraftPlayer() {
         return MINECRAFT_PLAYER;

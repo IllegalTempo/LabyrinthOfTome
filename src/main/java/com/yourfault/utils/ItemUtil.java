@@ -1,6 +1,7 @@
 // java
 package com.yourfault.utils;
 
+import com.yourfault.Main;
 import org.bukkit.Color;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.components.CustomModelDataComponent;
@@ -33,6 +34,21 @@ public class ItemUtil {
         meta.setCustomModelDataComponent(com);
         return meta;
     }
+    public static ItemMeta PlayAnimation(ItemMeta org,String animationName,long DurationTicks)
+    {
+        ItemMeta meta = org;
+        CustomModelDataComponent com = meta.getCustomModelDataComponent();
+        List<String> cmds = new ArrayList<String>(com.getStrings());
+        cmds.add(1,animationName);
+        long frameoffset = ((Main.world.getGameTime() % 24000) - 0) % DurationTicks;
+        com.setStrings(cmds);
+        meta.setCustomModelDataComponent(com);
+        meta = ItemUtil.SetItemCMDTint(meta,frameoffset);
+
+        return meta;
+
+
+    }
     public static ItemMeta SetItemCMDTint(ItemMeta org,long value)
     {
         ItemMeta meta = org;
@@ -44,6 +60,7 @@ public class ItemUtil {
         return meta;
 
     }
+
     public static ItemMeta SetCustomModelData(ItemMeta org, int index, String value) {
         return SetCustomModelData(org, List.of(new ISpair(index,value)));
 

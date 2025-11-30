@@ -132,7 +132,7 @@ public class Game {
         UpdateTask = new BukkitRunnable() {
             @Override
             public void run() {
-                PLAYER_LIST.values().forEach(GamePlayer::DisplayStatToPlayer);
+                PLAYER_LIST.values().forEach(GamePlayer::Update);
 
             }
         };

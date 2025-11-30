@@ -18,8 +18,8 @@ public abstract class Projectile {
     float damage;
     boolean UseGravity;
     ItemStack projectileItem;
-    float age;
-    ArmorStand entity;
+    protected float age;
+    protected ArmorStand entity;
     float radius;
     private BukkitRunnable UpdateTask;
 
@@ -59,11 +59,21 @@ public abstract class Projectile {
         Update();
 
     }
+    public Projectile(Location eyeLocation,float speed, float damage, float radius, boolean UseGravity, float LastFor)
+    {
+        this(eyeLocation, speed, damage, radius, UseGravity, new ItemStack(org.bukkit.Material.AIR), LastFor);
+    }
+    protected Location getDisplayedLocation()
+    {
+        return entity.getLocation().add(0,1,0);
+    }
+    protected abstract void ChildUpdate();
     public void Update()
     {
         UpdateTask = new BukkitRunnable() {
             @Override
             public void run() {
+                ChildUpdate();
                 if(age == 0) Destroy();
                 Vector travel = entity.getLocation().getDirection().multiply(speed);
                 age -= 1;
@@ -78,6 +88,7 @@ public abstract class Projectile {
                     }
                 }
                 if(hit) Projectile_OnHit();
+
 
 
 
