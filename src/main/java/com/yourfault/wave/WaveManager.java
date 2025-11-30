@@ -1,6 +1,5 @@
 package com.yourfault.wave;
 
-import com.yourfault.Enemy.EnemyHealthDisplay;
 import com.yourfault.Enemy.mob.LaserZombieEnemy;
 import com.yourfault.Main;
 import com.yourfault.map.MapManager;
@@ -21,7 +20,6 @@ public class WaveManager {
     private final Game game;
     private final Random random = new Random();
     private final MapManager mapManager;
-    private final EnemyHealthDisplay healthDisplay;
     private final List<UUID> activeWaveEnemyIds = new ArrayList<>();
     private final Map<UUID, WaveEnemyInstance> activeWaveEnemies = new HashMap<>();
     private final List<WaveEnemyInstance> lastSpawnedEnemies = new ArrayList<>();
@@ -32,10 +30,9 @@ public class WaveManager {
     private boolean waveInProgress = false;
     private boolean nextWaveScheduled = false;
 
-    public WaveManager(Game game, MapManager mapManager, EnemyHealthDisplay healthDisplay) {
+    public WaveManager(Game game, MapManager mapManager) {
         this.game = game;
         this.mapManager = mapManager;
-        this.healthDisplay = healthDisplay;
     }
 
     public void initializeSession(WaveDifficulty difficulty) {
@@ -304,9 +301,6 @@ public class WaveManager {
         }
         lastSpawnedEnemies.add(waveEnemy);
         activeWaveEnemies.put(entity.getUniqueId(), waveEnemy);
-        if (healthDisplay != null) {
-            healthDisplay.applyInitialTag(entity, type);
-        }
 
     }
 
@@ -423,6 +417,20 @@ public class WaveManager {
     private void tagWaveEntity(LivingEntity entity, WaveEnemyType type) {
         entity.addScoreboardTag("lot_wave_enemy");
         entity.addScoreboardTag("lot_wave_enemy_" + type.name().toLowerCase(Locale.ROOT));
+    }
+
+    public WaveEnemyInstance spawnEnemyAt(Location location, WaveEnemyType type, boolean contributeToWave) {
+        if (location == null || location.getWorld() == null || type == null) {
+            return null;
+        }
+        WaveContext context = buildWaveContext(Math.max(1, game.PLAYER_LIST.size()));
+        LivingEntity entity = type.spawn(location.getWorld(), location.clone());
+        tagWaveEntity(entity, type);
+        applyScaling(entity, type, context);
+        if (contributeToWave) {
+            activeWaveEnemyIds.add(entity.getUniqueId());
+        }
+        return activeWaveEnemies.get(entity.getUniqueId());
     }
 
     private void scheduleAutoAdvance() {

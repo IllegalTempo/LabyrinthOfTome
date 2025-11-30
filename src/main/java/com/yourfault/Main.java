@@ -5,7 +5,6 @@ import com.yourfault.Commands.map.ClearBossRoomCommand;
 import com.yourfault.Commands.map.ClearMapCommand;
 import com.yourfault.Commands.map.CreateMapCommand;
 import com.yourfault.Commands.map.GenerateBossCommand;
-import com.yourfault.Enemy.EnemyHealthDisplay;
 import com.yourfault.listener.PerkSelectionListener;
 import com.yourfault.map.BossStructureSpawner;
 import com.yourfault.map.MapManager;
@@ -28,7 +27,6 @@ public class Main extends JavaPlugin {
     public static Game game;
     public static World world;
     public static BleedoutManager bleedoutManager;
-    public static EnemyHealthDisplay enemyHealthDisplay;
     public static TabInfo tabInfo;
 
 
@@ -39,28 +37,26 @@ public class Main extends JavaPlugin {
     private BossStructureSpawner bossStructureSpawner;
     private LOTTestScenario lotTestScenario;
     private BleedoutManager bleedManager;
-    private EnemyHealthDisplay healthDisplay;
 
     //private QuickdrawAbility quickdrawAbility;
     //private SharpshooterAbility sharpshooterAbility;
 
     @Override
     public void onEnable() {
+
         getLogger().info("LOT Initialized...");
         plugin = this;
         world = Bukkit.getWorld("world");
-        game = new Game(this);
+        tabInfo = new TabInfo();
+
+        new Game(this);
         mapManager = new MapManager(this, game);
         bossStructureSpawner = new BossStructureSpawner(this);
         lotTestScenario = new LOTTestScenario(this, game, mapManager, bossStructureSpawner);
         bleedManager = new BleedoutManager(this, game);
-        tabInfo = new TabInfo();
         bleedoutManager = bleedManager;
         this.getServer().getPluginManager().registerEvents(bleedManager, this);
-        healthDisplay = new EnemyHealthDisplay(this);
-        enemyHealthDisplay = healthDisplay;
-        this.getServer().getPluginManager().registerEvents(healthDisplay, this);
-        waveManager = new WaveManager(game, mapManager, healthDisplay);
+        waveManager = new WaveManager(game, mapManager);
         game.setWaveManager(waveManager);
         game.setBossSpawner(bossStructureSpawner);
 
@@ -89,6 +85,7 @@ public class Main extends JavaPlugin {
         this.getCommand("skipwave").setExecutor(new SkipWaveCommand(game));
         this.getCommand("damageself").setExecutor(new changehealth());
         this.getCommand("debugtab").setExecutor(new SetHeaderAndFooter());
+        this.getCommand("spawnmob").setExecutor(new SpawnMobCommand(game));
 
     }
     private void RegisterPlayerActivity()

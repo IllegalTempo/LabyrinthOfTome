@@ -1,29 +1,31 @@
 package com.yourfault.weapon.Excalibur;
 
+import com.yourfault.Main;
 import com.yourfault.weapon.General.Projectile;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
+import static com.yourfault.Main.world;
+
 public class Sword_Aura extends Projectile {
+
     public Sword_Aura(Location StartLocation, float damage) {
-        super(StartLocation, 2, damage, 1, false, 20);
+        super(StartLocation, 2, damage, 0.5f, false, 5);
         // store the starting age set by the super constructor
-        this.initialAge = this.age;
 
     }
-    public Sword_Aura(Player p, float damage)
-    {
-        super(p.getEyeLocation().add(p.getLocation().getDirection()), 1, damage, 1, false, 20);
-        // store the starting age set by the super constructor
-        this.initialAge = this.age;
-    }
     // initial lifetime preserved so we can compute elapsed ticks from inherited `age`
-    private final float initialAge;
 
     @Override
     public void ChildUpdate()
     {
+        Color color = Color.fromRGB(255,255,Math.clamp(125+(int)age* 20L,0,255));
+        Particle.DustOptions dust = new Particle.DustOptions(color, 0.5f + age*0.2f);
+
+        world.spawnParticle(Particle.DUST, getDisplayedLocation(), 100, radius*0.5, 0.1, radius*0.5, 0.0, dust);
+        world.spawnParticle(Particle.END_ROD, getDisplayedLocation(), 1, radius, radius, radius, 0.5, null);
+
         
     }
     @Override

@@ -24,7 +24,6 @@ import org.bukkit.util.Vector;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 
 public class Game {
@@ -40,6 +39,7 @@ public class Game {
     );
     public Game(JavaPlugin plugin)
     {
+        Main.game = this;
         this.plugin = plugin;
         AddExistingPlayer();
         Main_Update();
@@ -48,7 +48,7 @@ public class Game {
 
     }
     private final JavaPlugin plugin;
-    private BukkitRunnable UpdateTask;
+    private BukkitRunnable updateTask;
     public Vector Gravity = new Vector(0,-0.5,0);
     public HashMap<UUID, GamePlayer> PLAYER_LIST = new HashMap<>();
     public HashMap<UUID,Projectile> PROJECTILE_LIST = new HashMap<>();
@@ -77,19 +77,20 @@ public class Game {
     private void AddExistingPlayer()
     {
         Main.world.getPlayers().forEach(player -> {
-            player.setInvulnerable(true);
-            var gamePlayer = new GamePlayer(player);
-            PLAYER_LIST.put(player.getUniqueId(), gamePlayer);
-            showGameStartTitle(player);
-            if (perkSelectionListener != null) {
-                perkSelectionListener.preparePlayer(gamePlayer);
-            }
+            AddPlayer(player);
+
+        });
+        PLAYER_LIST.values().forEach(player -> {
+            player.PLAYER_TAB.initTab();
 
         });
     }
     public void AddPlayer(Player player)
     {
+        player.setInvulnerable(false);
+        Main.tabInfo.GetTeam.get(TabInfo.TabType.PLAYERLIST_ALIVE).addEntry(player.getName());
         var gamePlayer = new GamePlayer(player);
+
         PLAYER_LIST.put(player.getUniqueId(), gamePlayer);
         showGameStartTitle(player);
         if (perkSelectionListener != null) {
@@ -100,7 +101,7 @@ public class Game {
     public void PlayerNumUpdate()
     {
         Scoreboard board = Bukkit.getScoreboardManager().getMainScoreboard();
-        Objects.requireNonNull(board.getTeam("00_PLAYERLIST_TOP")).suffix(Component.text(" [" + GetPlayerCount() + "]"));
+        Main.tabInfo.GetTeam.get(TabInfo.TabType.PLAYERLIST_TOP).suffix(Component.text(" [" + GetPlayerCount() + "]"));
 
     }
     public void RemovePlayer(Player player)
@@ -129,14 +130,14 @@ public class Game {
     }
     private void Main_Update()
     {
-        UpdateTask = new BukkitRunnable() {
+        updateTask = new BukkitRunnable() {
             @Override
             public void run() {
                 PLAYER_LIST.values().forEach(GamePlayer::Update);
 
             }
         };
-        UpdateTask.runTaskTimer(plugin, 0L, 1L);
+        updateTask.runTaskTimer(plugin, 0L, 1L);
     }
 
     public void EndGame()

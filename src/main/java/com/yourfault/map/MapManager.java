@@ -1396,13 +1396,14 @@ public class MapManager {
             }
         }
 
-        // place border trees on an evenly spaced circle (angular sampling)
-        String treeResource = "structures/treeModel/bordertree.nbt";
-        if (structureHelper.hasStructure(treeResource)) {
-            int treeOffset = 4; // inward offset from floorRadius — smaller -> closer to wall
+        if (theme.borderTreesEnabled() && !theme.getBorderTreeResources().isEmpty()) {
+            List<String> treeResources = theme.getBorderTreeResources();
+            int resourceCount = treeResources.size();
+            int treeOffset = 4; // inward offset from floorRadius — moved 3 blocks further inside per request
             int treeRadius = Math.max(1, floorRadius - treeOffset);
             int samples = Math.max(48, floorRadius * 8); // more samples -> denser ring
             Set<Long> placedTreeKeys = new HashSet<>();
+            int prevResourceIndex = -1;
             for (int i = 0; i < samples; i++) {
                 double angle = (Math.PI * 2 * i) / samples;
                 int tx = centerX + (int) Math.round(treeRadius * Math.cos(angle));
@@ -1421,11 +1422,24 @@ public class MapManager {
                 if (treeSurface == null) {
                     continue;
                 }
+
+                // pick a resource index randomly but avoid repeating the same resource consecutively
+                int chosen = random.nextInt(resourceCount);
+                if (resourceCount > 1 && chosen == prevResourceIndex) {
+                    chosen = (chosen + 1) % resourceCount;
+                }
+                String chosenResource = treeResources.get(chosen);
+                prevResourceIndex = chosen;
+
                 try {
-                    boolean placed = structureHelper.placeStructure(treeResource, activeWorld, tx, treeSurface + 1, tz, random, false, null);
-                    plugin.getLogger().log(Level.INFO, "Border tree placement at {0},{1} result={2}", new Object[]{tx, tz, placed});
+                    if (!structureHelper.hasStructure(chosenResource)) {
+                        plugin.getLogger().log(Level.WARNING, "Border tree resource not found: {0}", new Object[]{chosenResource});
+                        continue;
+                    }
+                    boolean placed = structureHelper.placeStructure(chosenResource, activeWorld, tx, treeSurface + 1, tz, random, false, null);
+                    plugin.getLogger().log(Level.INFO, "Border tree placement at {0},{1} resource={2} result={3}", new Object[]{tx, tz, chosenResource, placed});
                     if (placed) {
-                        BlockVector size = structureHelper.getStructureSize(treeResource);
+                        BlockVector size = structureHelper.getStructureSize(chosenResource);
                         int footprint = structureHelper.estimateFootprintRadius(size, 3);
                         markStructureFootprint(tx, tz, footprint);
                         reservedStructureColumns.add(key);

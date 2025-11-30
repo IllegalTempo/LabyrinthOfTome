@@ -132,8 +132,17 @@ public class LaserZombieEnemy extends WaveEnemyInstance {
         if (!entity.hasLineOfSight(target)) {
             return;
         }
-        target.damage(12.0, entity);
-        target.sendMessage(ChatColor.RED + "The laser burns through you for 12 damage!");
+        GamePlayer gamePlayer = Main.game != null ? Main.game.GetPlayer(target) : null;
+        double rawDamage = getScaledDamage();
+        float finalDamage = (float) Math.max(0.0, rawDamage);
+        if (gamePlayer != null) {
+            gamePlayer.damage(finalDamage);
+        } else {
+            // Fallback to vanilla if GamePlayer not available
+            target.damage(finalDamage, entity);
+        }
+        target.sendMessage(ChatColor.RED + "The laser burns through you for " + String.format("%.1f", finalDamage) + " damage!");
+        target.getWorld().spawnParticle(Particle.CRIT, target.getEyeLocation(), 15, 0.2, 0.2, 0.2, 0.01);
         target.getWorld().spawnParticle(Particle.CRIT, target.getEyeLocation(), 15, 0.2, 0.2, 0.2, 0.01);
     }
 

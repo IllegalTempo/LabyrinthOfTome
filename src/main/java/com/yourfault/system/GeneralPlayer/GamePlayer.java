@@ -1,6 +1,7 @@
 package com.yourfault.system.GeneralPlayer;
 
 import com.yourfault.Main;
+import com.yourfault.system.TabInfo;
 import com.yourfault.utils.AnimationInfo;
 import com.yourfault.utils.ItemUtil;
 import com.yourfault.weapon.WeaponType;
@@ -75,6 +76,13 @@ public class GamePlayer
     private BukkitTask downTask;
     private BukkitTask ReviveTask;
 
+    //Perk Stats
+    public int projectileMultiplier = 1;
+    public float projectileSizeMultiplier = 1.0f;
+    public float damageMultiplier = 1.0f;
+
+
+
     public GamePlayer(Player minecraftplayer)
     {
         this.MINECRAFT_PLAYER = minecraftplayer;
@@ -95,6 +103,38 @@ public class GamePlayer
         {
             inActionTicks--;
         }
+    }
+    public Location getLocationRelativeToPlayer(Vector offset)
+    {
+        // Convert a local offset (x = right, y = up, z = forward) into world coordinates
+        Location eye = MINECRAFT_PLAYER.getEyeLocation();
+
+        // Full forward vector (includes pitch)
+        Vector forward = eye.getDirection().clone();
+        if (forward.lengthSquared() < 1e-6) {
+            // Fallback if direction is somehow zero
+            forward = new Vector(0, 0, -1);
+        } else {
+            forward.normalize();
+        }
+
+        // Up is world up
+        Vector up = new Vector(0, 1, 0);
+
+        // Right = forward x up. If forward is nearly parallel to up (looking straight up/down)
+        // the cross product will be very small; in that case use the horizontal forward to compute right
+        Vector right = forward.clone().crossProduct(up);
+
+            right.normalize();
+
+
+        // Compose world offset: forward * z + right * x + up * y
+        Vector worldOffset = forward.multiply(offset.getZ())
+                .add(right.multiply(offset.getX()))
+                .add(up.multiply(offset.getY()));
+
+        // Return a new Location (don't mutate the player's eye location)
+        return eye.clone().add(worldOffset);
     }
     public void sendPacket(Packet packet)
     {
@@ -131,6 +171,11 @@ public class GamePlayer
     public void playAnimation(AnimationInfo info)
     {
         playAnimation(info.animationName(), info.durationTicks());
+    }
+    public Location GetForward(double multiplier)
+    {
+        return MINECRAFT_PLAYER.getEyeLocation().add(MINECRAFT_PLAYER.getLocation().getDirection().multiply(multiplier));
+
     }
     public void DisplayStatToPlayer()
     {
@@ -233,6 +278,7 @@ public class GamePlayer
         watchcorpse.setRotation(0,90);
         MINECRAFT_PLAYER.teleport(watchcorpse);
         MINECRAFT_PLAYER.setGameMode(GameMode.SPECTATOR);
+        Main.tabInfo.GetTeam.get(TabInfo.TabType.PLAYERLIST_DOWN).addEntry(MINECRAFT_PLAYER.getName());
         Bukkit.broadcastMessage(org.bukkit.ChatColor.RED + MINECRAFT_PLAYER.getName() + " is bleeding out! Hold SHIFT on them for 5 seconds to revive.");
         downTask = new BukkitRunnable() {
             private int ticksRemaining = BLEED_OUT_SECONDS * 20;
@@ -380,6 +426,7 @@ public class GamePlayer
     public void died()
     {
         CurrentState = SurvivalState.DEAD;
+        Main.tabInfo.GetTeam.get(TabInfo.TabType.PLAYERLIST_DEAD).addEntry(MINECRAFT_PLAYER.getName());
         if(Being_Revived == null)
         {
 

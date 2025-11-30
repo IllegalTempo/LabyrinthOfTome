@@ -6,11 +6,13 @@ import com.yourfault.utils.AnimationInfo;
 import com.yourfault.utils.ItemUtil;
 import com.yourfault.weapon.WeaponType;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,10 +39,20 @@ public class Excalibur_Main implements Listener {
 
 
                 gamePlayer.playAnimation(ANIMATION_RC);
-                Bukkit.getScheduler().runTaskLater(plugin, ()-> {
-                    gamePlayer.ChangeMana(-5f);
-                    new Sword_Aura(e.getPlayer(), 10f);
-                }, 7);
+                gamePlayer.ChangeMana(-5f);
+                // sweep the spawn directions from +22.5° to -22.5° over i = 5..10
+                for(int i = 5 ; i <= 10; i++)
+                {
+                    int finalI = i;
+
+                    Bukkit.getScheduler().runTaskLater(plugin, ()-> {
+                        Location loc = gamePlayer.GetForward(1);
+                        //Location loc = gamePlayer.getLocationRelativeToPlayer(new Vector(finalI -7,0,0));
+                        loc.setYaw(loc.getYaw() + (finalI-7.5f) * 20f);
+
+                        new Sword_Aura(loc, 10f);
+                    }, i);
+                }
 
             }
             if(e.getAction() == Action.LEFT_CLICK_AIR || e.getAction() == Action.LEFT_CLICK_BLOCK)

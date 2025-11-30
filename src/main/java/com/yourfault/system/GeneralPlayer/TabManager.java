@@ -5,6 +5,7 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.PropertyMap;
 import com.yourfault.Main;
 import com.yourfault.perks.PerkObject;
+import com.yourfault.system.TabInfo;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.minecraft.network.Connection;
@@ -65,10 +66,10 @@ public class TabManager {
     {
         Scoreboard board = Bukkit.getScoreboardManager().getMainScoreboard();
 
-        sendFakePlayer("Wave Info");
-        Team waveTop = board.getTeam("20_WAVEINFO_TOP");
+        sendFakePlayer("Game Info");
+        Team waveTop = Main.tabInfo.GetTeam.get(TabInfo.TabType.WAVEINFO_TOP);
         sendFakePlayer("Current Wave");
-        if (waveTop != null) waveTop.addEntry("Wave Info");
+        if (waveTop != null) waveTop.addEntry("Game Info");
         for(int i = 0 ; i < TAB_HEIGHT-2;i++)
         {
             sendFakePlayer("　　　　　　　　　　　　　");
@@ -80,18 +81,18 @@ public class TabManager {
         Scoreboard board = Bukkit.getScoreboardManager().getMainScoreboard();
         // create a fake "Players" entry and add it to the top team
         sendFakePlayer("Players");
-        Team topTeam = board.getTeam("00_PLAYERLIST_TOP");
+        Team topTeam = Main.tabInfo.GetTeam.get(TabInfo.TabType.PLAYERLIST_TOP);
         if (topTeam != null) topTeam.addEntry("Players");
 
         for (GamePlayer gp : Main.game.PLAYER_LIST.values()) {
             if (gp.CurrentState.equals(GamePlayer.SurvivalState.ALIVE)) {
-                Team alive = board.getTeam("01_PLAYERLIST_ALIVE");
+                Team alive = Main.tabInfo.GetTeam.get(TabInfo.TabType.PLAYERLIST_ALIVE);
                 if (alive != null) alive.addEntry(gp.MINECRAFT_PLAYER.getName());
             } else if (gp.CurrentState.equals(GamePlayer.SurvivalState.DOWNED)) {
-                Team down = board.getTeam("02_PLAYERLIST_DOWN");
+                Team down = Main.tabInfo.GetTeam.get(TabInfo.TabType.PLAYERLIST_DOWN);
                 if (down != null) down.addEntry(gp.MINECRAFT_PLAYER.getName());
             } else {
-                Team dead = board.getTeam("03_PLAYERLIST_DEAD");
+                Team dead = Main.tabInfo.GetTeam.get(TabInfo.TabType.PLAYERLIST_DEAD);
                 if (dead != null) dead.addEntry(gp.MINECRAFT_PLAYER.getName());
             }
         }
@@ -119,7 +120,7 @@ public class TabManager {
         Scoreboard board = Bukkit.getScoreboardManager().getMainScoreboard();
 
         sendFakePlayer("Perks");
-        Team perkTop = board.getTeam("10_PERKLIST_TOP");
+        Team perkTop = Main.tabInfo.GetTeam.get(TabInfo.TabType.PERKLIST_TOP);
         if (perkTop != null) perkTop.addEntry("Perks");
     }
 
@@ -144,11 +145,11 @@ public class TabManager {
         for(PerkObject p:player.PLAYER_PERKS.perks)
         {
             UUID perkUuid = sendFakePlayer(p.perkType.displayName);
-            Team perkTeam = board.getTeam("11_PERKLIST");
+            Team perkTeam = Main.tabInfo.GetTeam.get(TabInfo.TabType.PERKLIST);
             if (perkTeam != null) perkTeam.addEntry(p.perkType.displayName);
             TAB_PERKLIST.put(perkUuid, p.perkType.displayName);
         }
-        for(int i = 0; i < TAB_HEIGHT - player.PLAYER_PERKS.perks.size()-1;i++)
+        for(int i = 0; i < TAB_HEIGHT - player.PLAYER_PERKS.perks.size();i++)
         {
             UUID perkUuid = sendFakePlayer("　　　　　　　　　　　　　　　");
             TAB_PERKLIST.put(perkUuid, "　　　　　　　　　　　　　　　");

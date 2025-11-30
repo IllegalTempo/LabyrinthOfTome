@@ -73,3 +73,8 @@ commands:
     usage: /debugtab <header> <footer>
     permissions:
       labyrinthoftome.admin: true
+  spawnmob:
+    description: Spawns a specific wave enemy at your location
+    usage: /spawnmob <enemy_type> [amount]
+    permissions:
+      labyrinthoftome.admin: true

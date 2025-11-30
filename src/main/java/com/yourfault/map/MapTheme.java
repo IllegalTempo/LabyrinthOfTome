@@ -60,7 +60,9 @@ public enum MapTheme {
                                     StructureTemplate.Rotation.CLOCKWISE_180,
                                     StructureTemplate.Rotation.COUNTERCLOCKWISE_90
                             )
-            )
+            ),
+            true,
+            List.of("structures/treeModel/bordertree.nbt")
     ),
     NETHER(
             Material.CRIMSON_NYLIUM,
@@ -101,7 +103,9 @@ public enum MapTheme {
                                     StructureTemplate.Rotation.CLOCKWISE_180,
                                     StructureTemplate.Rotation.COUNTERCLOCKWISE_90
                             )
-            )
+            ),
+            false,
+            List.of()
     ),
     END(
             Material.END_STONE,
@@ -131,6 +135,8 @@ public enum MapTheme {
             ),
             MountainSettings.disabled(),
             false,
+            List.of(),
+            false,
             List.of()
     ),
     DESERT(
@@ -158,6 +164,8 @@ public enum MapTheme {
             roadMaterials(Material.SMOOTH_SANDSTONE, Material.CUT_SANDSTONE, Material.SANDSTONE),
             StructureSettings.template("structures/decoration/watchtower.nbt"),
             MountainSettings.disabled(),
+            false,
+            List.of(),
             false,
             List.of()
     ),
@@ -187,6 +195,8 @@ public enum MapTheme {
             StructureSettings.template("structures/decoration/watchtower.nbt"),
             MountainSettings.of(3, 36),
             false,
+            List.of(),
+            false,
             List.of()
     ),
     GLACIER(
@@ -214,6 +224,8 @@ public enum MapTheme {
             roadMaterials(Material.PACKED_ICE, Material.BLUE_ICE, Material.SNOW_BLOCK),
             StructureSettings.template("structures/decoration/watchtower.nbt"),
             MountainSettings.of(2, 34),
+            false,
+            List.of(),
             false,
             List.of()
     ),
@@ -243,6 +255,8 @@ public enum MapTheme {
             StructureSettings.template("structures/decoration/watchtower.nbt"),
             MountainSettings.disabled(),
             false,
+            List.of(),
+            false,
             List.of()
     ),
     SAVANNA(
@@ -270,6 +284,8 @@ public enum MapTheme {
             roadMaterials(Material.CUT_SANDSTONE, Material.SMOOTH_SANDSTONE, Material.TERRACOTTA),
             StructureSettings.template("structures/decoration/watchtower.nbt"),
             MountainSettings.disabled(),
+            false,
+            List.of(),
             false,
             List.of()
     ),
@@ -299,6 +315,8 @@ public enum MapTheme {
             StructureSettings.template("structures/decoration/watchtower.nbt"),
             MountainSettings.disabled(),
             false,
+            List.of(),
+            false,
             List.of()
     ),
     REAL_MOUNTAIN(
@@ -327,6 +345,8 @@ public enum MapTheme {
             StructureSettings.template("structures/decoration/watchtower.nbt"),
             MountainSettings.of(4, 44),
             false,
+            List.of(),
+            false,
             List.of()
     );
 
@@ -353,6 +373,8 @@ public enum MapTheme {
     private final boolean lampPostsEnabled;
     private final List<StructureTemplate> lampPostTemplates;
     private final MountainSettings mountainSettings;
+    private final boolean borderTreesEnabled;
+    private final List<String> borderTreeResources;
 
     MapTheme(Material topMaterial,
              Material fillerMaterial,
@@ -375,7 +397,9 @@ public enum MapTheme {
              StructureSettings structureSettings,
              MountainSettings mountainSettings,
              boolean lampPostsEnabled,
-             List<StructureTemplate> lampPostTemplates) {
+             List<StructureTemplate> lampPostTemplates,
+             boolean borderTreesEnabled,
+             List<String> borderTreeResources) {
         this.topMaterial = topMaterial;
         this.fillerMaterial = fillerMaterial;
         this.borderMaterial = borderMaterial;
@@ -398,6 +422,16 @@ public enum MapTheme {
         this.lampPostsEnabled = lampPostsEnabled;
         this.lampPostTemplates = lampPostTemplates == null ? List.of() : List.copyOf(lampPostTemplates);
         this.mountainSettings = mountainSettings == null ? MountainSettings.disabled() : mountainSettings;
+        this.borderTreesEnabled = borderTreesEnabled;
+        this.borderTreeResources = borderTreeResources == null ? List.of() : List.copyOf(borderTreeResources);
+    }
+
+    public boolean borderTreesEnabled() {
+        return borderTreesEnabled;
+    }
+
+    public List<String> getBorderTreeResources() {
+        return borderTreeResources;
     }
 
     public Material getTopMaterial() {

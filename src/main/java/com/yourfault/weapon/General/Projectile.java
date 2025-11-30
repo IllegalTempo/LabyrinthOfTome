@@ -1,6 +1,7 @@
 package com.yourfault.weapon.General;
 
 import com.yourfault.Main;
+import com.yourfault.system.Enemy;
 import org.bukkit.Location;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
@@ -19,8 +20,9 @@ public abstract class Projectile {
     boolean UseGravity;
     ItemStack projectileItem;
     protected float age;
+    private float LastFor;
     protected ArmorStand entity;
-    float radius;
+    protected float radius;
     private BukkitRunnable UpdateTask;
 
 
@@ -33,7 +35,8 @@ public abstract class Projectile {
         this.UseGravity = UseGravity;
         this.projectileItem = projectileItem;
 
-        age = LastFor;
+        age = 0;
+        this.LastFor = LastFor;
         this.radius = radius;
 
         entity = eyeLocation.getWorld().spawn(eyeLocation.subtract(0,1,0), ArmorStand.class, e ->{
@@ -74,18 +77,20 @@ public abstract class Projectile {
             @Override
             public void run() {
                 ChildUpdate();
-                if(age == 0) Destroy();
+                if(age == LastFor) Destroy();
                 Vector travel = entity.getLocation().getDirection().multiply(speed);
-                age -= 1;
+                age += 1;
                 if(UseGravity) travel.subtract(Main.game.Gravity);
                 entity.teleport(entity.getLocation().add(travel));
-                Collection<Entity> nearby = entity.getLocation().getWorld().getNearbyEntities(entity.getLocation(), radius, radius, radius);
+                Collection<Entity> nearby = entity.getLocation().getWorld().getNearbyEntities(getDisplayedLocation(), radius, radius, radius);
                 boolean hit = false;
                 for (Entity e : nearby) {
-                    if (e.getScoreboardTags().contains("enemy")) {
-                        Monster_OnHit(e);
-                        hit = true;
-                    }
+                    Enemy enemy = Main.game.ENEMY_LIST.get(e.getUniqueId());
+                    if(enemy == null) return;
+                    enemy.OnBeingDamage(damage);
+                    Monster_OnHit(e);
+                    hit = true;
+
                 }
                 if(hit) Projectile_OnHit();
 
