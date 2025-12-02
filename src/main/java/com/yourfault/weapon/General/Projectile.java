@@ -15,15 +15,15 @@ import java.util.Collection;
 import java.util.Objects;
 
 public abstract class Projectile {
-    float speed;
-    float damage;
-    boolean UseGravity;
-    ItemStack projectileItem;
+    protected float speed;
+    protected float damage;
+    protected boolean UseGravity;
+    protected ItemStack projectileItem;
     protected float age;
-    private float LastFor;
+    protected float LastFor;
     protected ArmorStand entity;
     protected float radius;
-    private BukkitRunnable UpdateTask;
+    protected BukkitRunnable UpdateTask;
 
 
     public Projectile(Location eyeLocation,float speed, float damage, float radius, boolean UseGravity, ItemStack projectileItem, float LastFor)

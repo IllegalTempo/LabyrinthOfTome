@@ -1,10 +1,13 @@
 package com.yourfault.system;
 
 import com.yourfault.Main;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.LivingEntity;
 
 import java.util.Locale;
+
+import static com.yourfault.Main.plugin;
 
 public abstract class Enemy {
     public LivingEntity entity;
@@ -24,7 +27,7 @@ public abstract class Enemy {
         updateDisplay();
 
         Main.game.ENEMY_LIST.put(entity.getUniqueId(),this);
-
+        startUpdate();
 
     }
     private void updateDisplay() {
@@ -34,6 +37,13 @@ public abstract class Enemy {
         entity.setCustomName(label);
 
     }
+    public void startUpdate()
+    {
+        Bukkit.getScheduler().runTaskTimer(plugin,()->{
+            tick();
+        },0L,1L);
+    }
+    public abstract void tick();
     public abstract void OnAttack();
     public abstract void OnDealDamage();
     public void OnBeingDamage(float damage)
