@@ -28,6 +28,11 @@ public class WaveEnemyInstance extends Enemy {
     }
 
     @Override
+    public void tick() {
+
+    }
+
+    @Override
     public void OnAttack() {}
 
     @Override

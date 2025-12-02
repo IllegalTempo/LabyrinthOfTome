@@ -26,6 +26,10 @@ public class PerlinNoise {
         return noise(x, 0.0, z);
     }
 
+    public double sample3D(double x, double y, double z) {
+        return noise(x, y, z);
+    }
+
     private double noise(double x, double y, double z) {
         int xi = fastFloor(x) & 255;
         int yi = fastFloor(y) & 255;

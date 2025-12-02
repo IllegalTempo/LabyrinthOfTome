@@ -62,7 +62,7 @@ public enum MapTheme {
                             )
             ),
             true,
-            List.of("structures/treeModel/bordertree.nbt")
+            List.of("structures/treeModel/bordertree.nbt", "structures/treeModel/bordertree2.nbt")
     ),
     NETHER(
             Material.CRIMSON_NYLIUM,

@@ -1,6 +1,7 @@
 package com.yourfault.map;
 
 import com.yourfault.map.build.*;
+import com.yourfault.map.util.RadialTaskRunner;
 import com.yourfault.system.Game;
 import com.yourfault.utils.PerlinNoise;
 import org.bukkit.Location;
@@ -25,8 +26,9 @@ public class MapManager {
     private final StructurePlacementHelper structureHelper;
     private final RoadBuilder roadBuilder;
     private PerlinNoise noise;
-    private static final int GENERATION_SLICE_INTERVAL_TICKS = 10; // 0.5 seconds
-    private static final int GENERATION_COLUMNS_PER_SLICE = 256;
+    // Map generation rate (configurable). Defaults chosen to be slower than boss-room pacing.
+    private int generationTickIntervalTicks = 2; // ticks between runner executions
+    private int generationColumnsPerTick = 128; // how many columns (operations) to run per tick
     private static final int CLEAR_SLICE_INTERVAL_TICKS = 10;
     private static final int CLEAR_COLUMNS_PER_SLICE = 512;
     private static final int CLEAR_RADIUS_PADDING = 12;
@@ -50,7 +52,7 @@ public class MapManager {
     private int lastRadius;
     private double noiseOffsetX;
     private double noiseOffsetZ;
-    private GenerationSession activeGeneration;
+    private RadialTaskRunner activeGeneration;
     private ClearSession activeClear;
     private int regionMinY;
     private int regionMaxY;
@@ -62,6 +64,24 @@ public class MapManager {
         this.noise = new PerlinNoise(System.currentTimeMillis());
         this.structureHelper = new StructurePlacementHelper(plugin);
         this.roadBuilder = new RoadBuilder();
+    }
+
+    /**
+     * Adjust the map generation pacing. Values are validated (minimum 1).
+     * @param columnsPerTick number of column operations to perform per runner execution
+     * @param tickIntervalTicks ticks between runner executions (1 = every tick)
+     */
+    public synchronized void setMapGenerationRate(int columnsPerTick, int tickIntervalTicks) {
+        this.generationColumnsPerTick = Math.max(1, columnsPerTick);
+        this.generationTickIntervalTicks = Math.max(1, tickIntervalTicks);
+    }
+
+    public synchronized int getMapGenerationColumnsPerTick() {
+        return generationColumnsPerTick;
+    }
+
+    public synchronized int getMapGenerationTickInterval() {
+        return generationTickIntervalTicks;
     }
 
     public synchronized boolean hasActiveMap() {
@@ -126,16 +146,20 @@ public class MapManager {
         int radius = computeRadius(playerCount);
         MapTheme theme = requestedTheme != null ? requestedTheme : MapTheme.pickRandom(random);
 
-        GenerationSession session = new GenerationSession(
-                theme,
-                radius,
-                center.getBlockY(),
-                playerCount,
-                onComplete,
-                onError
+        List<RadialTaskRunner.Step> steps = buildGenerationSteps(radius, center.getBlockY(), theme);
+        if (steps.isEmpty()) {
+            onError.accept("No columns available for generation; check center and radius.");
+            return;
+        }
+
+        RadialTaskRunner runner = new RadialTaskRunner(
+            steps,
+            this.generationColumnsPerTick,
+            () -> finalizeGeneration(theme, radius, center.getBlockY(), playerCount, onComplete),
+            ex -> handleGenerationFailure(ex, onError)
         );
-        activeGeneration = session;
-        session.runTaskTimer(plugin, 1L, GENERATION_SLICE_INTERVAL_TICKS);
+        activeGeneration = runner;
+        runner.runTaskTimer(plugin, 1L, this.generationTickIntervalTicks);
     }
 
     public synchronized void clearMapAsync(Consumer<Integer> onComplete, Consumer<String> onError) {
@@ -1925,36 +1949,33 @@ public class MapManager {
         buildColumn(work.x(), work.z(), surfaceY, theme, work.edge());
     }
 
-    private List<List<ColumnWork>> buildSlices(int radius) {
-        List<List<ColumnWork>> slices = new ArrayList<>();
+    private List<RadialTaskRunner.Step> buildGenerationSteps(int radius, int baseY, MapTheme theme) {
+        List<RadialTaskRunner.Step> steps = new ArrayList<>();
         if (activeCenter == null || radius <= 0) {
-            return slices;
+            return steps;
         }
         int centerX = activeCenter.getBlockX();
         int centerZ = activeCenter.getBlockZ();
         int radiusSquared = radius * radius;
-        List<ColumnWork> allColumns = new ArrayList<>();
         for (int dx = -radius; dx <= radius; dx++) {
             for (int dz = -radius; dz <= radius; dz++) {
                 int distanceSquared = dx * dx + dz * dz;
                 if (distanceSquared > radiusSquared) {
                     continue;
                 }
-                double normalizedDistance = Math.sqrt(distanceSquared) / radius;
+                double distance = Math.sqrt(distanceSquared);
+                double normalizedDistance = distance / radius;
                 boolean edge = normalizedDistance > 0.9;
                 int x = centerX + dx;
                 int z = centerZ + dz;
-                allColumns.add(new ColumnWork(x, z, normalizedDistance, edge));
+                ColumnWork work = new ColumnWork(x, z, normalizedDistance, edge);
+                steps.add(new RadialTaskRunner.Step(
+                        distance,
+                        () -> processColumn(work, baseY, theme)
+                ));
             }
         }
-        allColumns.sort((a, b) -> Double.compare(a.normalizedDistance(), b.normalizedDistance()));
-        int index = 0;
-        while (index < allColumns.size()) {
-            int end = Math.min(allColumns.size(), index + GENERATION_COLUMNS_PER_SLICE);
-            slices.add(new ArrayList<>(allColumns.subList(index, end)));
-            index = end;
-        }
-        return slices;
+        return steps;
     }
 
     private List<ColumnCoordinate> buildClearColumns(int radius) {
@@ -2005,91 +2026,48 @@ public class MapManager {
         regionMaxY = Integer.MIN_VALUE;
     }
 
-    private final class GenerationSession extends BukkitRunnable {
-        private final MapTheme theme;
-        private final int radius;
-        private final int baseY;
-        private final int playerCount;
-        private final Consumer<MapGenerationSummary> completion;
-        private final Consumer<String> error;
-        private final List<List<ColumnWork>> slices;
-        private int sliceCursor = 0;
+    private synchronized void finalizeGeneration(MapTheme theme,
+                                                  int radius,
+                                                  int baseY,
+                                                  int playerCount,
+                                                  Consumer<MapGenerationSummary> completion) {
+        activeGeneration = null;
+        buildBorderWall(theme, radius, baseY);
+        buildContainmentRidge(theme, radius, baseY);
+        generateMountains(theme, radius);
+        RoadPath roadPath = buildRoadNetwork(theme, radius);
+        placeRoadsideStructures(theme, roadPath, radius);
+        buildTopCover(theme, radius, baseY);
+        placePools(theme, radius);
+        placeStructures(theme, radius);
+        placePathBeacons(roadPath);
+        placeSpawnMarkers(playerCount, roadPath, radius);
+        lastTheme = theme;
+        lastRadius = radius;
+        plugin.getLogger().info(String.format("Generated %s PvE map (radius=%d, blocks=%d)", theme.name(), radius, touchedBlocks.size()));
+        MapGenerationSummary summary = new MapGenerationSummary(theme, radius, touchedBlocks.size(), spawnMarkerLocations.size());
+        completion.accept(summary);
+    }
 
-        private GenerationSession(MapTheme theme,
-                                  int radius,
-                                  int baseY,
-                                  int playerCount,
-                                  Consumer<MapGenerationSummary> completion,
-                                  Consumer<String> error) {
-            this.theme = theme;
-            this.radius = radius;
-            this.baseY = baseY;
-            this.playerCount = playerCount;
-            this.completion = completion;
-            this.error = error;
-            this.slices = buildSlices(radius);
-        }
-
-        @Override
-        public void run() {
-            try {
-                if (sliceCursor >= slices.size()) {
-                    finishSuccessfully();
-                    return;
-                }
-                List<ColumnWork> slice = slices.get(sliceCursor++);
-                for (ColumnWork work : slice) {
-                    processColumn(work, baseY, theme);
-                }
-                if (sliceCursor >= slices.size()) {
-                    finishSuccessfully();
-                }
-            } catch (Exception ex) {
-                cancel();
-                handleFailure(ex);
-            }
-        }
-
-        private void finishSuccessfully() {
-            cancel();
-            activeGeneration = null;
-            buildBorderWall(theme, radius, baseY);
-            buildContainmentRidge(theme, radius, baseY);
-            generateMountains(theme, radius);
-            RoadPath roadPath = buildRoadNetwork(theme, radius);
-            placeRoadsideStructures(theme, roadPath, radius);
-            buildTopCover(theme, radius, baseY);
-            placePools(theme, radius);
-            placeStructures(theme, radius);
-            placePathBeacons(roadPath);
-            placeSpawnMarkers(playerCount, roadPath, radius);
-            lastTheme = theme;
-            lastRadius = radius;
-            plugin.getLogger().info(String.format("Generated %s PvE map (radius=%d, blocks=%d)", theme.name(), radius, touchedBlocks.size()));
-            MapGenerationSummary summary = new MapGenerationSummary(theme, radius, touchedBlocks.size(), spawnMarkerLocations.size());
-            completion.accept(summary);
-        }
-
-        private void handleFailure(Exception ex) {
-            plugin.getLogger().log(Level.SEVERE, "Failed to generate map", ex);
-            activeGeneration = null;
-            surfaceHeights.clear();
-            spawnMarkerLocations.clear();
-            touchedBlocks.clear();
-            reservedStructureColumns.clear();
-            roadColumns.clear();
-            mountainColumns.clear();
-            poolColumns.clear();
-            activeRoadPalette = new ArrayList<>();
-            lastRoadHalfWidth = 0;
-            regionMinY = Integer.MAX_VALUE;
-            regionMaxY = Integer.MIN_VALUE;
-            activeCenter = null;
-            activeWorld = null;
-            lastTheme = null;
-            lastRadius = 0;
-            error.accept("Failed to generate map. Check server logs.");
-        }
+    private synchronized void handleGenerationFailure(Exception ex, Consumer<String> error) {
+        plugin.getLogger().log(Level.SEVERE, "Failed to generate map", ex);
+        activeGeneration = null;
+        surfaceHeights.clear();
+        spawnMarkerLocations.clear();
+        touchedBlocks.clear();
+        reservedStructureColumns.clear();
+        roadColumns.clear();
+        mountainColumns.clear();
+        poolColumns.clear();
+        activeRoadPalette = new ArrayList<>();
+        lastRoadHalfWidth = 0;
+        regionMinY = Integer.MAX_VALUE;
+        regionMaxY = Integer.MIN_VALUE;
+        activeCenter = null;
+        activeWorld = null;
+        lastTheme = null;
+        lastRadius = 0;
+        error.accept("Failed to generate map. Check server logs.");
     }
 
     private record TemplateResolved(MapTheme.StructureTemplate template,

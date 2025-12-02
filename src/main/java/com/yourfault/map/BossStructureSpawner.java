@@ -1,12 +1,12 @@
 package com.yourfault.map;
 
+import com.yourfault.map.util.RadialTaskRunner;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.BlockVector;
 
 import java.util.*;
@@ -27,9 +27,8 @@ public class BossStructureSpawner {
     private final StructurePlacementHelper structureHelper;
     private final Random random = new Random();
 
-    private GenerationTask activeGeneration;
-    private ClearTask activeClear;
-    private List<BlockPlacement> placementPlan = Collections.emptyList();
+    private RadialTaskRunner activeGeneration;
+    private RadialTaskRunner activeClear;
     private final Map<BlockPosition, BlockData> originalBlocks = new HashMap<>();
     private Location activeCenter;
     private String activeTemplate;
@@ -112,17 +111,22 @@ public class BossStructureSpawner {
         }
 
         List<BlockPlacement> plan = capturePlacementPlan(world, center, bounds);
-        if (plan.isEmpty()) {
+        List<RadialTaskRunner.Step> steps = buildPlacementSteps(plan);
+        if (steps.isEmpty()) {
             restoreOriginalSnapshot(world);
             originalBlocks.clear();
             onError.accept("Boss room template has no block data to place.");
             return;
         }
 
-        this.placementPlan = plan;
         this.activeCenter = center.clone();
         this.activeTemplate = resource.get();
-        GenerationTask task = new GenerationTask(onSuccess, onError);
+        RadialTaskRunner task = new RadialTaskRunner(
+                steps,
+                PLACEMENTS_PER_TICK,
+                () -> onGenerationFinished(onSuccess),
+                ex -> onGenerationFailed(ex, onError)
+        );
         this.activeGeneration = task;
         task.runTaskTimer(plugin, 1L, 1L);
     }
@@ -154,7 +158,13 @@ public class BossStructureSpawner {
             resetState();
             return;
         }
-        ClearTask task = new ClearTask(restorePlan, onSuccess, onError);
+        List<RadialTaskRunner.Step> steps = buildRestoreSteps(restorePlan);
+        RadialTaskRunner task = new RadialTaskRunner(
+                steps,
+                CLEAR_PLACEMENTS_TICK,
+                () -> onClearFinished(onSuccess),
+                ex -> onClearFailed(ex, onError)
+        );
         this.activeClear = task;
         task.runTaskTimer(plugin, 1L, 1L);
     }
@@ -214,6 +224,21 @@ public class BossStructureSpawner {
         return plan;
     }
 
+    private List<RadialTaskRunner.Step> buildPlacementSteps(List<BlockPlacement> plan) {
+        List<RadialTaskRunner.Step> steps = new ArrayList<>(plan.size());
+        for (BlockPlacement placement : plan) {
+            steps.add(new RadialTaskRunner.Step(
+                    placement.radialDistance(),
+                    () -> {
+                        World world = requireActiveWorld();
+                        Block block = world.getBlockAt(placement.getX(), placement.getY(), placement.getZ());
+                        block.setBlockData(placement.getData().clone(), false);
+                    }
+            ));
+        }
+        return steps;
+    }
+
     private List<BlockRestore> buildRestorePlan() {
         if (activeCenter == null) {
             return Collections.emptyList();
@@ -232,95 +257,50 @@ public class BossStructureSpawner {
         return plan;
     }
 
-    private final class GenerationTask extends BukkitRunnable {
-        private final Consumer<String> success;
-        private final Consumer<String> error;
-        private int cursor = 0;
-
-        private GenerationTask(Consumer<String> success, Consumer<String> error) {
-            this.success = success;
-            this.error = error;
+    private List<RadialTaskRunner.Step> buildRestoreSteps(List<BlockRestore> plan) {
+        List<RadialTaskRunner.Step> steps = new ArrayList<>(plan.size());
+        for (BlockRestore restore : plan) {
+            steps.add(new RadialTaskRunner.Step(
+                    restore.radialDistance(),
+                    () -> {
+                        World world = requireActiveWorld();
+                        Block block = world.getBlockAt(restore.position().getX(), restore.position().getY(), restore.position().getZ());
+                        block.setBlockData(restore.data().clone(), false);
+                        originalBlocks.remove(restore.position());
+                    }
+            ));
         }
-
-        @Override
-        public void run() {
-            try {
-                if (activeCenter == null || activeCenter.getWorld() == null) {
-                    throw new IllegalStateException("Boss room world reference lost.");
-                }
-                int operations = 0;
-                World world = activeCenter.getWorld();
-                while (cursor < placementPlan.size() && operations < PLACEMENTS_PER_TICK) {
-                    BlockPlacement placement = placementPlan.get(cursor++);
-                    Block block = world.getBlockAt(placement.getX(), placement.getY(), placement.getZ());
-                    block.setBlockData(placement.getData().clone(), false);
-                    operations++;
-                }
-                if (cursor >= placementPlan.size()) {
-                    finish();
-                }
-            } catch (Exception ex) {
-                cancel();
-                cleanupAfterFailure();
-                error.accept("Failed to generate boss room: " + ex.getMessage());
-                plugin.getLogger().severe("Boss room generation failed: " + ex.getMessage());
-            }
-        }
-
-        private void finish() {
-            cancel();
-            synchronized (BossStructureSpawner.this) {
-                activeGeneration = null;
-            }
-            success.accept("Boss room generated using " + (activeTemplate != null ? activeTemplate : "template") + ".");
-        }
+        return steps;
     }
 
-    private final class ClearTask extends BukkitRunnable {
-        private final List<BlockRestore> targets;
-        private final Consumer<String> success;
-        private final Consumer<String> error;
-        private int cursor = 0;
+    private synchronized void onGenerationFinished(Consumer<String> onSuccess) {
+        activeGeneration = null;
+        onSuccess.accept("Boss room generated using " + (activeTemplate != null ? activeTemplate : "template") + ".");
+    }
 
-        private ClearTask(List<BlockRestore> targets, Consumer<String> success, Consumer<String> error) {
-            this.targets = targets;
-            this.success = success;
-            this.error = error;
-        }
+    private void onGenerationFailed(Exception ex, Consumer<String> onError) {
+        cleanupAfterFailure();
+        onError.accept("Failed to generate boss room: " + ex.getMessage());
+        plugin.getLogger().severe("Boss room generation failed: " + ex.getMessage());
+    }
 
-        @Override
-        public void run() {
-            try {
-                if (activeCenter == null || activeCenter.getWorld() == null) {
-                    throw new IllegalStateException("Boss room world reference lost.");
-                }
-                World world = activeCenter.getWorld();
-                int operations = 0;
-                while (cursor < targets.size() && operations < CLEAR_PLACEMENTS_TICK) {
-                    BlockRestore restore = targets.get(cursor++);
-                    Block block = world.getBlockAt(restore.position().getX(), restore.position().getY(), restore.position().getZ());
-                    block.setBlockData(restore.data().clone(), false);
-                    originalBlocks.remove(restore.position());
-                    operations++;
-                }
-                if (cursor >= targets.size()) {
-                    finish();
-                }
-            } catch (Exception ex) {
-                cancel();
-                cleanupAfterFailure();
-                error.accept("Failed to clear boss room: " + ex.getMessage());
-                plugin.getLogger().severe("Boss room clearing failed: " + ex.getMessage());
-            }
-        }
+    private synchronized void onClearFinished(Consumer<String> onSuccess) {
+        activeClear = null;
+        resetState();
+        onSuccess.accept("Boss room cleared and world state restored.");
+    }
 
-        private void finish() {
-            cancel();
-            synchronized (BossStructureSpawner.this) {
-                resetState();
-            }
-            success.accept("Boss room cleared and world state restored.");
+    private void onClearFailed(Exception ex, Consumer<String> onError) {
+        cleanupAfterFailure();
+        onError.accept("Failed to clear boss room: " + ex.getMessage());
+        plugin.getLogger().severe("Boss room clearing failed: " + ex.getMessage());
+    }
+
+    private World requireActiveWorld() {
+        if (activeCenter == null || activeCenter.getWorld() == null) {
+            throw new IllegalStateException("Boss room world reference lost.");
         }
+        return activeCenter.getWorld();
     }
 
     private void cleanupAfterFailure() {
@@ -339,7 +319,6 @@ public class BossStructureSpawner {
     private void resetState() {
         activeGeneration = null;
         activeClear = null;
-        placementPlan = Collections.emptyList();
         originalBlocks.clear();
         activeCenter = null;
         activeTemplate = null;
