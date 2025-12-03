@@ -17,11 +17,11 @@ import java.util.function.Consumer;
  */
 public class BossStructureSpawner {
     private static final String[] STRUCTURE_RESOURCES = {
-            "structures/bossRoomModel/BossRoom.nbt",
             "structures/bossRoomModel/BossRoom2.nbt"
     };
     private static final int PLACEMENTS_PER_TICK = 500;
     private static final int CLEAR_PLACEMENTS_TICK = 1500;
+    private static final Set<Material> BLOCKED_TEMPLATE_MATERTIALS = EnumSet.of(Material.BARRIER);
 
     private final JavaPlugin plugin;
     private final StructurePlacementHelper structureHelper;
@@ -210,7 +210,8 @@ public class BossStructureSpawner {
                     int worldZ = bounds.minZ + z;
                     Block block = world.getBlockAt(worldX, worldY, worldZ);
                     BlockData data = block.getBlockData().clone();
-                    if (data.getMaterial() != Material.AIR) {
+                    Material material = data.getMaterial();
+                    if (material != Material.AIR && !BLOCKED_TEMPLATE_MATERTIALS.contains(material)) {
                         double dx = (worldX + 0.5) - centerX;
                         double dz = (worldZ + 0.5) - centerZ;
                         double radial = Math.sqrt(dx * dx + dz * dz);

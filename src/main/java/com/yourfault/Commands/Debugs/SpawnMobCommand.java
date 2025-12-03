@@ -1,8 +1,8 @@
 package com.yourfault.Commands.Debugs;
 
 import com.yourfault.system.Game;
-import com.yourfault.wave.WaveEnemyInstance;
-import com.yourfault.wave.WaveEnemyType;
+import com.yourfault.Enemy.mob.WaveEnemyInstance;
+import com.yourfault.Enemy.mob.WaveEnemyType;
 import com.yourfault.wave.WaveManager;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;

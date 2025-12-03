@@ -2,8 +2,6 @@ package com.yourfault.Enemy.mob;
 
 import com.yourfault.Main;
 import com.yourfault.system.GeneralPlayer.GamePlayer;
-import com.yourfault.wave.WaveEnemyInstance;
-import com.yourfault.wave.WaveEnemyType;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Particle;

@@ -1,6 +1,8 @@
 package com.yourfault.wave;
 
 import com.yourfault.Enemy.mob.LaserZombieEnemy;
+import com.yourfault.Enemy.mob.WaveEnemyInstance;
+import com.yourfault.Enemy.mob.WaveEnemyType;
 import com.yourfault.Main;
 import com.yourfault.map.MapManager;
 import com.yourfault.system.Game;
@@ -13,6 +15,8 @@ import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.scoreboard.ScoreboardManager;
+import org.bukkit.scoreboard.Team;
 
 import java.util.*;
 
@@ -29,6 +33,9 @@ public class WaveManager {
     private boolean active = false;
     private boolean waveInProgress = false;
     private boolean nextWaveScheduled = false;
+    private boolean autoAdvanceEnabled = true;
+    private boolean bossEncounterActive = false;
+    private WaveLifecycleListener lifecycleListener;
 
     public WaveManager(Game game, MapManager mapManager) {
         this.game = game;
@@ -41,6 +48,7 @@ public class WaveManager {
         this.active = true;
         this.waveInProgress = false;
         this.nextWaveScheduled = false;
+        this.bossEncounterActive = false;
         activeWaveEnemyIds.clear();
         activeWaveEnemyIds.clear();
         lastSpawnedEnemies.clear();
@@ -62,10 +70,19 @@ public class WaveManager {
         return difficulty;
     }
 
+    public void setLifecycleListener(WaveLifecycleListener lifecycleListener) {
+        this.lifecycleListener = lifecycleListener;
+    }
+
+    public void setAutoAdvance(boolean enabled) {
+        this.autoAdvanceEnabled = enabled;
+    }
+
     public void stop() {
         this.active = false;
         this.waveInProgress = false;
         this.nextWaveScheduled = false;
+        this.bossEncounterActive = false;
         activeWaveEnemyIds.clear();
         activeWaveEnemies.clear();
         lastSpawnedEnemies.clear();
@@ -86,10 +103,11 @@ public class WaveManager {
             Bukkit.broadcastMessage(ChatColor.RED + "No players have joined the game. Wave cancelled.");
             return;
         }
+        bossEncounterActive = false;
         waveInProgress = true;
         nextWaveScheduled = false;
         currentWave++;
-        Bukkit.getScoreboardManager().getMainScoreboard().getTeam("21_WAVEINFO_CURRENTWAVE").suffix(Component.text(": " + currentWave));
+        updateWaveInfoSuffix(": " + currentWave);
         activeWaveEnemyIds.clear();
         activeWaveEnemies.clear();
         lastSpawnedEnemies.clear();
@@ -98,9 +116,11 @@ public class WaveManager {
         List<WaveEnemyType> composition = planComposition(context);
         game.showWaveTitle(currentWave, composition.size());
         spawnWave(composition, context);
+        notifyEncounterStarted(currentWave, WaveEncounterType.STANDARD, composition.size());
         if (activeWaveEnemyIds.isEmpty()) {
             waveInProgress = false;
             Bukkit.broadcastMessage(ChatColor.RED + "Wave " + currentWave + " failed to spawn any enemies.");
+            notifyEncounterCompleted(currentWave, WaveEncounterType.STANDARD);
         }
     }
 
@@ -117,13 +137,6 @@ public class WaveManager {
         double maxPerType = context.totalWeightBudget() * 0.5;
         Map<WaveEnemyType, Double> weightUsed = new EnumMap<>(WaveEnemyType.class);
         List<WaveEnemyType> result = new ArrayList<>();
-
-        if (context.waveNumber() % 10 == 0) {
-            result.add(WaveEnemyType.BOSS);
-            double bossWeight = WaveEnemyType.BOSS.weight();
-            weightUsed.put(WaveEnemyType.BOSS, bossWeight);
-            remaining = Math.max(0, remaining - bossWeight);
-        }
 
         while (remaining >= getCheapestWeight()) {
             List<WaveEnemyType> candidates = new ArrayList<>();
@@ -156,10 +169,12 @@ public class WaveManager {
         int allowedTier = Math.max(1, (context.waveNumber() / 5) + 1);
         List<WaveEnemyType> list = new ArrayList<>();
         for (WaveEnemyType type : WaveEnemyType.values()) {
+            if (type.isBoss()) {
+                continue;
+            }
             if (type.weight() > remaining) continue;
             if (context.waveNumber() < type.minWave()) continue;
-            if (type.tier() > allowedTier && !type.isBoss()) continue;
-            if (type.isBoss() && context.waveNumber() % 10 != 0) continue;
+            if (type.tier() > allowedTier) continue;
             list.add(type);
         }
         return list;
@@ -357,7 +372,14 @@ public class WaveManager {
             return;
         }
         waveInProgress = false;
+        if (bossEncounterActive) {
+            bossEncounterActive = false;
+            Bukkit.broadcastMessage(ChatColor.GOLD + "Boss encounter cleared!");
+            notifyEncounterCompleted(currentWave, WaveEncounterType.BOSS);
+            return;
+        }
         Bukkit.broadcastMessage(ChatColor.GREEN + "Wave " + currentWave + " cleared! Next wave in 5 seconds.");
+        notifyEncounterCompleted(currentWave, WaveEncounterType.STANDARD);
         scheduleAutoAdvance();
     }
 
@@ -411,6 +433,7 @@ public class WaveManager {
         activeWaveEnemies.clear();
         lastSpawnedEnemies.clear();
         nextWaveScheduled = false;
+        bossEncounterActive = false;
         return removed;
     }
 
@@ -433,7 +456,46 @@ public class WaveManager {
         return activeWaveEnemies.get(entity.getUniqueId());
     }
 
+    public boolean startBossEncounter(Location location) {
+        if (!active) {
+            Bukkit.broadcastMessage(ChatColor.RED + "Wave manager is not active.");
+            return false;
+        }
+        if (waveInProgress) {
+            Bukkit.broadcastMessage(ChatColor.YELLOW + "Cannot start boss while another encounter is active.");
+            return false;
+        }
+        if (location == null || location.getWorld() == null) {
+            Bukkit.broadcastMessage(ChatColor.RED + "Boss spawn location is invalid.");
+            return false;
+        }
+        bossEncounterActive = true;
+        waveInProgress = true;
+        nextWaveScheduled = false;
+        activeWaveEnemyIds.clear();
+        activeWaveEnemies.clear();
+        lastSpawnedEnemies.clear();
+        WaveContext context = buildWaveContext(Math.max(1, game.PLAYER_LIST.size()));
+        LivingEntity bossEntity = WaveEnemyType.BOSS.spawn(location.getWorld(), location.clone());
+        tagWaveEntity(bossEntity, WaveEnemyType.BOSS);
+        applyScaling(bossEntity, WaveEnemyType.BOSS, context);
+        activeWaveEnemyIds.add(bossEntity.getUniqueId());
+        updateWaveInfoSuffix(": Boss");
+        Bukkit.broadcastMessage(ChatColor.DARK_RED + "Boss encounter beginning! Hold firm.");
+        notifyEncounterStarted(currentWave, WaveEncounterType.BOSS, 1);
+        if (activeWaveEnemyIds.isEmpty()) {
+            bossEncounterActive = false;
+            waveInProgress = false;
+            notifyEncounterCompleted(currentWave, WaveEncounterType.BOSS);
+            return false;
+        }
+        return true;
+    }
+
     private void scheduleAutoAdvance() {
+        if (!autoAdvanceEnabled) {
+            return;
+        }
         if (nextWaveScheduled) {
             return;
         }
@@ -449,6 +511,32 @@ public class WaveManager {
 
     public boolean isWaveInProgress() {
         return waveInProgress;
+    }
+
+    private void notifyEncounterStarted(int waveNumber, WaveEncounterType type, int enemyCount) {
+        if (lifecycleListener != null) {
+            lifecycleListener.onEncounterStarted(waveNumber, type, enemyCount);
+        }
+    }
+
+    private void notifyEncounterCompleted(int waveNumber, WaveEncounterType type) {
+        if (lifecycleListener != null) {
+            lifecycleListener.onEncounterCompleted(waveNumber, type);
+        }
+    }
+
+    private void updateWaveInfoSuffix(String suffixValue) {
+        if (suffixValue == null) {
+            return;
+        }
+        ScoreboardManager manager = Bukkit.getScoreboardManager();
+        if (manager == null) {
+            return;
+        }
+        Team team = manager.getMainScoreboard().getTeam("21_WAVEINFO_CURRENTWAVE");
+        if (team != null) {
+            team.suffix(Component.text(suffixValue));
+        }
     }
 
 }

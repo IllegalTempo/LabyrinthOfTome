@@ -2,6 +2,8 @@ package com.yourfault.map;
 
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.Material;
 import org.bukkit.block.structure.Mirror;
 import org.bukkit.block.structure.StructureRotation;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -75,7 +77,7 @@ public final class StructurePlacementHelper {
         Location origin = new Location(world, centerX - offsetX, baseY, centerZ - offsetZ);
 
         // Snapshot non-air blocks inside the structure footprint so AIR in the template doesn't erase them.
-        Map<String, org.bukkit.Material> preExisting = new HashMap<>();
+        Map<String, BlockData> preExisting = new HashMap<>();
         int ox = origin.getBlockX();
         int oy = origin.getBlockY();
         int oz = origin.getBlockZ();
@@ -90,8 +92,8 @@ public final class StructurePlacementHelper {
                     int wx = ox + dx;
                     int wz = oz + dz;
                     org.bukkit.block.Block b = world.getBlockAt(wx, wy, wz);
-                    if (b != null && !b.isEmpty() && b.getType() != org.bukkit.Material.AIR) {
-                        preExisting.put(wx + ":" + wy + ":" + wz, b.getType());
+                    if (b != null && !b.isEmpty() && b.getType() != Material.AIR) {
+                        preExisting.put(wx + ":" + wy + ":" + wz, b.getBlockData().clone());
                     }
                 }
             }
@@ -116,21 +118,29 @@ public final class StructurePlacementHelper {
 
         // Restore any pre-existing non-air blocks that were replaced by AIR during placement
         int restored = 0;
-        for (Map.Entry<String, org.bukkit.Material> e : preExisting.entrySet()) {
+        for (Map.Entry<String, BlockData> e : preExisting.entrySet()) {
             String[] parts = e.getKey().split(":");
             int wx = Integer.parseInt(parts[0]);
             int wy = Integer.parseInt(parts[1]);
             int wz = Integer.parseInt(parts[2]);
             if (wy < world.getMinHeight() || wy > world.getMaxHeight()) continue;
             org.bukkit.block.Block after = world.getBlockAt(wx, wy, wz);
-            if (after != null && after.isEmpty()) {
-                after.setType(e.getValue(), false);
+            if (shouldRestore(after)) {
+                after.setBlockData(e.getValue().clone(), false);
                 restored++;
             }
         }
         logger.log(Level.INFO, "placeStructure finished: resource={0} restored={1}", new Object[]{resourcePath, restored});
 
         return true;
+    }
+
+    private boolean shouldRestore(org.bukkit.block.Block block) {
+        if (block == null) {
+            return true;
+        }
+        Material type = block.getType();
+        return type.isAir() || type == Material.STRUCTURE_VOID;
     }
 
     private StructureRotation toBukkitRotation(MapTheme.StructureTemplate.Rotation rotation) {

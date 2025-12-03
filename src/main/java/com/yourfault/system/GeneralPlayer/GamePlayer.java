@@ -543,6 +543,8 @@ public class GamePlayer
                 reviveLocation.setPitch(0f);
                 player.teleport(reviveLocation);
             }
+            Main.tabInfo.GetTeam.get(TabInfo.TabType.PLAYERLIST_ALIVE).addEntry(MINECRAFT_PLAYER.getName());
+
             player.setGameMode(GameMode.ADVENTURE);
             player.setAllowFlight(false);
             player.setFlying(false);

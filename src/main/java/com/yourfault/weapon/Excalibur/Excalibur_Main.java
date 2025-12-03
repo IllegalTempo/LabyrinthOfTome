@@ -5,6 +5,7 @@ import com.yourfault.system.GeneralPlayer.GamePlayer;
 import com.yourfault.utils.AnimationInfo;
 import com.yourfault.utils.ItemUtil;
 import com.yourfault.weapon.WeaponType;
+import io.papermc.paper.event.player.PrePlayerAttackEntityEvent;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import org.bukkit.Bukkit;
@@ -81,6 +82,24 @@ public class Excalibur_Main implements Listener {
 
     }
     @EventHandler
+    public void OnMelee(PrePlayerAttackEntityEvent e)
+    {
+        GamePlayer gamePlayer = Main.game.GetPlayer(e.getPlayer().getUniqueId());
+        if (gamePlayer == null) return;
+        if(gamePlayer.inActionTicks > 0) {e.setCancelled(true);return;}
+        WeaponType selectedWeapon = gamePlayer.SELECTED_WEAPON;
+        if(selectedWeapon != WeaponType.Excalibur) return;
+        if(e.getPlayer().getInventory().getItemInMainHand().getItemMeta() == null) return;
+        List<String> customData = e.getPlayer().getInventory().getItemInMainHand().getItemMeta().getCustomModelDataComponent().getStrings();
+        if(customData.size() == 0) return;
+        String itemname = customData.get(0);
+        if(itemname.equals("excalibur")) {
+            gamePlayer.playAnimation(ANIMATION_LC);
+
+
+        }
+    }
+    @EventHandler
     public void on_F_clicked(PlayerSwapHandItemsEvent e)
     {
         e.setCancelled(true);
@@ -108,12 +127,13 @@ public class Excalibur_Main implements Listener {
 
             }, 20);
             // capture the effect center and owner now so the scheduled task can use them
-            Location effectCenter = e.getPlayer().getLocation().clone().add(0, 1.0, 0);
             Player effectOwner = e.getPlayer();
             Bukkit.getScheduler().runTaskLater(plugin, ()-> {
+                Location effectCenter = e.getPlayer().getLocation().clone().add(0, 1.0, 0);
+
                 F_MainEffect(effectCenter, effectOwner);
 
-             }, 25L);
+             }, 30L);
         }
     }
     private void F_MainEffect(Location center, Player owner)
@@ -128,7 +148,7 @@ public class Excalibur_Main implements Listener {
             double x = Math.cos(angle) * radius;
             double z = Math.sin(angle) * radius;
             // projectile spawn location slightly above the center
-            Location spawnLoc = center.clone().add(x, 0.2, z);
+            Location spawnLoc = center.clone();
             // direction outward from the center
             Vector dir = new Vector(x, 0, z).normalize();
             if (dir.lengthSquared() == 0) dir = owner.getLocation().getDirection().clone();

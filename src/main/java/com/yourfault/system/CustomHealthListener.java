@@ -1,11 +1,16 @@
 package com.yourfault.system;
 
 import com.yourfault.system.GeneralPlayer.GamePlayer;
+import org.bukkit.Bukkit;
+import org.bukkit.damage.DamageSource;
+import org.bukkit.damage.DamageType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
+
+import static com.yourfault.Main.plugin;
 
 /**
  * Redirects vanilla damage into the custom GamePlayer health pool.
@@ -28,7 +33,17 @@ public class CustomHealthListener implements Listener {
         if(game.ENEMY_LIST.containsKey(event.getEntity().getUniqueId()))
         {
             Enemy enemy = game.ENEMY_LIST.get(event.getEntity().getUniqueId());
-            enemy.OnBeingDamage((float) damage);
+            if(event.getCause() == EntityDamageEvent.DamageCause.ENTITY_ATTACK)
+            {
+                Bukkit.getScheduler().runTaskLater(plugin,()-> {
+                    enemy.OnBeingDamage((float) damage);
+
+                },5L);
+
+            }else {
+                enemy.OnBeingDamage((float) damage);
+
+            }
             event.setCancelled(true);
         }
         if ((event.getEntity() instanceof Player player)) {
@@ -41,10 +56,5 @@ public class CustomHealthListener implements Listener {
 
 
     }
-    @EventHandler
-    public void onEnemyDamage(EntityDamageEvent event)
-    {
 
-
-    }
 }

@@ -78,3 +78,13 @@ commands:
     usage: /spawnmob <enemy_type> [amount]
     permissions:
       labyrinthoftome.admin: true
+  playgame:
+    description: Starts the game loop readiness flow
+    usage: /playgame
+    permissions:
+      labyrinthoftome.admin: true
+  ready:
+    description: Responds to game loop ready prompts
+    usage: /ready
+    permissions:
+      labyrinthoftome.admin: true

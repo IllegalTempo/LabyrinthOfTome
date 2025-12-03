@@ -32,17 +32,30 @@ public enum MapTheme {
             true,
             roadMaterials(Material.MOSSY_COBBLESTONE, Material.COARSE_DIRT, Material.DIRT_PATH),
             StructureSettings.ofTemplates(
-                    StructureTemplate.template("structures/decoration/watchtower.nbt", 10),
-                    StructureTemplate.template("structures/treeModel/oaktree_6_7_5.nbt", 10),
-                    StructureTemplate.template("structures/treeModel/oaktree_12_13_11.nbt", 10),
-                    StructureTemplate.template("structures/treeModel/willotree_9_10_10.nbt", 10),
-                    StructureTemplate.template("structures/treeModel/cherrytree_12_10_12.nbt", 10),
-                    StructureTemplate.template("structures/decoration/smallshop.nbt", 10)
+                    StructureTemplate.template("structures/decoration/watchtower.nbt")
+                            .withMaxPlacements(10)
+                            .withMinPlacements(1)
+                            .withRotations(
+                                    StructureTemplate.Rotation.NONE,
+                                    StructureTemplate.Rotation.CLOCKWISE_90,
+                                    StructureTemplate.Rotation.CLOCKWISE_180,
+                                    StructureTemplate.Rotation.COUNTERCLOCKWISE_90
+                            ),
+                    StructureTemplate.template("structures/treeModel/oaktree_6_7_5.nbt").withMaxPlacements(10).withMinPlacements(1),
+                    StructureTemplate.template("structures/treeModel/oaktree_12_13_11.nbt").withMaxPlacements(10).withMinPlacements(1),
+                    StructureTemplate.template("structures/treeModel/willotree_9_10_10.nbt").withMaxPlacements(10).withMinPlacements(1),
+                    StructureTemplate.template("structures/treeModel/cherrytree_12_10_12.nbt").withMaxPlacements(10).withMinPlacements(1),
+                    StructureTemplate.template("structures/decoration/smallshop.nbt").withMaxPlacements(10).withMinPlacements(1),
+                    StructureTemplate.template("structures/decoration/well.nbt").withMaxPlacements(5).withMinPlacements(5).withYawOffset(-1),
+                    StructureTemplate.template("structures/decoration/farmturbine.nbt").withMaxPlacements(2).withMinPlacements(2)
+
             ),
-            MountainSettings.of(3, 35),
+            MountainSettings.of(3, 25),
             true,
             List.of(
-                    StructureTemplate.template("structures/lampPost/light1.nbt", 64)
+                    StructureTemplate.template("structures/lampPost/light1.nbt")
+                            .withMaxPlacements(64)
+                            .withMinPlacements(20)
                             .withFootprintRadius(2)
                             .withEstimatedHeight(7)
                             .withRotations(
@@ -51,7 +64,9 @@ public enum MapTheme {
                                     StructureTemplate.Rotation.CLOCKWISE_180,
                                     StructureTemplate.Rotation.COUNTERCLOCKWISE_90
                             ),
-                    StructureTemplate.template("structures/lampPost/light2.nbt", 64)
+                    StructureTemplate.template("structures/lampPost/light2.nbt")
+                            .withMaxPlacements(64)
+                            .withMinPlacements(10)
                             .withFootprintRadius(2)
                             .withEstimatedHeight(7)
                             .withRotations(
@@ -62,293 +77,109 @@ public enum MapTheme {
                             )
             ),
             true,
-            List.of("structures/treeModel/bordertree.nbt", "structures/treeModel/bordertree2.nbt")
+            List.of(
+                    StructureTemplate.template("structures/treeModel/bordertree.nbt")
+                            .withMaxPlacements(0)
+                            .withMinPlacements(1),
+                    StructureTemplate.template("structures/treeModel/bordertree2.nbt")
+                            .withMaxPlacements(0)
+                            .withMinPlacements(1)
+            )
     ),
-    NETHER(
-            Material.CRIMSON_NYLIUM,
-            Material.NETHERRACK,
-            Material.POLISHED_BASALT,
-            Material.CRIMSON_ROOTS,
-            0.065,
-            4.5,
-            4,
+
+    FROSTED_HILLS(
+            Material.SNOW_BLOCK,
+            Material.PACKED_ICE,
+            Material.BLUE_ICE,
+            Material.SNOW,
+            0.06,
+            3.8,
+            3,
             0.14,
             List.of(
-                    decoration(Material.NETHER_WART_BLOCK, 1.0),
-                    decoration(Material.SHROOMLIGHT, 0.8),
-                    decoration(Material.CRIMSON_FUNGUS, 0.6)
+                    decoration(Material.SNOW, 1.5),
+                    decoration(Material.POWDER_SNOW, 0.7),
+                    decoration(Material.ICE, 0.4)
             ),
             TerrainProfile.DEFAULT,
-            PoolSettings.of(0.7, 1.1),
+            PoolSettings.of(0.8, 1.0),
+            true,
             false,
             true,
+            false,
+            Material.LIGHT_BLUE_STAINED_GLASS,
+            true,
+            roadMaterials(
+                    Material.PACKED_ICE,
+                    Material.BLUE_ICE,
+                    Material.SNOW_BLOCK
+            ),
+            StructureSettings.ofTemplates(
+                    StructureTemplate.template("structures/frosted/ice_pillar.nbt")
+                            .withFootprintRadius(2)
+                            .withEstimatedHeight(4),
+                    StructureTemplate.template("structures/frosted/snow_drift.nbt")
+                            .withFootprintRadius(3)
+                            .withEstimatedHeight(3)
+            ),
+            MountainSettings.of(2, 28),  // Small hills only
+            true,
+            List.of(
+                    StructureTemplate.template("structures/lampPost/ice_lantern.nbt")
+                            .withFootprintRadius(1)
+                            .withEstimatedHeight(4)
+            ),
+            false,
+            List.of()
+    ),
+    SCORCHED_EARTH(
+            Material.COARSE_DIRT,
+            Material.DIRT,
+            Material.BLACK_TERRACOTTA,
+            Material.DEAD_BUSH,
+            0.05,
+            2.5,
+            3,
+            0.18,
+            List.of(
+                    decoration(Material.DEAD_BUSH, 1.2),
+                    decoration(Material.CAMPFIRE, 0.01),
+                    decoration(Material.SOUL_CAMPFIRE, 0.01)
+            ),
+            TerrainProfile.DEFAULT,
+            PoolSettings.of(0.3, 0.9),
+            false,
+            true,           // Lava pools only
             true,
             false,
             Material.BLACK_STAINED_GLASS,
             true,
-            roadMaterials(Material.POLISHED_BASALT, Material.BLACKSTONE, Material.CRIMSON_NYLIUM),
-            StructureSettings.ofTemplates(
-                    StructureTemplate.template("structures/decoration/watchtower.nbt", 2),
-                    StructureTemplate.template("structures/treeModel/wintertree.nbt", 2)
+            roadMaterials(
+                    Material.BLACKSTONE,
+                    Material.GRAVEL,
+                    Material.COARSE_DIRT
             ),
-            MountainSettings.disabled(),
-            true,
-            List.of(
-                    StructureTemplate.template("structures/lampPost/light3nether.nbt", 64)
+            StructureSettings.ofTemplates(
+                    StructureTemplate.template("structures/scorched/burnt_log.nbt")
                             .withFootprintRadius(2)
-                            .withEstimatedHeight(7)
-                            .withRotations(
-                                    StructureTemplate.Rotation.NONE,
-                                    StructureTemplate.Rotation.CLOCKWISE_90,
-                                    StructureTemplate.Rotation.CLOCKWISE_180,
-                                    StructureTemplate.Rotation.COUNTERCLOCKWISE_90
-                            )
-            ),
-            false,
-            List.of()
-    ),
-    END(
-            Material.END_STONE,
-            Material.END_STONE,
-            Material.OBSIDIAN,
-            Material.CHORUS_FLOWER,
-            0.045,
-            2.8,
-            3,
-            0.11,
-            List.of(
-                    decoration(Material.CHORUS_PLANT, 1.0),
-                    decoration(Material.PURPUR_PILLAR, 0.9)
-            ),
-            TerrainProfile.DEFAULT,
-            PoolSettings.of(0.4, 0.9),
-            false,
-            false,
-            true,
-            false,
-            Material.GLASS,
-            true,
-            roadMaterials(Material.OBSIDIAN, Material.PURPUR_BLOCK, Material.END_STONE_BRICKS),
-            StructureSettings.ofTemplates(
-                    StructureTemplate.template("structures/decoration/watchtower.nbt", 3),
-                    StructureTemplate.template("structures/treeModel/wintertree.nbt", 5)
+                            .withEstimatedHeight(3),
+                    StructureTemplate.template("structures/scorched/charred_stump.nbt")
+                            .withFootprintRadius(2)
+                            .withEstimatedHeight(2)
             ),
             MountainSettings.disabled(),
-            false,
-            List.of(),
-            false,
-            List.of()
-    ),
-    DESERT(
-            Material.SAND,
-            Material.SANDSTONE,
-            Material.SMOOTH_SANDSTONE,
-            Material.DEAD_BUSH,
-            0.06,
-            2.4,
-            4,
-            0.09,
+            true,
             List.of(
-                    decoration(Material.CACTUS, 0.7),
-                    decoration(Material.CUT_SANDSTONE, 0.5),
-                    decoration(Material.DEAD_BUSH, 1.2)
+                    StructureTemplate.template("structures/lampPost/skull_torch.nbt")
+                            .withFootprintRadius(1)
+                            .withEstimatedHeight(4)
             ),
-            TerrainProfile.DEFAULT,
-            PoolSettings.of(0.6, 1.5),
-            true,
-            false,
-            true,
-            true,
-            Material.GLASS,
-            true,
-            roadMaterials(Material.SMOOTH_SANDSTONE, Material.CUT_SANDSTONE, Material.SANDSTONE),
-            StructureSettings.template("structures/decoration/watchtower.nbt"),
-            MountainSettings.disabled(),
-            false,
-            List.of(),
-            false,
-            List.of()
-    ),
-    MOUNTAINS(
-            Material.STONE,
-            Material.STONE,
-            Material.POLISHED_ANDESITE,
-            Material.SNOW,
-            0.085,
-            5.5,
-            5,
-            0.06,
-            List.of(
-                    decoration(Material.COBBLED_DEEPSLATE, 1.0),
-                    decoration(Material.PACKED_ICE, 0.8),
-                    decoration(Material.COBBLESTONE_STAIRS, 0.6)
-            ),
-            TerrainProfile.DEFAULT,
-            PoolSettings.of(0.8, 0.9),
-            true,
-            false,
-            true,
-            false,
-            Material.GLASS,
-            true,
-            roadMaterials(Material.COBBLESTONE, Material.COBBLED_DEEPSLATE, Material.POLISHED_ANDESITE),
-            StructureSettings.template("structures/decoration/watchtower.nbt"),
-            MountainSettings.of(3, 36),
-            false,
-            List.of(),
-            false,
-            List.of()
-    ),
-    GLACIER(
-            Material.SNOW_BLOCK,
-            Material.PACKED_ICE,
-            Material.BLUE_ICE,
-            Material.ICE,
-            0.05,
-            4.2,
-            4,
-            0.1,
-            List.of(
-                    decoration(Material.SNOW, 1.2),
-                    decoration(Material.ICE, 0.8),
-                    decoration(Material.BLUE_ICE, 0.5)
-            ),
-            TerrainProfile.REAL_MOUNTAIN,
-            PoolSettings.of(0.9, 1.3),
-            true,
-            false,
-            true,
-            false,
-            Material.BLUE_STAINED_GLASS,
-            true,
-            roadMaterials(Material.PACKED_ICE, Material.BLUE_ICE, Material.SNOW_BLOCK),
-            StructureSettings.template("structures/decoration/watchtower.nbt"),
-            MountainSettings.of(2, 34),
-            false,
-            List.of(),
-            false,
-            List.of()
-    ),
-    TROPICAL_RAINFOREST(
-            Material.GRASS_BLOCK,
-            Material.PODZOL,
-            Material.MOSSY_STONE_BRICKS,
-            Material.JUNGLE_LEAVES,
-            0.07,
-            3.2,
-            3,
-            0.22,
-            List.of(
-                    decoration(Material.JUNGLE_SAPLING, 1.0),
-                    decoration(Material.BAMBOO, 0.8),
-                    decoration(Material.VINE, 0.6)
-            ),
-            TerrainProfile.DEFAULT,
-            PoolSettings.of(1.5, 1.8),
-            true,
-            false,
-            true,
-            true,
-            Material.JUNGLE_LEAVES,
-            true,
-            roadMaterials(Material.MOSSY_STONE_BRICKS, Material.MOSS_BLOCK, Material.JUNGLE_PLANKS),
-            StructureSettings.template("structures/decoration/watchtower.nbt"),
-            MountainSettings.disabled(),
-            false,
-            List.of(),
-            false,
-            List.of()
-    ),
-    SAVANNA(
-            Material.GRASS_BLOCK,
-            Material.DIRT,
-            Material.CUT_SANDSTONE,
-            Material.ACACIA_LEAVES,
-            0.06,
-            2.6,
-            3,
-            0.15,
-            List.of(
-                    decoration(Material.ACACIA_SAPLING, 1.0),
-                    decoration(Material.DEAD_BUSH, 0.9),
-                    decoration(Material.HAY_BLOCK, 0.6)
-            ),
-            TerrainProfile.DEFAULT,
-            PoolSettings.of(0.5, 1.0),
-            true,
-            false,
-            true,
-            false,
-            Material.GLASS,
-            true,
-            roadMaterials(Material.CUT_SANDSTONE, Material.SMOOTH_SANDSTONE, Material.TERRACOTTA),
-            StructureSettings.template("structures/decoration/watchtower.nbt"),
-            MountainSettings.disabled(),
-            false,
-            List.of(),
-            false,
-            List.of()
-    ),
-    WETLANDS(
-            Material.MUD,
-            Material.PACKED_MUD,
-            Material.MANGROVE_ROOTS,
-            Material.MANGROVE_LEAVES,
-            0.05,
-            2.2,
-            4,
-            0.2,
-            List.of(
-                    decoration(Material.MANGROVE_PROPAGULE, 1.0),
-                    decoration(Material.LILY_PAD, 0.8),
-                    decoration(Material.TALL_GRASS, 0.7)
-            ),
-            TerrainProfile.DEFAULT,
-            PoolSettings.of(1.8, 2.0),
-            true,
-            false,
-            true,
-            false,
-            Material.GLASS,
-            true,
-            roadMaterials(Material.MUD_BRICKS, Material.MUD, Material.ROOTED_DIRT),
-            StructureSettings.template("structures/decoration/watchtower.nbt"),
-            MountainSettings.disabled(),
-            false,
-            List.of(),
-            false,
-            List.of()
-    ),
-    REAL_MOUNTAIN(
-            Material.STONE,
-            Material.STONE,
-            Material.POLISHED_DEEPSLATE,
-            Material.SNOW,
-            0.12,
-            10.0,
-            6,
-            0.04,
-            List.of(
-                    decoration(Material.SPRUCE_SAPLING, 0.8),
-                    decoration(Material.COBBLESTONE_WALL, 0.6),
-                    decoration(Material.PACKED_ICE, 0.5)
-            ),
-            TerrainProfile.REAL_MOUNTAIN,
-            PoolSettings.of(0.7, 1.0),
-            true,
-            false,
-            true,
-            false,
-            Material.PACKED_ICE,
-            true,
-            roadMaterials(Material.POLISHED_DEEPSLATE, Material.COBBLED_DEEPSLATE, Material.STONE),
-            StructureSettings.template("structures/decoration/watchtower.nbt"),
-            MountainSettings.of(4, 44),
-            false,
-            List.of(),
             false,
             List.of()
     );
+
+
+
 
 
     private final Material topMaterial;
@@ -374,7 +205,7 @@ public enum MapTheme {
     private final List<StructureTemplate> lampPostTemplates;
     private final MountainSettings mountainSettings;
     private final boolean borderTreesEnabled;
-    private final List<String> borderTreeResources;
+    private final List<StructureTemplate> borderTreeTemplates;
 
     MapTheme(Material topMaterial,
              Material fillerMaterial,
@@ -399,7 +230,7 @@ public enum MapTheme {
              boolean lampPostsEnabled,
              List<StructureTemplate> lampPostTemplates,
              boolean borderTreesEnabled,
-             List<String> borderTreeResources) {
+             List<StructureTemplate> borderTreeTemplates) {
         this.topMaterial = topMaterial;
         this.fillerMaterial = fillerMaterial;
         this.borderMaterial = borderMaterial;
@@ -423,15 +254,15 @@ public enum MapTheme {
         this.lampPostTemplates = lampPostTemplates == null ? List.of() : List.copyOf(lampPostTemplates);
         this.mountainSettings = mountainSettings == null ? MountainSettings.disabled() : mountainSettings;
         this.borderTreesEnabled = borderTreesEnabled;
-        this.borderTreeResources = borderTreeResources == null ? List.of() : List.copyOf(borderTreeResources);
+        this.borderTreeTemplates = borderTreeTemplates == null ? List.of() : List.copyOf(borderTreeTemplates);
     }
 
     public boolean borderTreesEnabled() {
-        return borderTreesEnabled;
+        return borderTreesEnabled && !borderTreeTemplates.isEmpty();
     }
 
-    public List<String> getBorderTreeResources() {
-        return borderTreeResources;
+    public List<StructureTemplate> getBorderTreeTemplates() {
+        return borderTreeTemplates;
     }
 
     public Material getTopMaterial() {
@@ -618,7 +449,9 @@ public enum MapTheme {
         private final int fallbackFootprintRadius;
         private final int estimatedHeight;
         private final double weight;
+        private final int minPlacements;
         private final int maxPlacements;
+        private final int yawOffset;
         private final EnumSet<Rotation> rotations;
         private final Rotation[] rotationPool;
 
@@ -627,14 +460,23 @@ public enum MapTheme {
                                   int fallbackFootprintRadius,
                                   int estimatedHeight,
                                   double weight,
+                                  int minPlacements,
                                   int maxPlacements,
+                                  int yawOffset,
                                   EnumSet<Rotation> rotations) {
             this.resourcePath = resourcePath;
             this.includeEntities = includeEntities;
             this.fallbackFootprintRadius = Math.max(1, fallbackFootprintRadius);
             this.estimatedHeight = Math.max(1, estimatedHeight);
             this.weight = weight <= 0 ? 1.0 : weight;
-            this.maxPlacements = Math.max(0, maxPlacements);
+            int normalizedMin = Math.max(0, minPlacements);
+            int normalizedMax = Math.max(0, maxPlacements);
+            if (normalizedMax < 0 && normalizedMax < normalizedMin) {
+                normalizedMax = normalizedMin;
+            }
+            this.minPlacements = normalizedMin;
+            this.maxPlacements = normalizedMax;
+            this.yawOffset = yawOffset;
             EnumSet<Rotation> normalized = rotations == null || rotations.isEmpty()
                     ? EnumSet.of(Rotation.NONE)
                     : EnumSet.copyOf(rotations);
@@ -643,35 +485,39 @@ public enum MapTheme {
         }
 
         public static StructureTemplate template(String resourcePath) {
-            return new StructureTemplate(resourcePath, false, 4, 24, 1.0, 1, EnumSet.of(Rotation.NONE));
-        }
-
-        public static StructureTemplate template(String resourcePath, int maxPlacements) {
-            return new StructureTemplate(resourcePath, false, 4, 24, 1.0, maxPlacements, EnumSet.of(Rotation.NONE));
+            return new StructureTemplate(resourcePath, false, 4, 24, 1.0, 1, 1, 0, EnumSet.of(Rotation.NONE));
         }
 
         public StructureTemplate withIncludeEntities(boolean includeEntities) {
-            return new StructureTemplate(resourcePath, includeEntities, fallbackFootprintRadius, estimatedHeight, weight, maxPlacements, rotations);
+            return new StructureTemplate(resourcePath, includeEntities, fallbackFootprintRadius, estimatedHeight, weight, minPlacements, maxPlacements, yawOffset, rotations);
         }
 
         public StructureTemplate withFootprintRadius(int radius) {
-            return new StructureTemplate(resourcePath, includeEntities, Math.max(1, radius), estimatedHeight, weight, maxPlacements, rotations);
+            return new StructureTemplate(resourcePath, includeEntities, Math.max(1, radius), estimatedHeight, weight, minPlacements, maxPlacements, yawOffset, rotations);
         }
 
         public StructureTemplate withEstimatedHeight(int height) {
-            return new StructureTemplate(resourcePath, includeEntities, fallbackFootprintRadius, Math.max(1, height), weight, maxPlacements, rotations);
+            return new StructureTemplate(resourcePath, includeEntities, fallbackFootprintRadius, Math.max(1, height), weight, minPlacements, maxPlacements, yawOffset, rotations);
         }
 
         public StructureTemplate withWeight(double weight) {
-            return new StructureTemplate(resourcePath, includeEntities, fallbackFootprintRadius, estimatedHeight, weight, maxPlacements, rotations);
+            return new StructureTemplate(resourcePath, includeEntities, fallbackFootprintRadius, estimatedHeight, weight, minPlacements, maxPlacements, yawOffset, rotations);
+        }
+
+        public StructureTemplate withMinPlacements(int minPlacements) {
+            return new StructureTemplate(resourcePath, includeEntities, fallbackFootprintRadius, estimatedHeight, weight, minPlacements, maxPlacements, yawOffset, rotations);
         }
 
         public StructureTemplate withMaxPlacements(int maxPlacements) {
-            return new StructureTemplate(resourcePath, includeEntities, fallbackFootprintRadius, estimatedHeight, weight, maxPlacements, rotations);
+            return new StructureTemplate(resourcePath, includeEntities, fallbackFootprintRadius, estimatedHeight, weight, minPlacements, maxPlacements, yawOffset, rotations);
+        }
+
+        public StructureTemplate withYawOffset(int yawOffset) {
+            return new StructureTemplate(resourcePath, includeEntities, fallbackFootprintRadius, estimatedHeight, weight, minPlacements, maxPlacements, yawOffset, rotations);
         }
 
         public StructureTemplate withRotations(Rotation... rotations) {
-            return new StructureTemplate(resourcePath, includeEntities, fallbackFootprintRadius, estimatedHeight, weight, maxPlacements, normalizeRotations(rotations));
+            return new StructureTemplate(resourcePath, includeEntities, fallbackFootprintRadius, estimatedHeight, weight, minPlacements, maxPlacements, yawOffset, normalizeRotations(rotations));
         }
 
         public String resourcePath() {
@@ -694,8 +540,16 @@ public enum MapTheme {
             return weight;
         }
 
+        public int minPlacements() {
+            return minPlacements;
+        }
+
         public int maxPlacements() {
             return maxPlacements;
+        }
+
+        public int yawOffset() {
+            return yawOffset;
         }
 
         public EnumSet<Rotation> rotations() {

@@ -10,7 +10,7 @@ import static com.yourfault.Main.world;
 public class HolySword extends Projectile {
 
     public HolySword(Location StartLocation, float damage) {
-        super(StartLocation, 2, damage, 1f, false, 5);
+        super(StartLocation, 1, damage, 1f, false, 10);
         // store the starting age set by the super constructor
 
     }

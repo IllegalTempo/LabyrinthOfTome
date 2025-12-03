@@ -1,6 +1,8 @@
 package com.yourfault;
 
 import com.yourfault.Commands.Debugs.*;
+import com.yourfault.Commands.gameloop.PlayGameCommand;
+import com.yourfault.Commands.gameloop.ReadyCommand;
 import com.yourfault.Commands.map.ClearBossRoomCommand;
 import com.yourfault.Commands.map.ClearMapCommand;
 import com.yourfault.Commands.map.CreateMapCommand;
@@ -8,11 +10,10 @@ import com.yourfault.Commands.map.GenerateBossCommand;
 import com.yourfault.listener.PerkSelectionListener;
 import com.yourfault.map.BossStructureSpawner;
 import com.yourfault.map.MapManager;
+import com.yourfault.gameloop.GameLoopManager;
 import com.yourfault.npcinteraction.WeaponSelect;
 import com.yourfault.system.*;
 import com.yourfault.system.GeneralPlayer.GamePlayer;
-import com.yourfault.test.LOTTestScenario;
-import com.yourfault.test.StartLOTCommand;
 import com.yourfault.wave.WaveCombatListener;
 import com.yourfault.wave.WaveManager;
 import com.yourfault.weapon.Excalibur.Excalibur_Main;
@@ -36,7 +37,7 @@ public class Main extends JavaPlugin {
     private WaveManager waveManager;
     private MapManager mapManager;
     private BossStructureSpawner bossStructureSpawner;
-    private LOTTestScenario lotTestScenario;
+    private GameLoopManager gameLoopManager;
     private BleedoutManager bleedManager;
 
     //private QuickdrawAbility quickdrawAbility;
@@ -53,13 +54,14 @@ public class Main extends JavaPlugin {
         new Game(this);
         mapManager = new MapManager(this, game);
         bossStructureSpawner = new BossStructureSpawner(this);
-        lotTestScenario = new LOTTestScenario(this, game, mapManager, bossStructureSpawner);
         bleedManager = new BleedoutManager(this, game);
         bleedoutManager = bleedManager;
         this.getServer().getPluginManager().registerEvents(bleedManager, this);
         waveManager = new WaveManager(game, mapManager);
         game.setWaveManager(waveManager);
         game.setBossSpawner(bossStructureSpawner);
+        gameLoopManager = new GameLoopManager(this, game, mapManager, bossStructureSpawner, waveManager);
+        game.setGameLoopManager(gameLoopManager);
 
         perkSelectionListener = new PerkSelectionListener(this);
 
@@ -82,11 +84,12 @@ public class Main extends JavaPlugin {
         this.getCommand("clearmap").setExecutor(new ClearMapCommand(mapManager));
         this.getCommand("generateboss").setExecutor(new GenerateBossCommand(bossStructureSpawner));
         this.getCommand("clearbossroom").setExecutor(new ClearBossRoomCommand(bossStructureSpawner));
-        this.getCommand("startlot").setExecutor(new StartLOTCommand(lotTestScenario));
         this.getCommand("skipwave").setExecutor(new SkipWaveCommand(game));
         this.getCommand("damageself").setExecutor(new changehealth());
         this.getCommand("debugtab").setExecutor(new SetHeaderAndFooter());
         this.getCommand("spawnmob").setExecutor(new SpawnMobCommand(game));
+        this.getCommand("playgame").setExecutor(new PlayGameCommand(game));
+        this.getCommand("ready").setExecutor(new ReadyCommand(game));
 
     }
     private void RegisterPlayerActivity()

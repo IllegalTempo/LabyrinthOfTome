@@ -5,33 +5,50 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="18b9d33a-a1ab-4c7e-badb-df567bdbf954" name="Changes" comment="idk">
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/Excalibur/HolySword.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/checksums/checksums.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/checksums/checksums.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/checksums/md5-checksums.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/checksums/md5-checksums.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/checksums/sha1-checksums.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/checksums/sha1-checksums.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/executionHistory/executionHistory.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/executionHistory/executionHistory.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/executionHistory/executionHistory.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/executionHistory/executionHistory.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/fileHashes/fileHashes.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/fileHashes/fileHashes.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/fileHashes/fileHashes.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/fileHashes/fileHashes.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/fileHashes/resourceHashesCache.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/fileHashes/resourceHashesCache.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/caches/paperweight/taskCache/mappedServerJar.jar" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/caches/paperweight/taskCache/mappedServerJar.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.10.2/checksums/checksums.lock" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.10.2/checksums/md5-checksums.bin" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.10.2/checksums/sha1-checksums.bin" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.10.2/dependencies-accessors/gc.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.10.2/fileChanges/last-build.bin" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.10.2/fileHashes/fileHashes.lock" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.10.2/gc.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.13/checksums/checksums.lock" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.13/checksums/md5-checksums.bin" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.13/checksums/sha1-checksums.bin" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.13/executionHistory/executionHistory.bin" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.13/executionHistory/executionHistory.lock" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.13/fileChanges/last-build.bin" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.13/fileHashes/fileHashes.bin" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.13/fileHashes/fileHashes.lock" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.13/fileHashes/resourceHashesCache.bin" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.13/gc.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.14.3/checksums/checksums.lock" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.14.3/fileChanges/last-build.bin" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.14.3/fileHashes/fileHashes.bin" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.14.3/fileHashes/fileHashes.lock" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.14.3/gc.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.5/checksums/checksums.lock" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.5/fileChanges/last-build.bin" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.5/fileHashes/fileHashes.lock" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.5/gc.properties" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Main.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/CustomHealthListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/CustomHealthListener.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/Enemy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/Enemy.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/Game.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/Game.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/GamePlayer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/GamePlayer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/TabManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/TabManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/PlayerActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/PlayerActivity.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/Excalibur/Excalibur_Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/Excalibur/Excalibur_Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/Excalibur/Sword_Aura.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/Excalibur/Sword_Aura.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/Excalibur/HolySword.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/Excalibur/HolySword.java" afterDir="false" />
     </list>
     <list id="ed4ece3f-9002-43c6-988a-0eb8110adc25" name="Changes by user" comment="Changes by user">
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Commands/Debugs/SpawnMobCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Commands/Debugs/SpawnMobCommand.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/mob/LaserZombieEnemy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/mob/LaserZombieEnemy.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/map/BossStructureSpawner.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/map/BossStructureSpawner.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/map/MapManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/map/MapManager.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/map/MapTheme.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/map/MapTheme.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/map/StructurePlacementHelper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/map/StructurePlacementHelper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/Game.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/Game.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/wave/WaveManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/wave/WaveManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/plugin.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/plugin.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -343,7 +360,15 @@
       <option name="project" value="LOCAL" />
       <updated>1764638303416</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="idk">
+      <option name="closed" value="true" />
+      <created>1764723450622</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1764723450622</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -357,7 +382,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="master" />
+                        <option value="origin/master" />
                       </list>
                     </value>
                   </entry>

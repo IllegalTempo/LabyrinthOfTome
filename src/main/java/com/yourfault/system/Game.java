@@ -1,6 +1,7 @@
 package com.yourfault.system;
 
 import com.yourfault.Main;
+import com.yourfault.gameloop.GameLoopManager;
 import com.yourfault.listener.PerkSelectionListener;
 import com.yourfault.map.BossStructureSpawner;
 import com.yourfault.map.MapManager;
@@ -15,6 +16,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -62,6 +64,7 @@ public class Game {
     private WaveManager waveManager;
     private MapManager mapManager;
     private BossStructureSpawner bossSpawner;
+    private GameLoopManager gameLoopManager;
     public final Map<String,PerkType> ALL_PERKS = new HashMap<String,PerkType>();
     public Team EnemyTeam;
 
@@ -153,9 +156,11 @@ public class Game {
     public void EndGame()
     {
 
-        PLAYER_LIST.values().forEach((p) -> {
-            p.resetProgress();
-        });
+        if (gameLoopManager != null) {
+            gameLoopManager.handleExternalGameEnd();
+        }
+        Bukkit.broadcastMessage(org.bukkit.ChatColor.RED + "GAME OVER lololololo");
+        PLAYER_LIST.values().forEach(GamePlayer::resetProgress);
         if (waveManager != null) {
             int cleared = waveManager.clearAllEnemiesInstantly(true);
             if (cleared > 0) {
@@ -175,6 +180,7 @@ public class Game {
                     error -> plugin.getLogger().info(String.format("Failed to clear boss room", error))
             );
         }
+        teleportPlayersToLobby();
     }
     public boolean WholeFamilyDies()
     {
@@ -237,6 +243,14 @@ public class Game {
         this.bossSpawner = bossSpawner;
     }
 
+    public void setGameLoopManager(GameLoopManager gameLoopManager) {
+        this.gameLoopManager = gameLoopManager;
+    }
+
+    public GameLoopManager getGameLoopManager() {
+        return gameLoopManager;
+    }
+
     public void showWaveTitle(int waveNumber, int totalEnemies) {
         Title title = Title.title(
                 Component.text("Wave " + waveNumber, NamedTextColor.GOLD),
@@ -261,5 +275,30 @@ public class Game {
             return;
         }
         PLAYER_LIST.values().forEach(perkSelectionListener::preparePlayer);
+    }
+
+    private void teleportPlayersToLobby() {
+        if (PLAYER_LIST.isEmpty()) {
+            return;
+        }
+        var availableWorld = Main.world != null ? Main.world : (Bukkit.getWorlds().isEmpty() ? null : Bukkit.getWorlds().get(0));
+        if (availableWorld == null) {
+            return;
+        }
+        Location lobby;
+        if (gameLoopManager != null) {
+            lobby = gameLoopManager.getConfig().resolveLobby(availableWorld);
+        } else {
+            lobby = new Location(availableWorld, 39, -60, 19);
+        }
+        if (lobby == null) {
+            return;
+        }
+        for (GamePlayer player : PLAYER_LIST.values()) {
+            Player bukkit = player.getMinecraftPlayer();
+            if (bukkit != null && bukkit.isOnline()) {
+                bukkit.teleport(lobby);
+            }
+        }
     }
 }
