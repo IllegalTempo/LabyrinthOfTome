@@ -19,6 +19,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
 import org.bukkit.util.Vector;
 
 import java.time.Duration;
@@ -45,7 +46,7 @@ public class Game {
         Main_Update();
         RegisterPerks();
         RegisterPerksListener();
-
+        InitializeTeam();
     }
     private final JavaPlugin plugin;
     private BukkitRunnable updateTask;
@@ -62,7 +63,19 @@ public class Game {
     private MapManager mapManager;
     private BossStructureSpawner bossSpawner;
     public final Map<String,PerkType> ALL_PERKS = new HashMap<String,PerkType>();
+    public Team EnemyTeam;
 
+    public void InitializeTeam()
+    {
+        Team team = Bukkit.getScoreboardManager().getMainScoreboard().getTeam("enemy");
+        if(team == null)
+        {
+            team = Bukkit.getScoreboardManager().getMainScoreboard().registerNewTeam("enemy");
+            team.color(NamedTextColor.RED);
+        }
+        EnemyTeam = team;
+
+    }
     private void RegisterPerks()
     {
         ALL_PERKS.put("Sharpshooter",new SharpshooterPerk());
@@ -80,16 +93,13 @@ public class Game {
             AddPlayer(player);
 
         });
-        PLAYER_LIST.values().forEach(player -> {
-            player.PLAYER_TAB.initTab();
-
-        });
     }
     public void AddPlayer(Player player)
     {
         player.setInvulnerable(false);
         Main.tabInfo.GetTeam.get(TabInfo.TabType.PLAYERLIST_ALIVE).addEntry(player.getName());
         var gamePlayer = new GamePlayer(player);
+
 
         PLAYER_LIST.put(player.getUniqueId(), gamePlayer);
         showGameStartTitle(player);

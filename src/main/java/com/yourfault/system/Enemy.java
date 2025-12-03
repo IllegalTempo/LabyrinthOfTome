@@ -1,8 +1,12 @@
 package com.yourfault.system;
 
 import com.yourfault.Main;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Particle;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.block.BlockType;
 import org.bukkit.entity.LivingEntity;
 
 import java.util.Locale;
@@ -15,6 +19,7 @@ public abstract class Enemy {
     public float DEFENSE;
     public float MaxHealth;
     public String DisplayName;
+    public float scale = 1;
 
     public Enemy(LivingEntity entity, float health, float MaxHealth, float defense, String displayName)
     {
@@ -28,7 +33,8 @@ public abstract class Enemy {
 
         Main.game.ENEMY_LIST.put(entity.getUniqueId(),this);
         startUpdate();
-
+        Main.game.EnemyTeam.addEntity(entity);
+        entity.setGlowing(true);
     }
     private void updateDisplay() {
 
@@ -41,6 +47,10 @@ public abstract class Enemy {
     {
         Bukkit.getScheduler().runTaskTimer(plugin,()->{
             tick();
+            if(scale > 1)
+            {
+                entity.getAttribute(Attribute.SCALE).setBaseValue(1);
+            }
         },0L,1L);
     }
     public abstract void tick();
@@ -55,6 +65,9 @@ public abstract class Enemy {
         {
             Destroy();
         }
+        entity.getAttribute(Attribute.SCALE).setBaseValue(1.1);
+        scale = 1.1f;
+        entity.getWorld().spawnParticle(Particle.BLOCK, entity.getLocation().add(0,1,0),50,0.3,0.6,0.3,0, BlockType.REDSTONE_BLOCK.createBlockData() );
 
     }
     public void Destroy()

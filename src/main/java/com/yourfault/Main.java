@@ -10,6 +10,7 @@ import com.yourfault.map.BossStructureSpawner;
 import com.yourfault.map.MapManager;
 import com.yourfault.npcinteraction.WeaponSelect;
 import com.yourfault.system.*;
+import com.yourfault.system.GeneralPlayer.GamePlayer;
 import com.yourfault.test.LOTTestScenario;
 import com.yourfault.test.StartLOTCommand;
 import com.yourfault.wave.WaveCombatListener;
@@ -92,7 +93,6 @@ public class Main extends JavaPlugin {
     {
         this.getServer().getPluginManager().registerEvents(new PlayerActivity(),this);
         this.getServer().getPluginManager().registerEvents(new WaveCombatListener(game), this);
-
     }
     private void RegisterNPCInteraction()
     {
@@ -108,7 +108,13 @@ public class Main extends JavaPlugin {
     }
     @Override
     public void onDisable() {
+
         getLogger().info("LOT Disabled");
+        //remove all fakeplayers
+        for (GamePlayer player : game.PLAYER_LIST.values()) {
+            player.PLAYER_TAB.removeAllFakePlayer();
+        }
+
     }
 
 }

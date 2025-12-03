@@ -11,7 +11,7 @@ import static com.yourfault.Main.world;
 public class Sword_Aura extends Projectile {
 
     public Sword_Aura(Location StartLocation, float damage) {
-        super(StartLocation, 2, damage, 0.5f, false, 5);
+        super(StartLocation, 2, damage, 1f, false, 5);
         // store the starting age set by the super constructor
 
     }
@@ -23,7 +23,7 @@ public class Sword_Aura extends Projectile {
         Color color = Color.fromRGB(255,255,Math.clamp(125+(int)age* 20L,0,255));
         Particle.DustOptions dust = new Particle.DustOptions(color, 0.5f + age*0.2f);
 
-        world.spawnParticle(Particle.DUST, getDisplayedLocation(), 100, radius*0.5, 0.1, radius*0.5, 0.0, dust);
+        world.spawnParticle(Particle.DUST, getDisplayedLocation(), 100, radius*0.25, 0.1, radius*0.25, 0.0, dust);
         world.spawnParticle(Particle.END_ROD, getDisplayedLocation(), 1, radius, radius, radius, 0.5, null);
 
         

@@ -28,9 +28,11 @@ import static com.yourfault.system.TabInfo.TAB_HEIGHT;
 
 public class TabManager {
     public final GamePlayer player;
+    public List<UUID> AllFakePlayer = new ArrayList<>();
 
     public TabManager(GamePlayer player) {
         this.player = player;
+        initTab();
 
     }
 
@@ -164,6 +166,13 @@ public class TabManager {
         player.MINECRAFT_PLAYER.sendPlayerListHeaderAndFooter(h, f);
 
     }
+    public void removeAllFakePlayer()
+    {
+        for (UUID uuid : AllFakePlayer) {
+            removeFakePlayer(uuid);
+        }
+        AllFakePlayer.clear();
+    }
 
     public UUID sendFakePlayer(String name,PropertyMap pm) {
         // prefer provided PropertyMap; if it doesn't contain textures, fall back to the black PM
@@ -183,6 +192,7 @@ public class TabManager {
                 npc,
                 CommonListenerCookie.createInitial(profile, false)
         );
+        AllFakePlayer.add(npc.getUUID());
 
         player.sendPacket(ClientboundPlayerInfoUpdatePacket.createPlayerInitializing(Collections.singleton(npc)));
         return profile.id();

@@ -17,6 +17,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Display;
 import org.bukkit.entity.Mannequin;
@@ -166,6 +167,7 @@ public class GamePlayer
         MINECRAFT_PLAYER.getInventory().getItemInMainHand().setItemMeta(meta);
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             itemInHand.setItemMeta(ItemUtil.SetCustomModelData(itemInHand.getItemMeta(),1,"0"));
+
         }, durationTicks);
     }
     public void playAnimation(AnimationInfo info)
@@ -405,6 +407,8 @@ public class GamePlayer
         HEALTH = MAX_HEALTH * 0.2f;
         refillVanillaHealth();
         if (MINECRAFT_PLAYER != null) {
+            Main.tabInfo.GetTeam.get(TabInfo.TabType.PLAYERLIST_ALIVE).addEntry(MINECRAFT_PLAYER.getName());
+
             MINECRAFT_PLAYER.resetTitle();
 
             MINECRAFT_PLAYER.setGameMode(GameMode.ADVENTURE);

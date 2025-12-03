@@ -19,18 +19,32 @@ public class CustomHealthListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPlayerDamage(EntityDamageEvent event) {
-        if (!(event.getEntity() instanceof Player player)) {
-            return;
-        }
-        GamePlayer gamePlayer = game.GetPlayer(player);
-        if (gamePlayer == null) {
-            return;
-        }
+
+
         double damage = event.getFinalDamage();
         if (damage <= 0) {
             return;
         }
-        event.setDamage(0);
-        gamePlayer.damage((float) damage);
+        if(game.ENEMY_LIST.containsKey(event.getEntity().getUniqueId()))
+        {
+            Enemy enemy = game.ENEMY_LIST.get(event.getEntity().getUniqueId());
+            enemy.OnBeingDamage((float) damage);
+            event.setCancelled(true);
+        }
+        if ((event.getEntity() instanceof Player player)) {
+            GamePlayer gamePlayer = game.GetPlayer(player);
+            if (gamePlayer != null) {
+                event.setDamage(0);
+                gamePlayer.damage((float) damage);
+            }
+        }
+
+
+    }
+    @EventHandler
+    public void onEnemyDamage(EntityDamageEvent event)
+    {
+
+
     }
 }
