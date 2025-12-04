@@ -1,6 +1,8 @@
 package com.yourfault.map;
 
 import com.yourfault.map.util.RadialTaskRunner;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -22,6 +24,7 @@ public class BossStructureSpawner {
     private static final int PLACEMENTS_PER_TICK = 500;
     private static final int CLEAR_PLACEMENTS_TICK = 1500;
     private static final Set<Material> BLOCKED_TEMPLATE_MATERTIALS = EnumSet.of(Material.BARRIER);
+        private static final int PROGRESS_STEP_PERCENT = 10;
 
     private final JavaPlugin plugin;
     private final StructurePlacementHelper structureHelper;
@@ -32,6 +35,7 @@ public class BossStructureSpawner {
     private final Map<BlockPosition, BlockData> originalBlocks = new HashMap<>();
     private Location activeCenter;
     private String activeTemplate;
+    private int nextBossRoomProgressBroadcast = PROGRESS_STEP_PERCENT;
 
     public BossStructureSpawner(JavaPlugin plugin) {
         this.plugin = Objects.requireNonNull(plugin, "plugin");
@@ -77,6 +81,8 @@ public class BossStructureSpawner {
             onError.accept("Boss room template could not be loaded.");
             return;
         }
+
+        resetBossProgressGate();
 
         World world = center.getWorld();
         BlockVector size = structureHelper.getStructureSize(resource.get());
@@ -125,10 +131,28 @@ public class BossStructureSpawner {
                 steps,
                 PLACEMENTS_PER_TICK,
                 () -> onGenerationFinished(onSuccess),
-                ex -> onGenerationFailed(ex, onError)
+            ex -> onGenerationFailed(ex, onError),
+            this::handleBossGenerationProgress
         );
         this.activeGeneration = task;
         task.runTaskTimer(plugin, 1L, 1L);
+    }
+
+    private void handleBossGenerationProgress(int completedSteps, int totalSteps) {
+        if (totalSteps <= 0 || nextBossRoomProgressBroadcast > 100) {
+            return;
+        }
+        double fraction = (double) completedSteps / (double) totalSteps;
+        int percent = (int) Math.floor(fraction * 100.0);
+        while (percent >= nextBossRoomProgressBroadcast && nextBossRoomProgressBroadcast < 100) {
+            int displayPercent = nextBossRoomProgressBroadcast;
+            Bukkit.broadcastMessage(ChatColor.LIGHT_PURPLE + "[Boss] Arena prep " + displayPercent + "% complete...");
+            nextBossRoomProgressBroadcast += PROGRESS_STEP_PERCENT;
+        }
+    }
+
+    private void resetBossProgressGate() {
+        nextBossRoomProgressBroadcast = PROGRESS_STEP_PERCENT;
     }
 
     public synchronized void clearBossRoom(Consumer<String> onSuccess,
@@ -323,6 +347,7 @@ public class BossStructureSpawner {
         originalBlocks.clear();
         activeCenter = null;
         activeTemplate = null;
+        resetBossProgressGate();
     }
 
     private static final class Bounds {

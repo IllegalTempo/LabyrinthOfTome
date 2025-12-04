@@ -4,6 +4,8 @@ import com.yourfault.map.build.*;
 import com.yourfault.map.util.RadialTaskRunner;
 import com.yourfault.system.Game;
 import com.yourfault.utils.PerlinNoise;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -25,10 +27,13 @@ public class MapManager {
     private final Random random = new Random();
     private final StructurePlacementHelper structureHelper;
     private final RoadBuilder roadBuilder;
+    private static final int DEFAULT_GENERATION_TICK_INTERVAL_TICKS = 3;
+    private static final int DEFAULT_GENERATION_COLUMNS_PER_TICK = 96;
+    private static final int PROGRESS_STEP_PERCENT = 10;
     private PerlinNoise noise;
     // Map generation rate (configurable). Defaults chosen to be slower than boss-room pacing.
-    private int generationTickIntervalTicks = 2; // ticks between runner executions
-    private int generationColumnsPerTick = 128; // how many columns (operations) to run per tick
+    private int generationTickIntervalTicks = DEFAULT_GENERATION_TICK_INTERVAL_TICKS; // ticks between runner executions
+    private int generationColumnsPerTick = DEFAULT_GENERATION_COLUMNS_PER_TICK; // how many columns (operations) to run per tick
     private static final int CLEAR_SLICE_INTERVAL_TICKS = 10;
     private static final int CLEAR_COLUMNS_PER_SLICE = 512;
     private static final int CLEAR_RADIUS_PADDING = 12;
@@ -60,6 +65,7 @@ public class MapManager {
     private int regionMinY;
     private int regionMaxY;
     private int lastRoadHalfWidth;
+    private int nextGenerationProgressBroadcast = PROGRESS_STEP_PERCENT;
 
     public MapManager(JavaPlugin plugin, Game game) {
         this.plugin = plugin;
@@ -142,6 +148,7 @@ public class MapManager {
         lastRoadHalfWidth = 0;
         regionMinY = Integer.MAX_VALUE;
         regionMaxY = Integer.MIN_VALUE;
+        resetGenerationProgressBroadcastGate();
 
         noise = new PerlinNoise(random.nextLong());
         noiseOffsetX = random.nextDouble() * 10_000d;
@@ -161,7 +168,8 @@ public class MapManager {
                 steps,
                 this.generationColumnsPerTick,
                 () -> finalizeGeneration(theme, radius, center.getBlockY(), playerCount, onComplete),
-                ex -> handleGenerationFailure(ex, onError)
+            ex -> handleGenerationFailure(ex, onError),
+            this::handleGenerationProgress
         );
         activeGeneration = runner;
         runner.runTaskTimer(plugin, 1L, this.generationTickIntervalTicks);
@@ -2345,6 +2353,7 @@ public class MapManager {
         regionMaxY = Integer.MIN_VALUE;
         startBeaconLocation = null;
         endBeaconLocation = null;
+        resetGenerationProgressBroadcastGate();
     }
 
     private synchronized void finalizeGeneration(MapTheme theme,
@@ -2368,6 +2377,7 @@ public class MapManager {
         plugin.getLogger().info(String.format("Generated %s PvE map (radius=%d, blocks=%d)", theme.name(), radius, touchedBlocks.size()));
         MapGenerationSummary summary = new MapGenerationSummary(theme, radius, touchedBlocks.size(), spawnMarkerLocations.size());
         completion.accept(summary);
+        resetGenerationProgressBroadcastGate();
     }
 
     private synchronized void handleGenerationFailure(Exception ex, Consumer<String> error) {
@@ -2389,6 +2399,24 @@ public class MapManager {
         lastTheme = null;
         lastRadius = 0;
         error.accept("Failed to generate map. Check server logs.");
+        resetGenerationProgressBroadcastGate();
+    }
+
+    private void handleGenerationProgress(int completedSteps, int totalSteps) {
+        if (totalSteps <= 0 || nextGenerationProgressBroadcast > 100) {
+            return;
+        }
+        double fraction = (double) completedSteps / (double) totalSteps;
+        int percent = (int) Math.floor(fraction * 100.0);
+        while (percent >= nextGenerationProgressBroadcast && nextGenerationProgressBroadcast < 100) {
+            int displayPercent = nextGenerationProgressBroadcast;
+            Bukkit.broadcastMessage(ChatColor.YELLOW + "[Map] Generation " + displayPercent + "% complete...");
+            nextGenerationProgressBroadcast += PROGRESS_STEP_PERCENT;
+        }
+    }
+
+    private void resetGenerationProgressBroadcastGate() {
+        nextGenerationProgressBroadcast = PROGRESS_STEP_PERCENT;
     }
 
     private record TemplateResolved(MapTheme.StructureTemplate template,

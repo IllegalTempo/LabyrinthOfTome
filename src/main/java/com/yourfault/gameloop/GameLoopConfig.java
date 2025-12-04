@@ -8,7 +8,7 @@ import org.bukkit.util.Vector;
  * Central place for all gameplay coordinates so designers can tweak them without chasing literals.
  */
 public class GameLoopConfig {
-    private final Vector playMapCenter = new Vector(228, 25, -158);
+    private final Vector playMapCenter = new Vector(228, 50, -158);
     private final Vector startBeaconCenter = new Vector(228, 25, -158);
     private final double startScatterRadius = 8.0;
     private final Vector endBeaconCenter = new Vector(228, 25, -158);

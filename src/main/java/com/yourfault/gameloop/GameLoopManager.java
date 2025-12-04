@@ -21,6 +21,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Color;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -30,6 +31,7 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
+import org.bukkit.block.Block;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -73,6 +75,14 @@ public class GameLoopManager implements WaveLifecycleListener {
     private BukkitTask circleTask;
     private BukkitTask gatherTask;
     private BukkitTask scheduledWaveTask;
+    private boolean bossPrepNoticeActive = false;
+    private boolean playersConfirmedNextCycle = false;
+    private boolean pendingArenaReady = false;
+    private boolean waitingForMapNoticeSent = false;
+    private boolean arenaReadyWaitingOnPlayersNoticeSent = false;
+    private boolean awaitingBossRoomClear = false;
+    private Location pendingArenaCenter;
+    private Location pendingStartScatter;
     private final Set<UUID> bossSpectatorIds = new HashSet<>();
 
     private enum ReadyStage {
@@ -190,6 +200,7 @@ public class GameLoopManager implements WaveLifecycleListener {
     }
 
     public void handleExternalGameEnd() {
+        clearActiveMapOnShutdown();
         hardResetState();
         sessionInitialized = false;
         phase = GameLoopPhase.ENDED;
@@ -203,8 +214,9 @@ public class GameLoopManager implements WaveLifecycleListener {
         }
         if (completedMode == ReadyCheck.Mode.CONFIRM_ONLY && readyStage == ReadyStage.POST_BOSS) {
             cycleIndex++;
-            phase = GameLoopPhase.MAP_GENERATING;
-            generateCombatMap();
+            playersConfirmedNextCycle = true;
+            waitingForMapNoticeSent = false;
+            attemptLaunchNextCycle();
         }
     }
 
@@ -214,8 +226,18 @@ public class GameLoopManager implements WaveLifecycleListener {
             game.StartGame(WaveDifficulty.MEDIUM);
             sessionInitialized = true;
         }
-        phase = GameLoopPhase.MAP_GENERATING;
+        prepareNextCycleLaunchState(true);
         generateCombatMap();
+    }
+
+    private void prepareNextCycleLaunchState(boolean playersConfirmed) {
+        playersConfirmedNextCycle = playersConfirmed;
+        pendingArenaReady = false;
+        waitingForMapNoticeSent = false;
+        arenaReadyWaitingOnPlayersNoticeSent = false;
+        pendingArenaCenter = null;
+        pendingStartScatter = null;
+        bossPrepNoticeActive = false;
     }
 
     private void generateCombatMap() {
@@ -224,6 +246,13 @@ public class GameLoopManager implements WaveLifecycleListener {
             failAndShutdown("No world loaded for map generation.");
             return;
         }
+        phase = GameLoopPhase.MAP_GENERATING;
+        pendingArenaReady = false;
+        waitingForMapNoticeSent = false;
+        arenaReadyWaitingOnPlayersNoticeSent = false;
+        pendingArenaCenter = null;
+        pendingStartScatter = null;
+        bossPrepNoticeActive = false;
         Location center = config.resolvePlayMapCenter(world);
         Bukkit.broadcastMessage(ChatColor.YELLOW + "Map is currently generating...");
         mapManager.generateMapAsync(center,
@@ -238,13 +267,14 @@ public class GameLoopManager implements WaveLifecycleListener {
         }
         String themeName = summary.getTheme() != null ? summary.getTheme().name() : "Unknown";
         Bukkit.broadcastMessage(ChatColor.GREEN + "Arena ready with theme " + themeName + ".");
-        Location startCenter = resolveStartScatterCenter(center);
-        teleportPlayersToStart(startCenter);
-        phase = GameLoopPhase.WAVES_ACTIVE;
-        wavesClearedInCycle = 0;
-        cycleIndex = Math.max(0, cycleIndex);
-        waveManager.triggerNextWave();
-        prepareBossArena(center.getWorld());
+        pendingArenaReady = true;
+        arenaReadyWaitingOnPlayersNoticeSent = false;
+        pendingArenaCenter = center != null ? center.clone() : null;
+        pendingStartScatter = resolveStartScatterCenter(center);
+        waitingForMapNoticeSent = false;
+        World world = center != null ? center.getWorld() : null;
+        prepareBossArena(world);
+        attemptLaunchNextCycle();
     }
 
     private void prepareBossArena(World world) {
@@ -277,6 +307,99 @@ public class GameLoopManager implements WaveLifecycleListener {
                     }
                 }
         );
+    }
+
+    private void onBossRoomClearedForNextCycle() {
+        awaitingBossRoomClear = false;
+        if (!loopActive) {
+            return;
+        }
+        Bukkit.broadcastMessage(ChatColor.YELLOW + "Boss room cleared. Assembling the next arena...");
+        generateCombatMap();
+        attemptLaunchNextCycle();
+    }
+
+    private void attemptLaunchNextCycle() {
+        if (!loopActive) {
+            return;
+        }
+        if (!playersConfirmedNextCycle) {
+            if (pendingArenaReady && !arenaReadyWaitingOnPlayersNoticeSent && readyStage == ReadyStage.POST_BOSS) {
+                Bukkit.broadcastMessage(ChatColor.YELLOW + "Arena prepared. Use /ready when everyone is done shopping.");
+                arenaReadyWaitingOnPlayersNoticeSent = true;
+            }
+            return;
+        }
+        if (awaitingBossRoomClear) {
+            if (!waitingForMapNoticeSent) {
+                Bukkit.broadcastMessage(ChatColor.YELLOW + "Boss room cleanup still running. We'll move once it's finished.");
+                waitingForMapNoticeSent = true;
+            }
+            return;
+        }
+        if (!pendingArenaReady) {
+            if (!waitingForMapNoticeSent) {
+                Bukkit.broadcastMessage(ChatColor.YELLOW + "Arena is still generating. You'll be teleported once it's ready.");
+                waitingForMapNoticeSent = true;
+            }
+            return;
+        }
+        Location targetCenter = pendingStartScatter != null ? pendingStartScatter.clone() : resolveStartScatterCenter(pendingArenaCenter);
+        if (targetCenter == null) {
+            Bukkit.broadcastMessage(ChatColor.RED + "Unable to locate a valid start beacon for the next arena. Please contact staff.");
+            return;
+        }
+        teleportPlayersToStart(targetCenter);
+        playersConfirmedNextCycle = false;
+        pendingArenaReady = false;
+        waitingForMapNoticeSent = false;
+        arenaReadyWaitingOnPlayersNoticeSent = false;
+        pendingArenaCenter = null;
+        pendingStartScatter = null;
+        bossPrepNoticeActive = false;
+        World world = targetCenter != null ? targetCenter.getWorld() : resolveWorld();
+        waitForBossRoomThenStartCombat(world);
+    }
+
+    private void waitForBossRoomThenStartCombat(World world) {
+        if (!loopActive) {
+            bossPrepNoticeActive = false;
+            return;
+        }
+        if (world == null) {
+            failAndShutdown("World missing while waiting for boss arena.");
+            return;
+        }
+        if (isBossArenaPrepared()) {
+            bossPrepNoticeActive = false;
+            enterWavePhase();
+            return;
+        }
+        if (!bossPrepNoticeActive) {
+            Bukkit.broadcastMessage(ChatColor.YELLOW + "Boss arena is preparing. Waves will start once it is ready.");
+            bossPrepNoticeActive = true;
+        }
+        if (!bossSpawner.isGenerationRunning() && !bossSpawner.isClearRunning()) {
+            prepareBossArena(world);
+        }
+        Bukkit.getScheduler().runTaskLater(plugin, () -> waitForBossRoomThenStartCombat(world), BOSS_ROOM_READY_POLL_TICKS);
+    }
+
+    private void enterWavePhase() {
+        if (!loopActive) {
+            return;
+        }
+        phase = GameLoopPhase.WAVES_ACTIVE;
+        wavesClearedInCycle = 0;
+        cycleIndex = Math.max(0, cycleIndex);
+        bossPrepNoticeActive = false;
+        waveManager.triggerNextWave();
+    }
+
+    private boolean isBossArenaPrepared() {
+        return bossSpawner.hasActiveBossRoom()
+                && !bossSpawner.isGenerationRunning()
+                && !bossSpawner.isClearRunning();
     }
 
     private void beginBossGatherPhase() {
@@ -381,7 +504,6 @@ public class GameLoopManager implements WaveLifecycleListener {
         }
         phase = GameLoopPhase.BOSS_FIGHT;
         Location spawn = config.resolveBossSpawn(world);
-        teleportPlayersExact(spawn);
         setBossSpectatorMode(false);
         if (!waveManager.startBossEncounter(spawn)) {
             failAndShutdown("Failed to start boss encounter.");
@@ -402,6 +524,7 @@ public class GameLoopManager implements WaveLifecycleListener {
         teleportPlayersExact(config.resolvePerkHub(world));
         Bukkit.broadcastMessage(ChatColor.GOLD + "Boss defeated! Buy perks, then use /ready to continue.");
         readyStage = ReadyStage.POST_BOSS;
+        prepareNextCycleLaunchState(false);
         activeReadyCheck = new ReadyCheck(toUuidList(getOnlineParticipants()), ReadyCheck.Mode.CONFIRM_ONLY);
         if (activeReadyCheck.totalParticipants() == 0) {
             activeReadyCheck = null;
@@ -409,7 +532,11 @@ public class GameLoopManager implements WaveLifecycleListener {
         } else {
             sendPostBossPrompts();
         }
-        bossSpawner.clearBossRoom(msg -> {}, error -> Bukkit.getScheduler().runTask(plugin, () -> Bukkit.broadcastMessage(ChatColor.YELLOW + "Boss room cleanup pending: " + error)));
+        awaitingBossRoomClear = true;
+        bossSpawner.clearBossRoom(
+                msg -> Bukkit.getScheduler().runTask(plugin, this::onBossRoomClearedForNextCycle),
+                error -> Bukkit.getScheduler().runTask(plugin, () -> Bukkit.broadcastMessage(ChatColor.YELLOW + "Boss room cleanup pending: " + error))
+        );
     }
 
     private void scheduleNextWave() {
@@ -497,26 +624,90 @@ public class GameLoopManager implements WaveLifecycleListener {
 
     private void teleportPlayersToStart(Location center) {
         List<Player> players = getOnlineParticipants();
-        if (players.isEmpty()) {
+        if (players.isEmpty() || center == null) {
             return;
         }
-        if (center == null) {
+        World world = center.getWorld();
+        if (world == null) {
             return;
         }
-        double radius = config.getStartScatterRadius();
+        double baseRadius = config.getStartScatterRadius();
+        int generatedRadius = Math.max(0, mapManager.getLastRadius());
+        double interiorRadius = generatedRadius > 0 ? Math.max(6.0, generatedRadius - 6.0) : baseRadius;
+        double scatterRadius = Math.min(interiorRadius, baseRadius + 10.0);
+        scatterRadius = Math.max(4.0, scatterRadius);
         double angleStep = (Math.PI * 2) / players.size();
+        Location mapCenter = mapManager.getActiveCenterLocation().map(Location::clone).orElse(center.clone());
         for (int i = 0; i < players.size(); i++) {
             Player player = players.get(i);
-            double angle = angleStep * i;
-            double distance = radius * 0.5 + random.nextDouble() * (radius * 0.5);
-            double x = center.getX() + Math.cos(angle) * distance;
-            double z = center.getZ() + Math.sin(angle) * distance;
-            Location target = center.clone();
-            target.setX(x);
-            target.setZ(z);
-            target.setY(center.getWorld().getHighestBlockYAt((int) Math.round(x), (int) Math.round(z)) + 1);
-            player.teleport(target);
+            Location safeLocation = null;
+            for (int attempt = 0; attempt < 6 && safeLocation == null; attempt++) {
+                double angleJitter = (random.nextDouble() - 0.5) * angleStep * 0.35;
+                double angle = angleStep * i + angleJitter;
+                double distanceFactor = 0.35 + random.nextDouble() * 0.65;
+                double distance = scatterRadius * distanceFactor;
+                double x = center.getX() + Math.cos(angle) * distance;
+                double z = center.getZ() + Math.sin(angle) * distance;
+                if (mapCenter != null && generatedRadius > 0) {
+                    double dx = x - mapCenter.getX();
+                    double dz = z - mapCenter.getZ();
+                    double dist = Math.sqrt(dx * dx + dz * dz);
+                    double limit = Math.max(3.0, generatedRadius - 5.0);
+                    if (dist > limit && dist > 0.0001) {
+                        double scale = limit / dist;
+                        x = mapCenter.getX() + dx * scale;
+                        z = mapCenter.getZ() + dz * scale;
+                    }
+                }
+                safeLocation = findSafeLandingLocation(world, x, z);
+            }
+            if (safeLocation == null) {
+                safeLocation = center.clone();
+                int fallbackY = world.getHighestBlockYAt(safeLocation.getBlockX(), safeLocation.getBlockZ());
+                safeLocation.setY(fallbackY + 1.0);
+            }
+            safeLocation.setYaw(random.nextFloat() * 360f);
+            safeLocation.setPitch(0f);
+            player.teleport(safeLocation);
         }
+    }
+
+    private Location findSafeLandingLocation(World world, double x, double z) {
+        if (world == null) {
+            return null;
+        }
+        int blockX = (int) Math.floor(x);
+        int blockZ = (int) Math.floor(z);
+        int highest = world.getHighestBlockYAt(blockX, blockZ);
+        int minY = Math.max(world.getMinHeight() + 1, highest - 40);
+        for (int y = highest; y >= minY; y--) {
+            Block ground = world.getBlockAt(blockX, y, blockZ);
+            Material type = ground.getType();
+            if (!type.isSolid()) {
+                continue;
+            }
+            if (isFoliageOrUnsafe(type) || ground.isLiquid()) {
+                continue;
+            }
+            Block head = world.getBlockAt(blockX, y + 1, blockZ);
+            Block head2 = world.getBlockAt(blockX, y + 2, blockZ);
+            if (!head.isEmpty() || !head2.isEmpty()) {
+                continue;
+            }
+            return new Location(world, blockX + 0.5, y + 1.01, blockZ + 0.5);
+        }
+        return null;
+    }
+
+    private boolean isFoliageOrUnsafe(Material material) {
+        if (material == null) {
+            return true;
+        }
+        String name = material.name();
+        if (name.contains("LEAVES") || name.contains("LOG") || name.contains("WOOD")) {
+            return true;
+        }
+        return material == Material.BARRIER || material == Material.LIGHT || material.name().contains("GLASS");
     }
 
     private void teleportPlayersExact(Location location) {
@@ -661,15 +852,33 @@ public class GameLoopManager implements WaveLifecycleListener {
         phase = GameLoopPhase.IDLE;
         readyStage = ReadyStage.INITIAL;
         disableWaveControl();
+        bossPrepNoticeActive = false;
+        awaitingBossRoomClear = false;
+        prepareNextCycleLaunchState(false);
         setBossSpectatorMode(false);
     }
 
     private void failAndShutdown(String reason) {
         Bukkit.broadcastMessage(ChatColor.RED + "Game loop aborted: " + reason);
         setBossSpectatorMode(false);
+        clearActiveMapOnShutdown();
         hardResetState();
         sessionInitialized = false;
         game.EndGame();
+    }
+
+    private void clearActiveMapOnShutdown() {
+        if (!mapManager.hasActiveMap()) {
+            return;
+        }
+        if (mapManager.isGenerationRunning() || mapManager.isClearingRunning()) {
+            plugin.getLogger().info("Arena clear skipped; generation or clearing already in progress.");
+            return;
+        }
+        mapManager.clearMapAsync(
+                removed -> plugin.getLogger().info("Cleared arena during shutdown (" + removed + " blocks)."),
+                error -> plugin.getLogger().warning("Failed to clear arena during shutdown: " + error)
+        );
     }
 
     private void setBossSpectatorMode(boolean enable) {

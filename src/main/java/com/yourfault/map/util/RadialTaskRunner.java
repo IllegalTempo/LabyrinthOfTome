@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
@@ -16,17 +17,27 @@ public final class RadialTaskRunner extends BukkitRunnable {
     private final int operationsPerTick;
     private final Runnable onComplete;
     private final Consumer<Exception> onError;
+    private final BiConsumer<Integer, Integer> progressListener;
     private int cursor;
 
     public RadialTaskRunner(List<Step> steps,
                             int operationsPerTick,
                             Runnable onComplete,
                             Consumer<Exception> onError) {
+        this(steps, operationsPerTick, onComplete, onError, null);
+    }
+
+    public RadialTaskRunner(List<Step> steps,
+                            int operationsPerTick,
+                            Runnable onComplete,
+                            Consumer<Exception> onError,
+                            BiConsumer<Integer, Integer> progressListener) {
         this.steps = new ArrayList<>(Objects.requireNonNull(steps, "steps"));
         this.steps.sort(Comparator.comparingDouble(Step::radialDistance));
         this.operationsPerTick = Math.max(1, operationsPerTick);
         this.onComplete = Objects.requireNonNull(onComplete, "onComplete");
         this.onError = Objects.requireNonNull(onError, "onError");
+        this.progressListener = progressListener;
     }
 
     @Override
@@ -36,6 +47,9 @@ public final class RadialTaskRunner extends BukkitRunnable {
             while (cursor < steps.size() && processed < operationsPerTick) {
                 steps.get(cursor++).action().run();
                 processed++;
+            }
+            if (progressListener != null && processed > 0) {
+                progressListener.accept(cursor, steps.size());
             }
             if (cursor >= steps.size()) {
                 cancel();
