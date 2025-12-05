@@ -11,10 +11,12 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.block.Block;
 import org.bukkit.scoreboard.ScoreboardManager;
 import org.bukkit.scoreboard.Team;
 
@@ -22,8 +24,12 @@ import java.util.*;
 
 public class WaveManager {
     private final Game game;
-    private final Random random = new Random();
     private final MapManager mapManager;
+    private final Random random = new Random();
+    private static final double MIN_SPAWN_RADIUS = 15.0;
+    private static final double SPAWN_RADIUS_VARIANCE = 8.0;
+    private static final int MAX_SPAWN_ATTEMPTS = 40;
+    private static final int FALLBACK_ATTEMPTS = 20;
     private final List<UUID> activeWaveEnemyIds = new ArrayList<>();
     private final Map<UUID, WaveEnemyInstance> activeWaveEnemies = new HashMap<>();
     private final List<WaveEnemyInstance> lastSpawnedEnemies = new ArrayList<>();
@@ -203,8 +209,10 @@ public class WaveManager {
             Bukkit.broadcastMessage(ChatColor.RED + "World is not ready. Cannot spawn wave.");
             return;
         }
+        Set<String> usedSpawnBlocks = new HashSet<>();
+        Map<WaveEnemyType, Integer> spawnCounts = new LinkedHashMap<>();
         for (WaveEnemyType type : composition) {
-            Location spawnLocation = pickSpawnLocation();
+            Location spawnLocation = pickSpawnLocation(usedSpawnBlocks);
             if (spawnLocation == null) {
                 continue;
             }
@@ -212,40 +220,186 @@ public class WaveManager {
             tagWaveEntity(entity, type);
             applyScaling(entity, type, context);
             activeWaveEnemyIds.add(entity.getUniqueId());
-            Bukkit.broadcastMessage(ChatColor.DARK_PURPLE + "Spawned " + type.name() + " for wave " + context.waveNumber());
+            spawnCounts.merge(type, 1, Integer::sum);
+        }
+        if (!spawnCounts.isEmpty()) {
+            broadcastSpawnSummary(spawnCounts);
         }
     }
 
-    private Location pickSpawnLocation() {
-        List<Location> markers = mapManager != null ? mapManager.getSpawnMarkers() : Collections.emptyList();
-        if (!markers.isEmpty()) {
-            List<Location> nearbyMarkers = markersNearActivePlayers(markers, 5.0);
-            Location choice = nearbyMarkers.isEmpty() ? markers.get(random.nextInt(markers.size())) : nearbyMarkers.get(random.nextInt(nearbyMarkers.size()));
-            Location spawn = choice.clone();
-            spawn.setY(spawn.getY() + 1);
+    private Location pickSpawnLocation(Set<String> usedBlocks) {
+        List<Location> playerLocations = getActivePlayerLocations();
+        if (playerLocations.isEmpty()) {
+            playerLocations = getWorldPlayerLocations();
+        }
+        Location candidate = tryPickLocationNearPlayers(playerLocations, usedBlocks);
+        return candidate != null ? candidate : pickWorldSpawnFallback(usedBlocks);
+    }
+
+    private Location tryPickLocationNearPlayers(List<Location> playerLocations, Set<String> usedBlocks) {
+        if (playerLocations.isEmpty()) {
+            return null;
+        }
+        for (int attempt = 0; attempt < MAX_SPAWN_ATTEMPTS; attempt++) {
+            Location reference = playerLocations.get(random.nextInt(playerLocations.size()));
+            Location seed = randomLocationAround(reference, MIN_SPAWN_RADIUS, MIN_SPAWN_RADIUS + SPAWN_RADIUS_VARIANCE);
+            if (seed == null) {
+                continue;
+            }
+            Location spawn = finalizeSpawnLocation(seed);
+            if (spawn == null) {
+                continue;
+            }
+            if (!isFarEnoughFromPlayers(spawn, playerLocations)) {
+                continue;
+            }
+            if (!usedBlocks.add(locationKey(spawn))) {
+                continue;
+            }
             return spawn;
         }
-        return pickFallbackLocation();
+        return null;
     }
 
-    private List<Location> markersNearActivePlayers(List<Location> markers, double range) {
-        double rangeSquared = range * range;
-        List<Location> candidates = new ArrayList<>();
-        List<Location> playerLocations = getActivePlayerLocations();
-        for (Location marker : markers) {
-            for (Location playerLocation : playerLocations) {
-                if (!Objects.equals(marker.getWorld(), playerLocation.getWorld())) {
-                    continue;
-                }
-                double dx = marker.getX() - playerLocation.getX();
-                double dz = marker.getZ() - playerLocation.getZ();
-                if ((dx * dx) + (dz * dz) <= rangeSquared) {
-                    candidates.add(marker);
-                    break;
-                }
+    private Location randomLocationAround(Location origin, double minDistance, double maxDistance) {
+        if (origin == null || origin.getWorld() == null) {
+            return null;
+        }
+        double span = Math.max(0.0, maxDistance - minDistance);
+        double distance = minDistance + (span > 0 ? random.nextDouble() * span : 0.0);
+        double angle = random.nextDouble() * Math.PI * 2;
+        double offsetX = Math.cos(angle) * distance;
+        double offsetZ = Math.sin(angle) * distance;
+        Location candidate = origin.clone().add(offsetX, 0, offsetZ);
+        candidate.setY(origin.getY());
+        return candidate;
+    }
+
+    private boolean isFarEnoughFromPlayers(Location candidate, List<Location> playerLocations) {
+        double minDistanceSquared = MIN_SPAWN_RADIUS * MIN_SPAWN_RADIUS;
+        for (Location playerLocation : playerLocations) {
+            if (playerLocation == null) {
+                continue;
+            }
+            if (!Objects.equals(candidate.getWorld(), playerLocation.getWorld())) {
+                continue;
+            }
+            double dx = candidate.getX() - playerLocation.getX();
+            double dz = candidate.getZ() - playerLocation.getZ();
+            if ((dx * dx) + (dz * dz) < minDistanceSquared) {
+                return false;
             }
         }
-        return candidates;
+        return true;
+    }
+
+    private Location pickWorldSpawnFallback(Set<String> usedBlocks) {
+        if (Main.world == null) {
+            return null;
+        }
+        for (int attempt = 0; attempt < FALLBACK_ATTEMPTS; attempt++) {
+            Location seed = Main.world.getSpawnLocation().clone();
+            double offsetX = random.nextInt(41) - 20;
+            double offsetZ = random.nextInt(41) - 20;
+            seed.add(offsetX, 0, offsetZ);
+            Location spawn = finalizeSpawnLocation(seed);
+            if (spawn == null) {
+                continue;
+            }
+            if (!usedBlocks.add(locationKey(spawn))) {
+                continue;
+            }
+            return spawn;
+        }
+        Location fallback = finalizeSpawnLocation(Main.world.getSpawnLocation().clone());
+        if (fallback != null) {
+            usedBlocks.add(locationKey(fallback));
+        }
+        return fallback;
+    }
+
+    private Location finalizeSpawnLocation(Location seed) {
+        if (seed == null || seed.getWorld() == null) {
+            return null;
+        }
+        if (!isWithinActiveArena(seed)) {
+            return null;
+        }
+        Location grounded = snapToGround(seed);
+        if (grounded == null) {
+            return null;
+        }
+        return isWithinActiveArena(grounded) ? grounded : null;
+    }
+
+    private Location snapToGround(Location sample) {
+        if (sample == null || sample.getWorld() == null) {
+            return null;
+        }
+        World world = sample.getWorld();
+        int x = sample.getBlockX();
+        int z = sample.getBlockZ();
+        int highestY = world.getHighestBlockYAt(x, z);
+        int minY = Math.max(world.getMinHeight(), highestY - 32);
+        for (int y = highestY; y >= minY; y--) {
+            Block block = world.getBlockAt(x, y, z);
+            if (!isValidGroundBlock(block)) {
+                continue;
+            }
+            Block above = block.getRelative(0, 1, 0);
+            Block aboveTwo = block.getRelative(0, 2, 0);
+            if (above.getType().isSolid() || aboveTwo.getType().isSolid()) {
+                continue;
+            }
+            return new Location(world, x + 0.5, block.getY() + 1.01, z + 0.5);
+        }
+        return null;
+    }
+
+    private boolean isValidGroundBlock(Block block) {
+        if (block == null) {
+            return false;
+        }
+        Material type = block.getType();
+        if (type.isAir() || block.isLiquid()) {
+            return false;
+        }
+        if (!type.isSolid()) {
+            return false;
+        }
+        String name = type.name();
+        if (name.contains("LEAVES") || name.contains("LOG") || name.contains("WOOD")) {
+            return false;
+        }
+        if (name.contains("FENCE") || name.contains("WALL")) {
+            return false;
+        }
+        return switch (type) {
+            case BARRIER, BEDROCK, MAGMA_BLOCK, CAMPFIRE, SOUL_CAMPFIRE, CACTUS, COBWEB -> false;
+            default -> true;
+        };
+    }
+
+    private boolean isWithinActiveArena(Location location) {
+        if (mapManager == null) {
+            return true;
+        }
+        Optional<Location> centerOpt = mapManager.getActiveCenterLocation();
+        if (centerOpt.isEmpty()) {
+            return true;
+        }
+        Location center = centerOpt.get();
+        if (!Objects.equals(center.getWorld(), location.getWorld())) {
+            return false;
+        }
+        int radius = Math.max(0, mapManager.getLastRadius());
+        if (radius <= 0) {
+            return true;
+        }
+        double limit = Math.max(4.0, radius - 3.0);
+        double dx = location.getX() - center.getX();
+        double dz = location.getZ() - center.getZ();
+        return (dx * dx) + (dz * dz) <= limit * limit;
     }
 
     private List<Location> getActivePlayerLocations() {
@@ -259,23 +413,37 @@ public class WaveManager {
         return locations;
     }
 
-    private Location pickFallbackLocation() {
-        if (Main.world == null || Main.world.getPlayers().isEmpty()) {
-            return null;
+    private List<Location> getWorldPlayerLocations() {
+        if (Main.world == null) {
+            return Collections.emptyList();
         }
-        Player target = Main.world.getPlayers().get(random.nextInt(Main.world.getPlayers().size()));
-        if (target == null) {
-            return null;
+        List<Location> locations = new ArrayList<>();
+        for (Player player : Main.world.getPlayers()) {
+            if (player != null && player.isOnline() && !player.isDead()) {
+                locations.add(player.getLocation());
+            }
         }
-        Location base = target.getLocation();
-        if (base == null) {
-            return null;
+        return locations;
+    }
+
+    private String locationKey(Location location) {
+        String worldName = location.getWorld() != null ? location.getWorld().getName() : "unknown";
+        return worldName + ":" + location.getBlockX() + ":" + location.getBlockY() + ":" + location.getBlockZ();
+    }
+
+    private void broadcastSpawnSummary(Map<WaveEnemyType, Integer> spawnCounts) {
+        int total = spawnCounts.values().stream().mapToInt(Integer::intValue).sum();
+        StringBuilder summary = new StringBuilder();
+        summary.append("================\n");
+        summary.append("[").append(total).append("] mobs have spawned\n");
+        for (Map.Entry<WaveEnemyType, Integer> entry : spawnCounts.entrySet()) {
+            summary.append(entry.getValue())
+                    .append("x ")
+                    .append(entry.getKey().displayName().toUpperCase(Locale.ROOT))
+                    .append("\n");
         }
-        double offsetX = random.nextInt(14) - 7;
-        double offsetZ = random.nextInt(14) - 7;
-        Location spawn = base.clone().add(offsetX, 0, offsetZ);
-        spawn.setY(Main.world.getHighestBlockYAt(spawn) + 1);
-        return spawn;
+        summary.append("================");
+        Bukkit.broadcastMessage(summary.toString());
     }
 
     private void applyScaling(LivingEntity entity, WaveEnemyType type, WaveContext context) {
@@ -332,6 +500,7 @@ public class WaveManager {
     }
 
     public void handleEnemyHit(UUID enemyId, GamePlayer attacker) {
+
         if (!active || attacker == null) {
             return;
         }
@@ -356,12 +525,27 @@ public class WaveManager {
         if (player == null) {
             return;
         }
+        boolean rewarded = false;
         if (coins > 0) {
             player.addCoins(coins);
+            rewarded = true;
         }
         if (xp > 0) {
             player.addExperience(xp);
+            rewarded = true;
         }
+        if (rewarded) {
+            sendRewardMessage(player, coins, xp);
+        }
+    }
+
+    private void sendRewardMessage(GamePlayer player, int coins, int xp) {
+        Player bukkitPlayer = player.getMinecraftPlayer();
+        if (bukkitPlayer == null) {
+            return;
+        }
+        String message = String.format("+%d coins, + %d XP", coins, xp);
+        bukkitPlayer.sendMessage(message);
     }
 
     private void checkWaveCompletion() {

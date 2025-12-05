@@ -21,26 +21,26 @@ public class WaveCombatListener implements Listener {
         this.game = game;
     }
 
-    @EventHandler
-    public void onEnemyDamage(EntityDamageByEntityEvent event) {
-        WaveManager waveManager = game.getWaveManager();
-        if (waveManager == null || !waveManager.isActive()) {
-            return;
-        }
-        Entity target = event.getEntity();
-        if (!(target instanceof LivingEntity living)) {
-            return;
-        }
-        UUID enemyId = living.getUniqueId();
-        if (waveManager.getActiveEnemy(enemyId) == null) {
-            return;
-        }
-        GamePlayer attacker = resolveGamePlayer(event.getDamager());
-        if (attacker == null) {
-            return;
-        }
-        waveManager.handleEnemyHit(enemyId, attacker);
-    }
+//    @EventHandler
+//    public void onEnemyDamage(EntityDamageByEntityEvent event) {
+//        WaveManager waveManager = game.getWaveManager();
+//        if (waveManager == null || !waveManager.isActive()) {
+//            return;
+//        }
+//        Entity target = event.getEntity();
+//        if (!(target instanceof LivingEntity living)) {
+//            return;
+//        }
+//        UUID enemyId = living.getUniqueId();
+//        if (waveManager.getActiveEnemy(enemyId) == null) {
+//            return;
+//        }
+//        GamePlayer attacker = resolveGamePlayer(event.getDamager());
+//        if (attacker == null) {
+//            return;
+//        }
+//        waveManager.handleEnemyHit(enemyId, attacker);
+//    }
 
     @EventHandler
     public void onEnemyDeath(EntityDeathEvent event) {

@@ -32,7 +32,7 @@ import static com.yourfault.NBT_namespace.PERK_TYPE;
 
 public class PerkSelectionListener implements Listener {
     private static final int SELECTOR_SLOT = 8;
-    private static final String GUI_TITLE = "Select your perk";
+    private static final String GUI_TITLE = "Level Perk Upgrades";
     private static final long PERK_REMOVE_CONFIRM_WINDOW_MS = 1500L;
 
     private final NamespacedKey selectorKey;
@@ -55,8 +55,8 @@ public class PerkSelectionListener implements Listener {
         ItemStack stack = new ItemStack(Material.NETHER_STAR);
         ItemMeta meta = stack.getItemMeta();
         if (meta != null) {
-            meta.setDisplayName(ChatColor.GREEN + "Buy Perks");
-            meta.setLore(List.of(ChatColor.GRAY + "Right-click to open the perk menu."));
+            meta.setDisplayName(ChatColor.GREEN + "Manage Level Perks");
+            meta.setLore(List.of(ChatColor.GRAY + "Right-click to upgrade owned level perks."));
             meta.getPersistentDataContainer().set(selectorKey, PersistentDataType.BYTE, (byte) 1);
             stack.setItemMeta(meta);
         }
@@ -83,18 +83,54 @@ public class PerkSelectionListener implements Listener {
     }
 
     private void openSelection(Player player) {
-        player.openInventory(Perk_Shop());
+        GamePlayer gamePlayer = Main.game.GetPlayer(player);
+        if (gamePlayer == null) {
+            player.sendMessage(ChatColor.RED + "You must be in a run to upgrade perks.");
+            return;
+        }
+        player.openInventory(buildUpgradeInventory(gamePlayer));
     }
 
-    private Inventory Perk_Shop() {
-        //Build Perk display in inventory!
-        Inventory inventory = Bukkit.createInventory(null, 27, GUI_TITLE);
-        for (PerkType perkType : Main.game.ALL_PERKS.values())
-        {
-            inventory.setItem(perkType.menuSlot, perkType.shop_getPerkIcon());
+    private Inventory buildUpgradeInventory(GamePlayer gamePlayer) {
+        Inventory inventory = Bukkit.createInventory(null, 54, GUI_TITLE);
+        int slot = 10;
+        for (PerkType perkType : Main.game.ALL_PERKS.values()) {
+            if (!perkType.isLevelPerk()) {
+                continue;
+            }
+            ItemStack icon = buildLevelEntry(perkType, gamePlayer);
+            if (slot >= inventory.getSize()) {
+                break;
+            }
+            inventory.setItem(slot, icon);
+            slot++;
+            if ((slot + 1) % 9 == 0) {
+                slot += 2;
+            }
         }
         fillEmpty(inventory);
         return inventory;
+    }
+
+    private ItemStack buildLevelEntry(PerkType perkType, GamePlayer player) {
+        int currentLevel = player.PLAYER_PERKS.getPerkLevel(perkType);
+        if (currentLevel == 0) {
+            ItemStack base = perkType.buildShopIcon();
+            ItemMeta meta = base.getItemMeta();
+            if (meta != null) {
+                List<String> lore = meta.getLore() == null ? new java.util.ArrayList<>() : new java.util.ArrayList<>(meta.getLore());
+                lore.add(" ");
+                lore.add(ChatColor.RED + "Unlock this perk at the boss shop first.");
+                meta.setLore(lore);
+                meta.getPersistentDataContainer().set(PERK_TYPE, PersistentDataType.STRING, perkType.displayName);
+                base.setItemMeta(meta);
+            }
+            return base;
+        }
+        int maxLevel = perkType.getMaxLevel();
+        int nextLevel = Math.min(maxLevel, currentLevel + 1);
+        int nextCost = currentLevel >= maxLevel ? 0 : perkType.costForLevel(nextLevel);
+        return perkType.buildLevelMenuIcon(currentLevel, maxLevel, nextCost);
     }
 
     private void fillEmpty(Inventory inventory) {
@@ -114,7 +150,7 @@ public class PerkSelectionListener implements Listener {
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
         if (isSelectionInventory(event.getView())) {
-            handleSelectionClick(event);
+            handleUpgradeClick(event);
             return;
         }
         if (!(event.getWhoClicked() instanceof Player player)) {
@@ -184,40 +220,47 @@ public class PerkSelectionListener implements Listener {
         }
     }
 
-    private void handleSelectionClick(InventoryClickEvent event) {
+    private void handleUpgradeClick(InventoryClickEvent event) {
         event.setCancelled(true);
         ItemStack clicked = event.getCurrentItem();
         if (clicked == null) return;
         PerkType perkType = resolvePerkType(clicked);
-        if (perkType == null) return;
+        if (perkType == null || !perkType.isLevelPerk()) return;
         Player player = (Player) event.getWhoClicked();
         GamePlayer gamePlayer = Main.game.GetPlayer(player);
         if (gamePlayer == null) {
-            player.sendMessage(ChatColor.RED + "You must join the game before selecting perks.");
+            player.sendMessage(ChatColor.RED + "You must join the game before upgrading perks.");
             player.closeInventory();
             return;
         }
-        if (gamePlayer.PLAYER_PERKS.hasPerk(perkType)) {
-            player.sendMessage(ChatColor.YELLOW + "You already have " + perkType.displayName + ChatColor.YELLOW + ".");
-            player.closeInventory();
+        if (!gamePlayer.PLAYER_PERKS.hasPerk(perkType)) {
+            player.sendMessage(ChatColor.YELLOW + "Unlock " + perkType.displayName + ChatColor.YELLOW + " at the boss shop first.");
             return;
         }
-
-        int cost = perkType.cost;
+        int currentLevel = gamePlayer.PLAYER_PERKS.getPerkLevel(perkType);
+        int maxLevel = perkType.getMaxLevel();
+        if (currentLevel >= maxLevel) {
+            player.sendMessage(ChatColor.GRAY + perkType.displayName + ChatColor.GRAY + " is already max level.");
+            return;
+        }
+        int nextLevel = currentLevel + 1;
+        int cost = perkType.costForLevel(nextLevel);
+        if (cost <= 0) {
+            player.sendMessage(ChatColor.RED + "This perk cannot be upgraded further.");
+            return;
+        }
         if (!gamePlayer.spendCoins(cost)) {
-            player.sendMessage(ChatColor.RED + "You need " + cost + " coins to buy " + perkType.displayName + ChatColor.RED + ".");
-            player.closeInventory();
+            player.sendMessage(ChatColor.RED + "You need " + cost + " coins to upgrade " + perkType.displayName + ChatColor.RED + ".");
             return;
         }
-
-        boolean applied = gamePlayer.PLAYER_PERKS.applyPerkSelection(perkType);
-        if (applied) {
-            player.sendMessage(ChatColor.GREEN + perkType.displayName + ChatColor.GRAY + " purchased for " + ChatColor.GOLD + cost + ChatColor.GRAY + " coins.");
-        } else {
-            gamePlayer.addCoins(cost); // refund if application failed for any reason
-            player.sendMessage(ChatColor.RED + "Unable to equip perk. Your coins were refunded.");
+        boolean upgraded = gamePlayer.PLAYER_PERKS.levelUpPerk(perkType);
+        if (!upgraded) {
+            player.sendMessage(ChatColor.RED + "Upgrade failed. Coins refunded.");
+            gamePlayer.addCoins(cost);
+            return;
         }
-        player.closeInventory();
+        player.sendMessage(ChatColor.GREEN + "Upgraded " + perkType.displayName + ChatColor.GREEN + " to level " + nextLevel + " for " + ChatColor.GOLD + cost + ChatColor.GREEN + " coins.");
+        player.openInventory(buildUpgradeInventory(gamePlayer));
     }
 
     private boolean isProtectedSlot(int slot) {

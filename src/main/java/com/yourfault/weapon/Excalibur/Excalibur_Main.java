@@ -68,7 +68,7 @@ public class Excalibur_Main implements Listener {
                         //Location loc = gamePlayer.getLocationRelativeToPlayer(new Vector(finalI -7,0,0));
                         loc.setYaw(loc.getYaw() + (finalI-7.5f) * 20f);
 
-                        new Sword_Aura(loc, 10f);
+                        new Sword_Aura(loc, 10f,gamePlayer);
                     }, i);
                 }
 
@@ -127,17 +127,20 @@ public class Excalibur_Main implements Listener {
 
             }, 20);
             // capture the effect center and owner now so the scheduled task can use them
-            Player effectOwner = e.getPlayer();
             Bukkit.getScheduler().runTaskLater(plugin, ()-> {
                 Location effectCenter = e.getPlayer().getLocation().clone().add(0, 1.0, 0);
 
-                F_MainEffect(effectCenter, effectOwner);
+                F_MainEffect(effectCenter, gamePlayer);
 
-             }, 30L);
+            }, 30L);
         }
     }
-    private void F_MainEffect(Location center, Player owner)
+    private void F_MainEffect(Location center, GamePlayer owner)
     {
+        Player bukkitOwner = owner != null ? owner.getMinecraftPlayer() : null;
+        if (bukkitOwner == null) {
+            return;
+        }
         // spawn 16 projectiles arranged in a circle around `center`, each facing outward
         final int count = 32;
         final double radius = 2.0;
@@ -151,10 +154,10 @@ public class Excalibur_Main implements Listener {
             Location spawnLoc = center.clone();
             // direction outward from the center
             Vector dir = new Vector(x, 0, z).normalize();
-            if (dir.lengthSquared() == 0) dir = owner.getLocation().getDirection().clone();
+            if (dir.lengthSquared() == 0) dir = bukkitOwner.getLocation().getDirection().clone();
             spawnLoc.setDirection(dir);
             // create the projectile (Sword_Aura will handle registration)
-            new HolySword(spawnLoc, damage);
+            new HolySword(spawnLoc, damage, owner);
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.yourfault.system;
 
 import com.yourfault.Main;
+import com.yourfault.system.GeneralPlayer.GamePlayer;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -56,19 +57,26 @@ public abstract class Enemy {
     public abstract void tick();
     public abstract void OnAttack();
     public abstract void OnDealDamage();
-    public void OnBeingDamage(float damage)
+    public void OnBeingDamage(float damage, GamePlayer damageDealer)
     {
         HEALTH -= damage;
         entity.damage(0);
         updateDisplay();
-        if(HEALTH <= 0)
+        if(damageDealer != null)
         {
-            Destroy();
+            damageDealer.onDoDamage(this,damage);
+
         }
+
         entity.getAttribute(Attribute.SCALE).setBaseValue(1.1);
         scale = 1.1f;
         entity.getWorld().spawnParticle(Particle.BLOCK, entity.getLocation().add(0,1,0),50,0.3,0.6,0.3,0, BlockType.REDSTONE_BLOCK.createBlockData() );
 
+
+        if(HEALTH <= 0)
+        {
+            Destroy();
+        }
     }
     public void Destroy()
     {

@@ -168,8 +168,8 @@ public class MapManager {
                 steps,
                 this.generationColumnsPerTick,
                 () -> finalizeGeneration(theme, radius, center.getBlockY(), playerCount, onComplete),
-            ex -> handleGenerationFailure(ex, onError),
-            this::handleGenerationProgress
+                ex -> handleGenerationFailure(ex, onError),
+                this::handleGenerationProgress
         );
         activeGeneration = runner;
         runner.runTaskTimer(plugin, 1L, this.generationTickIntervalTicks);
@@ -2371,7 +2371,6 @@ public class MapManager {
         placePools(theme, radius);
         placeStructures(theme, radius);
         placePathBeacons(roadPath);
-        placeSpawnMarkers(playerCount, roadPath, radius);
         lastTheme = theme;
         lastRadius = radius;
         plugin.getLogger().info(String.format("Generated %s PvE map (radius=%d, blocks=%d)", theme.name(), radius, touchedBlocks.size()));

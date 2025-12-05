@@ -2,7 +2,10 @@ package com.yourfault.weapon.General;
 
 import com.yourfault.Main;
 import com.yourfault.system.Enemy;
+import com.yourfault.system.GeneralPlayer.GamePlayer;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.EquipmentSlot;
@@ -24,16 +27,22 @@ public abstract class Projectile {
     protected ArmorStand entity;
     protected float radius;
     protected BukkitRunnable UpdateTask;
+    protected GamePlayer owner;
 
-
-    public Projectile(Location eyeLocation,float speed, float damage, float radius, boolean UseGravity, ItemStack projectileItem, float LastFor)
+    public Projectile(Location eyeLocation,float speed, float damage, float radius, boolean UseGravity, float LastFor, GamePlayer owner)
+    {
+        this(eyeLocation,speed,damage,radius,UseGravity,new ItemStack(Material.AIR),LastFor,owner);
+    }
+    public Projectile(Location eyeLocation,float speed, float damage, float radius, boolean UseGravity, ItemStack projectileItem, float LastFor, GamePlayer owner)
     {
         //speed(b/t), age(ticks)
         //boundingbox is relative to 0 0 0
+
         this.speed = speed;
         this.damage = damage;
         this.UseGravity = UseGravity;
         this.projectileItem = projectileItem;
+        this.owner = owner;
 
         age = 0;
         this.LastFor = LastFor;
@@ -62,10 +71,7 @@ public abstract class Projectile {
         Update();
 
     }
-    public Projectile(Location eyeLocation,float speed, float damage, float radius, boolean UseGravity, float LastFor)
-    {
-        this(eyeLocation, speed, damage, radius, UseGravity, new ItemStack(org.bukkit.Material.AIR), LastFor);
-    }
+
     protected Location getDisplayedLocation()
     {
         return entity.getLocation().add(0,1,0);
@@ -86,8 +92,8 @@ public abstract class Projectile {
                 boolean hit = false;
                 for (Entity e : nearby) {
                     Enemy enemy = Main.game.ENEMY_LIST.get(e.getUniqueId());
-                    if(enemy == null) return;
-                    enemy.OnBeingDamage(damage);
+                    if(enemy == null) continue;
+                    enemy.OnBeingDamage(damage, owner);
                     Monster_OnHit(e);
                     hit = true;
 
@@ -107,6 +113,7 @@ public abstract class Projectile {
     }
     public void Monster_OnHit(Entity e)
     {
+
 
     }
     public void Destroy()

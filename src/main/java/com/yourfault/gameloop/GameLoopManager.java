@@ -49,6 +49,7 @@ public class GameLoopManager implements WaveLifecycleListener {
     private static final long GATHER_CHECK_PERIOD_TICKS = 20L;
     private static final long BOSS_ROOM_READY_POLL_TICKS = 40L;
     private static final int FALL_IMMUNITY_TICKS = 20 * 12;
+    private static final long INITIAL_READY_TIMEOUT_TICKS = 20L * 60;
     private static final Title.Times STANDARD_TITLE_TIMES = Title.Times.times(
             Duration.ofMillis(250),
             Duration.ofSeconds(2),
@@ -75,6 +76,7 @@ public class GameLoopManager implements WaveLifecycleListener {
     private BukkitTask circleTask;
     private BukkitTask gatherTask;
     private BukkitTask scheduledWaveTask;
+    private BukkitTask readyTimeoutTask;
     private boolean bossPrepNoticeActive = false;
     private boolean playersConfirmedNextCycle = false;
     private boolean pendingArenaReady = false;
@@ -121,6 +123,7 @@ public class GameLoopManager implements WaveLifecycleListener {
         readyStage = ReadyStage.INITIAL;
         phase = GameLoopPhase.INITIAL_READY;
         activeReadyCheck = new ReadyCheck(toUuidList(participants), ReadyCheck.Mode.YES_NO);
+        scheduleReadyTimeout();
         Bukkit.broadcastMessage(ChatColor.AQUA + "Play session requested by " + initiator.getName() + ". Waiting for everyone to accept.");
         participants.forEach(this::sendInitialReadyPrompt);
         return true;
@@ -142,6 +145,8 @@ public class GameLoopManager implements WaveLifecycleListener {
             if (action == ReadyAction.NO) {
                 if (activeReadyCheck.markDeclined(id)) {
                     Bukkit.broadcastMessage(ChatColor.RED + player.getName() + " needs DOWNTIME!");
+                    cancelReadyTimeout();
+                    failAndShutdown(player.getName() + " cancelled the ready check.");
                 }
                 return true;
             }
@@ -167,6 +172,7 @@ public class GameLoopManager implements WaveLifecycleListener {
         if (activeReadyCheck.isComplete()) {
             ReadyCheck completedCheck = activeReadyCheck;
             activeReadyCheck = null;
+            cancelReadyTimeout();
             onReadyCheckComplete(completedCheck.mode());
         }
         return true;
@@ -349,6 +355,9 @@ public class GameLoopManager implements WaveLifecycleListener {
             Bukkit.broadcastMessage(ChatColor.RED + "Unable to locate a valid start beacon for the next arena. Please contact staff.");
             return;
         }
+        if (game.getPerkShopManager() != null) {
+            game.getPerkShopManager().closeShop();
+        }
         teleportPlayersToStart(targetCenter);
         playersConfirmedNextCycle = false;
         pendingArenaReady = false;
@@ -522,6 +531,16 @@ public class GameLoopManager implements WaveLifecycleListener {
         }
         phase = GameLoopPhase.POST_BOSS_READY;
         teleportPlayersExact(config.resolvePerkHub(world));
+        for (GamePlayer gamePlayer : game.PLAYER_LIST.values()) {
+            gamePlayer.grantPerkSelectionTokens(1);
+            Player bukkit = gamePlayer.getMinecraftPlayer();
+            if (bukkit != null) {
+                bukkit.sendMessage(ChatColor.AQUA + "Boss reward: +1 perk selection token (" + gamePlayer.getPerkSelectionTokens() + " total).");
+            }
+        }
+        if (game.getPerkShopManager() != null) {
+            game.getPerkShopManager().openShopForPlayers(game.PLAYER_LIST.values());
+        }
         Bukkit.broadcastMessage(ChatColor.GOLD + "Boss defeated! Buy perks, then use /ready to continue.");
         readyStage = ReadyStage.POST_BOSS;
         prepareNextCycleLaunchState(false);
@@ -841,10 +860,37 @@ public class GameLoopManager implements WaveLifecycleListener {
         }
     }
 
+    private void cancelReadyTimeout() {
+        if (readyTimeoutTask != null) {
+            readyTimeoutTask.cancel();
+            readyTimeoutTask = null;
+        }
+    }
+
+    private void scheduleReadyTimeout() {
+        cancelReadyTimeout();
+        if (readyStage != ReadyStage.INITIAL) {
+            return;
+        }
+        readyTimeoutTask = Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            if (!loopActive) {
+                return;
+            }
+            if (readyStage != ReadyStage.INITIAL) {
+                return;
+            }
+            if (activeReadyCheck == null || activeReadyCheck.isComplete()) {
+                return;
+            }
+            failAndShutdown("Ready check timed out.");
+        }, INITIAL_READY_TIMEOUT_TICKS);
+    }
+
     private void hardResetState() {
         cancelCircleTask();
         cancelGatherTask();
         cancelNextWaveTask();
+        cancelReadyTimeout();
         activeReadyCheck = null;
         loopActive = false;
         wavesClearedInCycle = 0;
@@ -860,6 +906,7 @@ public class GameLoopManager implements WaveLifecycleListener {
 
     private void failAndShutdown(String reason) {
         Bukkit.broadcastMessage(ChatColor.RED + "Game loop aborted: " + reason);
+        cancelReadyTimeout();
         setBossSpectatorMode(false);
         clearActiveMapOnShutdown();
         hardResetState();

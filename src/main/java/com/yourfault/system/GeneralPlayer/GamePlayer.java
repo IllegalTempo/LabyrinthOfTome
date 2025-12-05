@@ -1,6 +1,7 @@
 package com.yourfault.system.GeneralPlayer;
 
 import com.yourfault.Main;
+import com.yourfault.system.Enemy;
 import com.yourfault.system.TabInfo;
 import com.yourfault.utils.AnimationInfo;
 import com.yourfault.utils.ItemUtil;
@@ -30,6 +31,7 @@ import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
 import java.time.Duration;
+import java.util.UUID;
 
 import static com.yourfault.Main.plugin;
 import static com.yourfault.system.BleedoutManager.BLEED_OUT_SECONDS;
@@ -68,6 +70,7 @@ public class GamePlayer
     private int coins = 0;
     private int level = 1;
     private int experience = 0;
+    private int perkSelectionTokens = 0;
     public long inActionTicks = 0;
     public SurvivalState CurrentState = SurvivalState.ALIVE;
     public GamePlayer Reviving_Someone = null;
@@ -256,6 +259,13 @@ public class GamePlayer
         } else {
             refillVanillaHealth();
         }
+    }
+
+    public void onDoDamage(Enemy enemy, float damage) {
+        if (Main.game.getWaveManager() != null) {
+            Main.game.getWaveManager().handleEnemyHit(enemy.entity.getUniqueId(), this);
+        }
+
     }
     public Mannequin SpawnSecondPerson()
     {
@@ -471,14 +481,16 @@ public class GamePlayer
             return;
         }
         experience += amount;
-        boolean leveled = false;
+        int levelsGained = 0;
         while (experience >= xpForNextLevel()) {
             experience -= xpForNextLevel();
             level++;
-            leveled = true;
+            levelsGained++;
+            grantPerkSelectionTokens(1);
         }
-        if (leveled && MINECRAFT_PLAYER != null) {
+        if (levelsGained > 0 && MINECRAFT_PLAYER != null) {
             MINECRAFT_PLAYER.sendMessage("§6Level Up! You are now level " + level + "!");
+            MINECRAFT_PLAYER.sendMessage(org.bukkit.ChatColor.AQUA + "+" + levelsGained + " perk selection" + (levelsGained > 1 ? "s" : "") + " available.");
         }
     }
 
@@ -501,6 +513,25 @@ public class GamePlayer
         return true;
     }
 
+    public void grantPerkSelectionTokens(int amount) {
+        if (amount <= 0) {
+            return;
+        }
+        perkSelectionTokens += amount;
+    }
+
+    public boolean consumePerkSelectionToken() {
+        if (perkSelectionTokens <= 0) {
+            return false;
+        }
+        perkSelectionTokens--;
+        return true;
+    }
+
+    public int getPerkSelectionTokens() {
+        return perkSelectionTokens;
+    }
+
     public int getLevel() {
         return level;
     }
@@ -517,6 +548,7 @@ public class GamePlayer
         level = 1;
         coins = 0;
         experience = 0;
+        perkSelectionTokens = 0;
         HEALTH = MAX_HEALTH;
         MANA = MAX_MANA;
         CurrentState = SurvivalState.ALIVE;

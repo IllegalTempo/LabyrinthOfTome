@@ -1,5 +1,6 @@
 package com.yourfault.weapon.Excalibur;
 
+import com.yourfault.system.GeneralPlayer.GamePlayer;
 import com.yourfault.weapon.General.Projectile;
 import org.bukkit.Color;
 import org.bukkit.Location;
@@ -9,8 +10,8 @@ import static com.yourfault.Main.world;
 
 public class HolySword extends Projectile {
 
-    public HolySword(Location StartLocation, float damage) {
-        super(StartLocation, 1, damage, 1f, false, 10);
+    public HolySword(Location StartLocation, float damage, GamePlayer owner) {
+        super(StartLocation, 1, damage, 1f, false, 10,owner);
         // store the starting age set by the super constructor
 
     }
@@ -25,7 +26,7 @@ public class HolySword extends Projectile {
         world.spawnParticle(Particle.DUST, getDisplayedLocation(), 100, radius*0.25, 0.1, radius*0.25, 0.0, dust);
         world.spawnParticle(Particle.END_ROD, getDisplayedLocation(), 1, radius, radius, radius, 0.5, null);
 
-        
+
     }
     @Override
     public void Projectile_OnHit()

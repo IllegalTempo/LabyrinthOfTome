@@ -5,50 +5,45 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="18b9d33a-a1ab-4c7e-badb-df567bdbf954" name="Changes" comment="idk">
-      <change beforePath="$PROJECT_DIR$/.gradle/8.10.2/checksums/checksums.lock" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.10.2/checksums/md5-checksums.bin" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.10.2/checksums/sha1-checksums.bin" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.10.2/dependencies-accessors/gc.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.10.2/fileChanges/last-build.bin" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.10.2/fileHashes/fileHashes.lock" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.10.2/gc.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.13/checksums/checksums.lock" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.13/checksums/md5-checksums.bin" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.13/checksums/sha1-checksums.bin" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.13/executionHistory/executionHistory.bin" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.13/executionHistory/executionHistory.lock" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.13/fileChanges/last-build.bin" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.13/fileHashes/fileHashes.bin" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.13/fileHashes/fileHashes.lock" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.13/fileHashes/resourceHashesCache.bin" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.13/gc.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.14.3/checksums/checksums.lock" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.14.3/fileChanges/last-build.bin" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.14.3/fileHashes/fileHashes.bin" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.14.3/fileHashes/fileHashes.lock" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.14.3/gc.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.5/checksums/checksums.lock" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.5/fileChanges/last-build.bin" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.5/fileHashes/fileHashes.lock" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.5/gc.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/checksums/checksums.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/checksums/checksums.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/checksums/sha1-checksums.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/checksums/sha1-checksums.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/executionHistory/executionHistory.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/executionHistory/executionHistory.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/executionHistory/executionHistory.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/executionHistory/executionHistory.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/fileHashes/fileHashes.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/fileHashes/fileHashes.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/fileHashes/fileHashes.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/fileHashes/fileHashes.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/fileHashes/resourceHashesCache.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/fileHashes/resourceHashesCache.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/gameloop/GameLoopManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/gameloop/GameLoopManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/map/MapManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/map/MapManager.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/CustomHealthListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/CustomHealthListener.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/Enemy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/Enemy.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/Game.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/Game.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/GamePlayer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/GamePlayer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/wave/WaveCombatListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/wave/WaveCombatListener.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/wave/WaveManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/wave/WaveManager.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/Excalibur/Excalibur_Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/Excalibur/Excalibur_Main.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/Excalibur/HolySword.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/Excalibur/HolySword.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/Excalibur/Sword_Aura.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/Excalibur/Sword_Aura.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/General/Projectile.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/General/Projectile.java" afterDir="false" />
     </list>
     <list id="ed4ece3f-9002-43c6-988a-0eb8110adc25" name="Changes by user" comment="Changes by user">
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Commands/Debugs/SpawnMobCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Commands/Debugs/SpawnMobCommand.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/mob/LaserZombieEnemy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/mob/LaserZombieEnemy.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/map/BossStructureSpawner.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/map/BossStructureSpawner.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/system/EnemyProjectile.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/system/EnemyProjectile.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/gameloop/GameLoopManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/gameloop/GameLoopManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/listener/PerkSelectionListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/listener/PerkSelectionListener.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/map/MapManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/map/MapManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/map/MapTheme.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/map/MapTheme.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/map/StructurePlacementHelper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/map/StructurePlacementHelper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/perks/PerkObject.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/perks/PerkObject.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/perks/PerkType.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/perks/PerkType.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/perks/QuickdrawPerk.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/perks/QuickdrawPerk.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/perks/SharpshooterPerk.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/perks/SharpshooterPerk.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/Game.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/Game.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/GamePlayer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/GamePlayer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/Perks.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/Perks.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/wave/WaveManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/wave/WaveManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/plugin.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/plugin.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/Excalibur/Excalibur_Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/Excalibur/Excalibur_Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/Excalibur/HolySword.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/Excalibur/HolySword.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/Excalibur/Sword_Aura.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/Excalibur/Sword_Aura.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -138,8 +133,104 @@
     &quot;accountId&quot;: &quot;112ddd4e-714d-4256-9e6c-ae35ccb9cbbe&quot;
   }
 }</component>
+  <component name="LineStatusTrackerManager">
+    <file path="$PROJECT_DIR$/src/main/java/com/yourfault/system/Game.java">
+      <ranges>
+        <range start1="10" end1="10" start2="10" end2="11" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="14" end1="14" start2="15" end2="16" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="50" end1="50" start2="52" end2="53" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="69" end1="69" start2="72" end2="75" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="81" end1="81" start2="87" end2="90" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="163" end1="163" start2="172" end2="173" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="200" end1="201" start2="210" end2="211" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="251" end1="251" start2="261" end2="265" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+      </ranges>
+    </file>
+    <file path="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/Excalibur/Excalibur_Main.java">
+      <ranges>
+        <range start1="70" end1="71" start2="70" end2="71" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="129" end1="130" start2="129" end2="129" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="133" end1="134" start2="132" end2="133" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="135" end1="136" start2="134" end2="135" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="138" end1="139" start2="137" end2="138" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="140" end1="140" start2="139" end2="143" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="153" end1="154" start2="156" end2="157" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="156" end1="157" start2="159" end2="160" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+      </ranges>
+    </file>
+    <file path="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/GamePlayer.java">
+      <ranges>
+        <range start1="3" end1="3" start2="3" end2="4" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="32" end1="32" start2="33" end2="34" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="70" end1="70" start2="72" end2="73" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="259" end1="259" start2="262" end2="269" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="473" end1="474" start2="483" end2="484" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="477" end1="478" start2="487" end2="489" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="479" end1="480" start2="490" end2="491" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="481" end1="481" start2="492" end2="493" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="502" end1="502" start2="514" end2="533" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="519" end1="519" start2="550" end2="551" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+      </ranges>
+    </file>
+    <file path="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/Excalibur/Sword_Aura.java">
+      <ranges>
+        <range start1="3" end1="3" start2="3" end2="4" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="12" end1="16" start2="13" end2="15" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="17" end1="18" start2="16" end2="16" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="28" end1="29" start2="26" end2="27" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+      </ranges>
+    </file>
+    <file path="$PROJECT_DIR$/src/main/java/com/yourfault/gameloop/GameLoopManager.java">
+      <ranges>
+        <range start1="51" end1="51" start2="51" end2="52" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="77" end1="77" start2="78" end2="79" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="123" end1="123" start2="125" end2="126" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="144" end1="144" start2="147" end2="149" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="169" end1="169" start2="174" end2="175" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="351" end1="351" start2="357" end2="360" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="524" end1="524" start2="533" end2="543" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="843" end1="843" start2="862" end2="888" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="847" end1="847" start2="892" end2="893" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="862" end1="862" start2="908" end2="909" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+      </ranges>
+    </file>
+    <file path="$PROJECT_DIR$/src/main/java/com/yourfault/wave/WaveManager.java">
+      <ranges>
+        <range start1="13" end1="13" start2="13" end2="14" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="17" end1="17" start2="18" end2="19" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="24" end1="25" start2="26" end2="26" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="26" end1="26" start2="27" end2="32" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="205" end1="205" start2="211" end2="213" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="206" end1="207" start2="214" end2="215" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="214" end1="226" start2="222" end2="226" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="227" end1="228" start2="227" end2="227" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="230" end1="233" start2="229" end2="230" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="234" end1="248" start2="231" end2="402" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="261" end1="268" start2="415" end2="424" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="269" end1="278" start2="425" end2="446" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="334" end1="334" start2="502" end2="503" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="358" end1="358" start2="527" end2="528" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="360" end1="360" start2="530" end2="531" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="363" end1="363" start2="534" end2="538" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+        <range start1="364" end1="364" start2="539" end2="548" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+      </ranges>
+    </file>
+    <file path="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/Excalibur/HolySword.java">
+      <ranges>
+        <range start1="2" end1="2" start2="2" end2="3" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="11" end1="13" start2="12" end2="14" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="27" end1="28" start2="28" end2="29" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+      </ranges>
+    </file>
+    <file path="$PROJECT_DIR$/src/main/java/com/yourfault/map/MapManager.java">
+      <ranges>
+        <range start1="170" end1="172" start2="170" end2="172" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="2373" end1="2374" start2="2373" end2="2373" changelist="ed4ece3f-9002-43c6-988a-0eb8110adc25" />
+      </ranges>
+    </file>
+  </component>
   <component name="ProblemsViewState">
-    <option name="selectedTabId" value="CurrentFile" />
+    <option name="selectedTabId" value="ProjectErrors" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;customColor&quot;: &quot;&quot;,
@@ -368,7 +459,15 @@
       <option name="project" value="LOCAL" />
       <updated>1764723450622</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="idk">
+      <option name="closed" value="true" />
+      <created>1764806096943</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1764806096943</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -382,7 +481,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="origin/master" />
+                        <option value="master" />
                       </list>
                     </value>
                   </entry>

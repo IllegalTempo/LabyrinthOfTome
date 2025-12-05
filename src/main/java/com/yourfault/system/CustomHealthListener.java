@@ -35,13 +35,14 @@ public class CustomHealthListener implements Listener {
             Enemy enemy = game.ENEMY_LIST.get(event.getEntity().getUniqueId());
             if(event.getCause() == EntityDamageEvent.DamageCause.ENTITY_ATTACK)
             {
+                GamePlayer damageDealer = event.getDamageSource().getCausingEntity() instanceof Player p ? game.GetPlayer(p) : null;
                 Bukkit.getScheduler().runTaskLater(plugin,()-> {
-                    enemy.OnBeingDamage((float) damage);
+                    enemy.OnBeingDamage((float) damage,damageDealer);
 
                 },5L);
 
             }else {
-                enemy.OnBeingDamage((float) damage);
+                enemy.OnBeingDamage((float) damage,null);
 
             }
             event.setCancelled(true);

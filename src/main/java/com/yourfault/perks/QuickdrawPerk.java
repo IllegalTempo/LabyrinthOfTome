@@ -27,13 +27,16 @@ public final class QuickdrawPerk extends PerkType {
             Material.TIPPED_ARROW
     );
     public QuickdrawPerk() {
-        super("Quickdraw",
+        super(
+                "Quickdraw",
                 List.of(
-                ChatColor.GRAY + "Speed over precision",
-                ChatColor.GRAY + "Perk Ability:",
-                ChatColor.WHITE + "Bow fires instantly at full power.",
-                ChatColor.WHITE + "1s cooldown between arrows."
-        ),13,1500);
+                        ChatColor.GRAY + "Speed over precision",
+                        ChatColor.GRAY + "Perk Ability:",
+                        ChatColor.WHITE + "Bow fires instantly at full power.",
+                        ChatColor.WHITE + "1s cooldown between arrows."
+                ),
+                PerkCategory.SHOP
+        );
     }
     private final Map<UUID, Long> cooldowns = new HashMap<>();
 

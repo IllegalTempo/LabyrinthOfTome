@@ -1,6 +1,7 @@
 package com.yourfault.weapon.Excalibur;
 
 import com.yourfault.Main;
+import com.yourfault.system.GeneralPlayer.GamePlayer;
 import com.yourfault.weapon.General.Projectile;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
@@ -10,12 +11,9 @@ import static com.yourfault.Main.world;
 
 public class Sword_Aura extends Projectile {
 
-    public Sword_Aura(Location StartLocation, float damage) {
-        super(StartLocation, 2, damage, 1f, false, 5);
-        // store the starting age set by the super constructor
-
+    public Sword_Aura(Location StartLocation, float damage, GamePlayer owner) {
+        super(StartLocation, 2, damage, 1f, false, 5,owner);
     }
-    // initial lifetime preserved so we can compute elapsed ticks from inherited `age`
 
     @Override
     public void ChildUpdate()
@@ -26,7 +24,7 @@ public class Sword_Aura extends Projectile {
         world.spawnParticle(Particle.DUST, getDisplayedLocation(), 100, radius*0.25, 0.1, radius*0.25, 0.0, dust);
         world.spawnParticle(Particle.END_ROD, getDisplayedLocation(), 1, radius, radius, radius, 0.5, null);
 
-        
+
     }
     @Override
     public void Projectile_OnHit()

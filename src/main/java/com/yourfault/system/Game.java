@@ -8,10 +8,12 @@ import com.yourfault.map.MapManager;
 import com.yourfault.perks.PerkType;
 import com.yourfault.perks.QuickdrawPerk;
 import com.yourfault.perks.SharpshooterPerk;
+import com.yourfault.perks.shop.PerkShopManager;
 import com.yourfault.system.GeneralPlayer.GamePlayer;
 import com.yourfault.wave.WaveDifficulty;
 import com.yourfault.wave.WaveManager;
 import com.yourfault.weapon.General.Projectile;
+import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.title.Title;
@@ -48,6 +50,7 @@ public class Game {
         Main_Update();
         RegisterPerks();
         RegisterPerksListener();
+        perkShopManager = new PerkShopManager(this);
         InitializeTeam();
     }
     private final JavaPlugin plugin;
@@ -67,6 +70,9 @@ public class Game {
     private GameLoopManager gameLoopManager;
     public final Map<String,PerkType> ALL_PERKS = new HashMap<String,PerkType>();
     public Team EnemyTeam;
+    private final PerkShopManager perkShopManager;
+    public BossBar MonsterRemaining;
+    public BossBar BossHealthBar;
 
     public void InitializeTeam()
     {
@@ -78,6 +84,9 @@ public class Game {
         }
         EnemyTeam = team;
 
+    }
+    private void InitialzieBossBar()
+    {
     }
     private void RegisterPerks()
     {
@@ -161,6 +170,7 @@ public class Game {
         }
         Bukkit.broadcastMessage(org.bukkit.ChatColor.RED + "GAME OVER lololololo");
         PLAYER_LIST.values().forEach(GamePlayer::resetProgress);
+        perkShopManager.closeShop();
         if (waveManager != null) {
             int cleared = waveManager.clearAllEnemiesInstantly(true);
             if (cleared > 0) {
@@ -198,7 +208,7 @@ public class Game {
             EndGame();
         }
     }
-//    private void CleanPlayerList()
+    //    private void CleanPlayerList()
 //    {
 //        PLAYER_LIST.values().forEach(p -> {
 //            var bukkitPlayer = p.getMinecraftPlayer();
@@ -249,6 +259,10 @@ public class Game {
 
     public GameLoopManager getGameLoopManager() {
         return gameLoopManager;
+    }
+
+    public PerkShopManager getPerkShopManager() {
+        return perkShopManager;
     }
 
     public void showWaveTitle(int waveNumber, int totalEnemies) {
