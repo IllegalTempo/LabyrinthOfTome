@@ -1,7 +1,9 @@
-package com.yourfault.system;
+package com.yourfault.Enemy;
 
+import com.yourfault.Enemy.system.AbstractEnemyType;
 import com.yourfault.Main;
 import com.yourfault.system.GeneralPlayer.GamePlayer;
+import com.yourfault.wave.WaveContext;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Particle;
@@ -18,33 +20,67 @@ public abstract class Enemy {
     public float HEALTH;
     public float DEFENSE;
     public float MaxHealth;
-    public String DisplayName;
+    private final long updateTime;
+    public AbstractEnemyType enemyType;
+    public WaveContext context;
+
+
     public float scale = 1;
 
-    public Enemy(LivingEntity entity, float health, float MaxHealth, float defense, String displayName)
+    public float damageMultiplier = 1.0f;
+
+    public Enemy(LivingEntity entity,WaveContext context,AbstractEnemyType type)
     {
-        this.HEALTH = health;
+        this(entity,type.getScaledHealth(context),type.getScaledDefense(context),type.getDamageMultipler(context),20L,type,context);
+
+    }
+    public Enemy(LivingEntity entity,WaveContext context,long updateTime,AbstractEnemyType type)
+    {
+        this(entity,type.getScaledHealth(context),type.getScaledDefense(context),type.getDamageMultipler(context),updateTime,type,context);
+
+    }
+    public Enemy(LivingEntity entity, float MaxHealth, float defense, float damageMultiplier,long updateTime,AbstractEnemyType enemyType,WaveContext context)
+    {
+        this.context = context;
+
+        this.HEALTH = MaxHealth;
         this.MaxHealth = MaxHealth;
         this.DEFENSE = defense;
-        this.DisplayName = displayName;
         this.entity = entity;
+        this.damageMultiplier = damageMultiplier;
+        this.enemyType = enemyType;
         entity.setCustomNameVisible(true);
         updateDisplay();
+        this.updateTime = updateTime;
+
 
         Main.game.ENEMY_LIST.put(entity.getUniqueId(),this);
         startUpdate();
         Main.game.EnemyTeam.addEntity(entity);
         entity.setGlowing(true);
+        entity.addScoreboardTag("lot_wave_enemy");
+        entity.addScoreboardTag("lot_wave_enemy_" + enemyType.displayName.toLowerCase(Locale.ROOT));
     }
     private void updateDisplay() {
 
         String label = ChatColor.RED + String.format(Locale.US, "%.0f/%.0f HP ", HEALTH, MaxHealth)
-                + ChatColor.GRAY + DisplayName;
+                + ChatColor.GRAY + enemyType.displayName;
         entity.setCustomName(label);
+        if(isBoss())
+        {
+            Main.game.BossHealthBar.progress(HEALTH/MaxHealth);
+        }
 
+    }
+    private boolean isBoss()
+    {
+        return enemyType.isBoss;
     }
     public void startUpdate()
     {
+        Bukkit.getScheduler().runTaskTimer(plugin,()->{
+            update();
+        },0L,updateTime);
         Bukkit.getScheduler().runTaskTimer(plugin,()->{
             tick();
             if(scale > 1)
@@ -53,6 +89,7 @@ public abstract class Enemy {
             }
         },0L,1L);
     }
+    public abstract void update();
     public abstract void tick();
     public abstract void OnAttack();
     public abstract void OnDealDamage();

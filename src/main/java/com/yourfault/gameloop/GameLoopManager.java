@@ -18,11 +18,9 @@ import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Color;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.Particle;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -45,11 +43,12 @@ import java.util.stream.Collectors;
 public class GameLoopManager implements WaveLifecycleListener {
     private static final int WAVES_PER_CYCLE = 10;
     private static final long NEXT_WAVE_DELAY_TICKS = 100L;
-    private static final long PARTICLE_PERIOD_TICKS = 5L;
-    private static final long GATHER_CHECK_PERIOD_TICKS = 20L;
     private static final long BOSS_ROOM_READY_POLL_TICKS = 40L;
     private static final int FALL_IMMUNITY_TICKS = 20 * 12;
     private static final long INITIAL_READY_TIMEOUT_TICKS = 20L * 60;
+    private static final long FINAL_WAVE_HOLD_TICKS = 20L * 3;
+    private static final double SPAWN_BORDER_BUFFER = 8.0;
+    private static final int MAX_SPAWN_ATTEMPTS = 24;
     private static final Title.Times STANDARD_TITLE_TIMES = Title.Times.times(
             Duration.ofMillis(250),
             Duration.ofSeconds(2),
@@ -63,7 +62,6 @@ public class GameLoopManager implements WaveLifecycleListener {
     private final WaveManager waveManager;
     private final GameLoopConfig config = new GameLoopConfig();
     private final Random random = new Random();
-    private final Particle.DustOptions gatherDust = new Particle.DustOptions(Color.fromRGB(255, 96, 32), 1.5F);
 
     private GameLoopPhase phase = GameLoopPhase.IDLE;
     private ReadyCheck activeReadyCheck;
@@ -73,9 +71,8 @@ public class GameLoopManager implements WaveLifecycleListener {
     private boolean sessionInitialized = false;
     private int wavesClearedInCycle = 0;
     private int cycleIndex = 0;
-    private BukkitTask circleTask;
-    private BukkitTask gatherTask;
     private BukkitTask scheduledWaveTask;
+    private BukkitTask bossCountdownTask;
     private BukkitTask readyTimeoutTask;
     private boolean bossPrepNoticeActive = false;
     private boolean playersConfirmedNextCycle = false;
@@ -194,9 +191,10 @@ public class GameLoopManager implements WaveLifecycleListener {
             return;
         }
         if (type == WaveEncounterType.STANDARD) {
+            sendWaveClearedTitle(waveNumber);
             wavesClearedInCycle++;
             if (wavesClearedInCycle >= WAVES_PER_CYCLE) {
-                beginBossGatherPhase();
+                beginBossCountdown();
             } else {
                 scheduleNextWave();
             }
@@ -352,7 +350,7 @@ public class GameLoopManager implements WaveLifecycleListener {
         }
         Location targetCenter = pendingStartScatter != null ? pendingStartScatter.clone() : resolveStartScatterCenter(pendingArenaCenter);
         if (targetCenter == null) {
-            Bukkit.broadcastMessage(ChatColor.RED + "Unable to locate a valid start beacon for the next arena. Please contact staff.");
+            Bukkit.broadcastMessage(ChatColor.RED + "Unable to locate a valid starting position for the next arena. Please contact staff.");
             return;
         }
         if (game.getPerkShopManager() != null) {
@@ -411,53 +409,25 @@ public class GameLoopManager implements WaveLifecycleListener {
                 && !bossSpawner.isClearRunning();
     }
 
-    private void beginBossGatherPhase() {
+    private void beginBossCountdown() {
         cancelNextWaveTask();
         if (phase != GameLoopPhase.WAVES_ACTIVE) {
             return;
         }
-        phase = GameLoopPhase.BOSS_GATHER;
-        Bukkit.broadcastMessage(ChatColor.LIGHT_PURPLE + "All waves cleared! Gather at the end beacon.");
-        startGatherVisuals();
-        startGatherCheck();
-    }
-
-    private void startGatherVisuals() {
-        cancelCircleTask();
-        Location center = resolveGatherCenter();
-        if (center == null) {
-            return;
-        }
-        circleTask = new BukkitRunnable() {
-            @Override
-            public void run() {
-                drawCircle(center, config.getGatherRadius());
+        phase = GameLoopPhase.BOSS_TRANSITION;
+        Bukkit.broadcastMessage(ChatColor.LIGHT_PURPLE + "All waves cleared! Preparing the boss arena...");
+        cancelBossCountdownTask();
+        bossCountdownTask = Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            bossCountdownTask = null;
+            if (!loopActive) {
+                return;
             }
-        }.runTaskTimer(plugin, 0L, PARTICLE_PERIOD_TICKS);
-    }
-
-    private void startGatherCheck() {
-        cancelGatherTask();
-        Location center = resolveGatherCenter();
-        double radius = config.getGatherRadius();
-        double tolerance = config.getGatherVerticalTolerance();
-        if (center == null) {
-            return;
-        }
-        gatherTask = new BukkitRunnable() {
-            @Override
-            public void run() {
-                if (areAllPlayersInside(center, radius, tolerance)) {
-                    beginBossTransition();
-                    cancel();
-                }
-            }
-        }.runTaskTimer(plugin, 0L, GATHER_CHECK_PERIOD_TICKS);
+            beginBossTransition();
+        }, FINAL_WAVE_HOLD_TICKS);
     }
 
     private void beginBossTransition() {
-        cancelGatherTask();
-        cancelCircleTask();
+        cancelBossCountdownTask();
         if (!loopActive) {
             return;
         }
@@ -470,7 +440,7 @@ public class GameLoopManager implements WaveLifecycleListener {
         Location holdPoint = resolveMapCenter(world);
         teleportPlayersExact(holdPoint);
         applyFallDamageProtection(getOnlineParticipants(), FALL_IMMUNITY_TICKS);
-        Bukkit.broadcastMessage(ChatColor.YELLOW + "Clearing arena... hold steady inside the circle!");
+        Bukkit.broadcastMessage(ChatColor.YELLOW + "Clearing arena... hold steady near the center!");
         if (mapManager.hasActiveMap()) {
             mapManager.clearMapAsync(
                     removed -> Bukkit.getScheduler().runTask(plugin, () -> launchBossEncounter(world)),
@@ -591,6 +561,18 @@ public class GameLoopManager implements WaveLifecycleListener {
         showTitleToPlayers(waveTitle);
     }
 
+    private void sendWaveClearedTitle(int waveNumber) {
+        Component title = Component.text("Wave " + waveNumber + " Cleared", NamedTextColor.AQUA);
+        Component subtitle;
+        if (waveNumber >= WAVES_PER_CYCLE) {
+            subtitle = Component.text("Boss fight is next!", NamedTextColor.GRAY);
+        } else {
+            subtitle = Component.text("Prepare for the next wave.", NamedTextColor.GRAY);
+        }
+        Title clearTitle = Title.title(title, subtitle, STANDARD_TITLE_TIMES);
+        showTitleToPlayers(clearTitle);
+    }
+
     private void sendBossTitle() {
         Component title = Component.text("Boss Approaches", NamedTextColor.DARK_RED);
         Component subtitle = Component.text("Stay alive while the arena seals.", NamedTextColor.GRAY);
@@ -605,28 +587,18 @@ public class GameLoopManager implements WaveLifecycleListener {
     }
 
     private Location resolveStartScatterCenter(Location defaultCenter) {
-        Location beacon = mapManager.getStartBeaconLocation().map(Location::clone).orElse(null);
-        if (beacon != null) {
-            return beacon;
+        Location candidate = defaultCenter != null ? defaultCenter.clone() : null;
+        if (candidate == null) {
+            candidate = mapManager.getActiveCenterLocation().map(Location::clone).orElse(null);
         }
-        Location fallback = defaultCenter;
-        if (fallback == null) {
+        if (candidate == null) {
             World fallbackWorld = resolveWorld();
             if (fallbackWorld == null) {
                 return null;
             }
-            fallback = config.resolvePlayMapCenter(fallbackWorld);
+            candidate = config.resolvePlayMapCenter(fallbackWorld);
         }
-        return fallback == null ? null : fallback.clone();
-    }
-
-    private Location resolveGatherCenter() {
-        World world = resolveWorld();
-        if (world == null) {
-            return null;
-        }
-        Location beacon = mapManager.getEndBeaconLocation().map(Location::clone).orElse(null);
-        return beacon != null ? beacon : config.resolveEndBeaconCenter(world);
+        return candidate;
     }
 
     private Location resolveMapCenter(World world) {
@@ -646,36 +618,22 @@ public class GameLoopManager implements WaveLifecycleListener {
         if (world == null) {
             return;
         }
-        double baseRadius = config.getStartScatterRadius();
-        int generatedRadius = Math.max(0, mapManager.getLastRadius());
-        double interiorRadius = generatedRadius > 0 ? Math.max(6.0, generatedRadius - 6.0) : baseRadius;
-        double scatterRadius = Math.min(interiorRadius, baseRadius + 10.0);
-        scatterRadius = Math.max(4.0, scatterRadius);
-        double angleStep = (Math.PI * 2) / players.size();
         Location mapCenter = mapManager.getActiveCenterLocation().map(Location::clone).orElse(center.clone());
-        for (int i = 0; i < players.size(); i++) {
-            Player player = players.get(i);
-            Location safeLocation = null;
-            for (int attempt = 0; attempt < 6 && safeLocation == null; attempt++) {
-                double angleJitter = (random.nextDouble() - 0.5) * angleStep * 0.35;
-                double angle = angleStep * i + angleJitter;
-                double distanceFactor = 0.35 + random.nextDouble() * 0.65;
-                double distance = scatterRadius * distanceFactor;
-                double x = center.getX() + Math.cos(angle) * distance;
-                double z = center.getZ() + Math.sin(angle) * distance;
-                if (mapCenter != null && generatedRadius > 0) {
-                    double dx = x - mapCenter.getX();
-                    double dz = z - mapCenter.getZ();
-                    double dist = Math.sqrt(dx * dx + dz * dz);
-                    double limit = Math.max(3.0, generatedRadius - 5.0);
-                    if (dist > limit && dist > 0.0001) {
-                        double scale = limit / dist;
-                        x = mapCenter.getX() + dx * scale;
-                        z = mapCenter.getZ() + dz * scale;
-                    }
-                }
-                safeLocation = findSafeLandingLocation(world, x, z);
-            }
+        if (mapCenter.getWorld() == null) {
+            mapCenter.setWorld(world);
+        }
+        int generatedRadius = Math.max(0, mapManager.getLastRadius());
+        double borderBuffer = 0.0;
+        if (generatedRadius > 0) {
+            borderBuffer = Math.max(SPAWN_BORDER_BUFFER, generatedRadius * 0.2);
+            borderBuffer = Math.min(borderBuffer, Math.max(4.0, generatedRadius - 4.0));
+        }
+        double usableRadius = generatedRadius > 0
+                ? Math.max(4.0, generatedRadius - borderBuffer)
+                : Math.max(4.0, config.getStartScatterRadius());
+        Set<Long> usedColumns = new HashSet<>();
+        for (Player player : players) {
+            Location safeLocation = pickRandomSpawn(world, mapCenter, usableRadius, usedColumns);
             if (safeLocation == null) {
                 safeLocation = center.clone();
                 int fallbackY = world.getHighestBlockYAt(safeLocation.getBlockX(), safeLocation.getBlockZ());
@@ -710,6 +668,32 @@ public class GameLoopManager implements WaveLifecycleListener {
                 continue;
             }
             return new Location(world, blockX + 0.5, y + 1.01, blockZ + 0.5);
+        }
+        return null;
+    }
+
+    private Location pickRandomSpawn(World world, Location center, double radius, Set<Long> usedColumns) {
+        if (world == null || center == null) {
+            return null;
+        }
+        double clampedRadius = Math.max(0.0, radius);
+        for (int attempt = 0; attempt < MAX_SPAWN_ATTEMPTS; attempt++) {
+            double distance = clampedRadius <= 0.0 ? 0.0 : Math.sqrt(random.nextDouble()) * clampedRadius;
+            double angle = random.nextDouble() * Math.PI * 2.0;
+            double x = center.getX() + Math.cos(angle) * distance;
+            double z = center.getZ() + Math.sin(angle) * distance;
+            int blockX = (int) Math.floor(x);
+            int blockZ = (int) Math.floor(z);
+            long key = packColumnKey(blockX, blockZ);
+            if (usedColumns.contains(key)) {
+                continue;
+            }
+            Location safeLocation = findSafeLandingLocation(world, x, z);
+            if (safeLocation == null) {
+                continue;
+            }
+            usedColumns.add(key);
+            return safeLocation;
         }
         return null;
     }
@@ -751,48 +735,15 @@ public class GameLoopManager implements WaveLifecycleListener {
         }
     }
 
+    private long packColumnKey(int x, int z) {
+        return (((long) x) << 32) ^ (z & 0xffffffffL);
+    }
+
     private Vector randomOffset(int seed) {
         double spread = 1.5;
         double angle = (seed * 37) % 360;
         double radians = Math.toRadians(angle);
         return new Vector(Math.cos(radians) * spread, 0, Math.sin(radians) * spread);
-    }
-
-    private boolean areAllPlayersInside(Location center, double radius, double tolerance) {
-        if (center == null) {
-            return false;
-        }
-        double radiusSquared = radius * radius;
-        for (Player player : getOnlineParticipants()) {
-            if (!player.getWorld().equals(center.getWorld())) {
-                return false;
-            }
-            Location loc = player.getLocation();
-            double dx = loc.getX() - center.getX();
-            double dz = loc.getZ() - center.getZ();
-            if ((dx * dx + dz * dz) > radiusSquared) {
-                return false;
-            }
-            if (Math.abs(loc.getY() - center.getY()) > tolerance) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private void drawCircle(Location center, double radius) {
-        World world = center.getWorld();
-        if (world == null) {
-            return;
-        }
-        int segments = 64;
-        for (int i = 0; i < segments; i++) {
-            double angle = (Math.PI * 2 * i) / segments;
-            double x = center.getX() + Math.cos(angle) * radius;
-            double z = center.getZ() + Math.sin(angle) * radius;
-            double yOffset = 0.2 + (Math.sin(angle * 3) * 0.2);
-            world.spawnParticle(Particle.DUST, x, center.getY() + yOffset, z, 3, 0.08, 0.02, 0.08, 0.0, gatherDust);
-        }
     }
 
     private void enableWaveControl() {
@@ -835,17 +786,10 @@ public class GameLoopManager implements WaveLifecycleListener {
         return Bukkit.getWorlds().isEmpty() ? null : Bukkit.getWorlds().get(0);
     }
 
-    private void cancelCircleTask() {
-        if (circleTask != null) {
-            circleTask.cancel();
-            circleTask = null;
-        }
-    }
-
-    private void cancelGatherTask() {
-        if (gatherTask != null) {
-            gatherTask.cancel();
-            gatherTask = null;
+    private void cancelBossCountdownTask() {
+        if (bossCountdownTask != null) {
+            bossCountdownTask.cancel();
+            bossCountdownTask = null;
         }
     }
 
@@ -883,8 +827,7 @@ public class GameLoopManager implements WaveLifecycleListener {
     }
 
     private void hardResetState() {
-        cancelCircleTask();
-        cancelGatherTask();
+        cancelBossCountdownTask();
         cancelNextWaveTask();
         cancelReadyTimeout();
         activeReadyCheck = null;

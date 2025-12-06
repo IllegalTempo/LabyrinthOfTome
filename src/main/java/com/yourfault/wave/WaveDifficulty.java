@@ -1,15 +1,15 @@
 package com.yourfault.wave;
 
 public enum WaveDifficulty {
-    EASY("Easy", 0.0, 0.9),
-    MEDIUM("Medium", 5.0, 1.0),
-    HARD("Hard", 12.0, 1.15);
+    EASY("Easy", 0.0, 0.9f),
+    MEDIUM("Medium", 5.0, 1.0f),
+    HARD("Hard", 12.0, 1.15f);
 
     private final String displayName;
     private final double modeBonus;
-    private final double difficultyScale;
+    private final float difficultyScale;
 
-    WaveDifficulty(String displayName, double modeBonus, double difficultyScale) {
+    WaveDifficulty(String displayName, double modeBonus, float difficultyScale) {
         this.displayName = displayName;
         this.modeBonus = modeBonus;
         this.difficultyScale = difficultyScale;
@@ -23,7 +23,7 @@ public enum WaveDifficulty {
         return modeBonus;
     }
 
-    public double difficultyScale() {
+    public float difficultyScale() {
         return difficultyScale;
     }
 

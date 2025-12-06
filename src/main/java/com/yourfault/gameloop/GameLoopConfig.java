@@ -9,11 +9,7 @@ import org.bukkit.util.Vector;
  */
 public class GameLoopConfig {
     private final Vector playMapCenter = new Vector(228, 50, -158);
-    private final Vector startBeaconCenter = new Vector(228, 25, -158);
     private final double startScatterRadius = 8.0;
-    private final Vector endBeaconCenter = new Vector(228, 25, -158);
-    private final double gatherRadius = 15.0;
-    private final double gatherVerticalTolerance = 4.0;
     private final Vector bossArenaCenter = new Vector(228, 0, -158);
     private final double bossObservationHeight = 50.0;
     private final double bossSpawnYOffset = 4.0;
@@ -24,24 +20,8 @@ public class GameLoopConfig {
         return toLocation(world, playMapCenter);
     }
 
-    public Location resolveStartBeacon(World world) {
-        return toLocation(world, startBeaconCenter);
-    }
-
     public double getStartScatterRadius() {
         return startScatterRadius;
-    }
-
-    public Location resolveEndBeaconCenter(World world) {
-        return toLocation(world, endBeaconCenter);
-    }
-
-    public double getGatherRadius() {
-        return gatherRadius;
-    }
-
-    public double getGatherVerticalTolerance() {
-        return gatherVerticalTolerance;
     }
 
     public Location resolveBossArenaCenter(World world) {

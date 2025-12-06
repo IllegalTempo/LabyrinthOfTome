@@ -40,7 +40,6 @@ public class MapManager {
     private static final double MIN_SPAWN_MARKER_SPACING = 6.0;
     private static final int FIXED_SPAWN_MARKER_COUNT = 9;
     private static final int POOL_FLOOR_LIFT_BLOCKS = 5;
-    private static final int BEACON_NUDGE_STEPS = 12;
 
     private final Set<String> touchedBlocks = new HashSet<>();
     private final Map<Long, Integer> surfaceHeights = new HashMap<>();
@@ -50,8 +49,6 @@ public class MapManager {
     private final Set<Long> mountainColumns = new HashSet<>();
     private final Set<Long> poolColumns = new HashSet<>();
     private List<Material> activeRoadPalette = new ArrayList<>();
-    private Location startBeaconLocation;
-    private Location endBeaconLocation;
     private boolean barrierPlacementEnabled = true;
 
     private World activeWorld;
@@ -143,8 +140,6 @@ public class MapManager {
         mountainColumns.clear();
         poolColumns.clear();
         activeRoadPalette = new ArrayList<>();
-        startBeaconLocation = null;
-        endBeaconLocation = null;
         lastRoadHalfWidth = 0;
         regionMinY = Integer.MAX_VALUE;
         regionMaxY = Integer.MIN_VALUE;
@@ -224,20 +219,6 @@ public class MapManager {
             copy.add(marker.clone());
         }
         return copy;
-    }
-
-    public synchronized Optional<Location> getStartBeaconLocation() {
-        if (startBeaconLocation == null) {
-            return Optional.empty();
-        }
-        return Optional.of(startBeaconLocation.clone());
-    }
-
-    public synchronized Optional<Location> getEndBeaconLocation() {
-        if (endBeaconLocation == null) {
-            return Optional.empty();
-        }
-        return Optional.of(endBeaconLocation.clone());
     }
 
     public synchronized Optional<Location> getActiveCenterLocation() {
@@ -1011,74 +992,6 @@ public class MapManager {
 
     private boolean isRoadTile(int x, int z) {
         return roadColumns.contains(columnKey(x, z));
-    }
-
-    private void placePathBeacons(RoadPath roadPath) {
-        if (roadPath == null || roadPath.isEmpty()) {
-            return;
-        }
-        placeBeaconAt(roadPath.start(), false);
-        placeBeaconAt(roadPath.end(), true);
-    }
-
-    private void placeBeaconAt(RoadPoint point, boolean bossBeacon) {
-        if (activeWorld == null || point == null) {
-            return;
-        }
-        int x = (int) Math.round(point.x());
-        int z = (int) Math.round(point.z());
-        ColumnCoordinate adjusted = nudgeColumnTowardCenter(x, z, BEACON_NUDGE_STEPS);
-        Integer surfaceY = surfaceHeights.get(columnKey(x, z));
-        if (surfaceY == null && activeCenter != null) {
-            surfaceY = findNearestSurfaceY(x, z, activeCenter.getBlockY());
-        }
-        if (surfaceY == null) {
-            return;
-        }
-        Material baseMaterial = bossBeacon ? Material.NETHERITE_BLOCK : Material.IRON_BLOCK;
-        Material glassMaterial = bossBeacon ? Material.RED_STAINED_GLASS : Material.WHITE_STAINED_GLASS;
-        int layers = bossBeacon ? 2 : 1;
-        buildBeaconBase(x, z, surfaceY, baseMaterial, layers);
-        int beaconY = surfaceY + 1;
-        setBlock(activeWorld, x, beaconY, z, Material.BEACON);
-        int glassHeight = bossBeacon ? 4 : 2;
-        for (int i = 1; i <= glassHeight; i++) {
-            setBlock(activeWorld, x, beaconY + i, z, glassMaterial);
-        }
-        clearSkyColumn(x, z, beaconY + glassHeight + 1);
-        Location beaconLocation = new Location(activeWorld, x + 0.5, beaconY, z + 0.5);
-        if (bossBeacon) {
-            endBeaconLocation = beaconLocation;
-        } else {
-            startBeaconLocation = beaconLocation;
-        }
-        reservedStructureColumns.add(columnKey(x, z));
-        surfaceHeights.put(columnKey(x, z), surfaceY);
-        regionMinY = Math.min(regionMinY, surfaceY - (layers - 1));
-        regionMaxY = Math.max(regionMaxY, beaconY + glassHeight + 1);
-    }
-
-    private ColumnCoordinate nudgeColumnTowardCenter(int x, int z, int steps) {
-        if (activeCenter == null) {
-            return new ColumnCoordinate(x, z);
-        }
-        int currentX = x;
-        int currentZ = z;
-        for (int i = 0; i < steps; i++) {
-            long key = columnKey(currentX, currentZ);
-            if (!reservedStructureColumns.contains(key)) {
-                break;
-            }
-            double dx = activeCenter.getBlockX() - currentX;
-            double dz = activeCenter.getBlockZ() - currentZ;
-            double length = Math.hypot(dx, dz);
-            if (length < 1.0) {
-                break;
-            }
-            currentX += (int) Math.round(dx / length);
-            currentZ += (int) Math.round(dz / length);
-        }
-        return new ColumnCoordinate(currentX, currentZ);
     }
 
     private void buildBeaconBase(int centerX,
@@ -2351,8 +2264,6 @@ public class MapManager {
         lastRadius = 0;
         regionMinY = Integer.MAX_VALUE;
         regionMaxY = Integer.MIN_VALUE;
-        startBeaconLocation = null;
-        endBeaconLocation = null;
         resetGenerationProgressBroadcastGate();
     }
 
@@ -2370,7 +2281,6 @@ public class MapManager {
         buildTopCover(theme, radius, baseY);
         placePools(theme, radius);
         placeStructures(theme, radius);
-        placePathBeacons(roadPath);
         lastTheme = theme;
         lastRadius = radius;
         plugin.getLogger().info(String.format("Generated %s PvE map (radius=%d, blocks=%d)", theme.name(), radius, touchedBlocks.size()));

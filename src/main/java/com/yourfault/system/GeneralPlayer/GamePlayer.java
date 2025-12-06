@@ -1,7 +1,7 @@
 package com.yourfault.system.GeneralPlayer;
 
 import com.yourfault.Main;
-import com.yourfault.system.Enemy;
+import com.yourfault.Enemy.Enemy;
 import com.yourfault.system.TabInfo;
 import com.yourfault.utils.AnimationInfo;
 import com.yourfault.utils.ItemUtil;
@@ -94,6 +94,7 @@ public class GamePlayer
         this.DEFENSE = SELECTED_WEAPON.Defense;
         PLAYER_PERKS = new Perks(this);
         PLAYER_TAB = new TabManager(this);
+        MINECRAFT_PLAYER.activeBossBars().forEach(MINECRAFT_PLAYER::hideBossBar);
         refillVanillaHealth();
     }
     public void Update()
@@ -136,7 +137,6 @@ public class GamePlayer
         // Return a new Location (don't mutate the player's eye location)
         return eye.clone().add(worldOffset);
     }
-    //todo: trytofly Register these events pls :)
     public void onGameStart()
     {
 
@@ -565,6 +565,8 @@ public class GamePlayer
     }
 
     public void resetProgress() {
+        MINECRAFT_PLAYER.hideBossBar(Main.game.BossHealthBar);
+        MINECRAFT_PLAYER.hideBossBar(Main.game.MonsterRemaining);
         level = 1;
         coins = 0;
         experience = 0;

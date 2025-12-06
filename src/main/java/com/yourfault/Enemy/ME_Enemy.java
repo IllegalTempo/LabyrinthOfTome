@@ -1,18 +1,21 @@
 // Java
-package com.yourfault.system;
+package com.yourfault.Enemy;
 
+import com.yourfault.Enemy.system.AbstractEnemyType;
+import com.yourfault.wave.WaveContext;
 import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.util.Vector;
 
-public class ME_Enemy extends Enemy {
+public abstract class ME_Enemy extends Enemy {
     public record EntityComponent(LivingEntity entity, Vector RelativeOffset, Vector Pivot, Vector direction) {}
     public final EntityComponent[] parts;
 
-    public ME_Enemy(EntityComponent[] entity, float health, float maxHealth, float defense, String displayName) {
-        super(entity[0].entity, health, maxHealth, defense, displayName);
+    public ME_Enemy(EntityComponent[] entity, WaveContext context, AbstractEnemyType type) {
+        super(entity[0].entity, context, type);
         this.parts = entity;
     }
+
 
     @Override
     public void tick() {

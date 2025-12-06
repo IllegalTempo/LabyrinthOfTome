@@ -1,8 +1,10 @@
 package com.yourfault.Commands.Debugs;
 
+import com.yourfault.Enemy.Enemy;
+import com.yourfault.Enemy.EnemyTypes.*;
+import com.yourfault.Enemy.system.AbstractEnemyType;
+import com.yourfault.Main;
 import com.yourfault.system.Game;
-import com.yourfault.Enemy.mob.WaveEnemyInstance;
-import com.yourfault.Enemy.mob.WaveEnemyType;
 import com.yourfault.wave.WaveManager;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -15,15 +17,6 @@ import java.util.Locale;
 import java.util.Map;
 
 public class SpawnMobCommand implements CommandExecutor {
-    private static final Map<String, WaveEnemyType> ALIASES = Map.of(
-            "laser_zombie", WaveEnemyType.LASER_ZOMBIE,
-            "lasr_zombie", WaveEnemyType.LASER_ZOMBIE,
-            "grunt", WaveEnemyType.GRUNT,
-            "archer", WaveEnemyType.ARCHER,
-            "brute", WaveEnemyType.BRUTE,
-            "mage", WaveEnemyType.MAGE,
-            "boss", WaveEnemyType.BOSS
-    );
 
     private final Game game;
 
@@ -46,7 +39,7 @@ public class SpawnMobCommand implements CommandExecutor {
             sender.sendMessage(ChatColor.YELLOW + "Usage: /" + label + " <enemy_type> [amount]");
             return true;
         }
-        WaveEnemyType type = resolveType(args[0]);
+        AbstractEnemyType type = resolveType(args[0]);
         if (type == null) {
             sender.sendMessage(ChatColor.RED + "Unknown enemy type '" + args[0] + "'.");
             sender.sendMessage(ChatColor.YELLOW + "Valid types: " + listTypes());
@@ -65,45 +58,32 @@ public class SpawnMobCommand implements CommandExecutor {
         int spawned = 0;
         for (int i = 0; i < amount; i++) {
             Location spawn = origin.clone().add((i % 3) - 1, 0, (i / 3));
-            WaveEnemyInstance instance = manager.spawnEnemyAt(spawn, type, false);
+            Enemy instance = manager.spawnEnemyAt(spawn, type);
             if (instance != null) {
                 spawned++;
             }
         }
-        sender.sendMessage(ChatColor.GREEN + "Spawned " + spawned + " " + type.displayName() + (spawned == 1 ? "" : "s") + ".");
+        sender.sendMessage(ChatColor.GREEN + "Spawned " + spawned + " " + type.displayName+ (spawned == 1 ? "" : "s") + ".");
         if (!manager.isActive()) {
             sender.sendMessage(ChatColor.YELLOW + "(Wave manager inactive: custom damage may not process until a session is started.)");
         }
         return true;
     }
 
-    private WaveEnemyType resolveType(String token) {
-        if (token == null || token.isEmpty()) {
-            return null;
-        }
-        String normalized = token.toLowerCase(Locale.ROOT);
-        if (ALIASES.containsKey(normalized)) {
-            return ALIASES.get(normalized);
-        }
-        normalized = normalized.replace('-', '_');
-        try {
-            return WaveEnemyType.valueOf(normalized.toUpperCase(Locale.ROOT));
-        } catch (IllegalArgumentException ex) {
-            return null;
-        }
+    private AbstractEnemyType resolveType(String token) {
+        return Main.game.getWaveManager().EnemyTypes.getOrDefault(token.toLowerCase(), null);
     }
 
     private String listTypes() {
         StringBuilder builder = new StringBuilder();
         boolean first = true;
-        for (WaveEnemyType type : WaveEnemyType.values()) {
+        for (String alias : Main.game.getWaveManager().EnemyTypes.keySet()) {
             if (!first) {
-                builder.append(ChatColor.GRAY).append(", ");
+                builder.append(", ");
             }
-            builder.append(ChatColor.AQUA).append(type.name().toLowerCase(Locale.ROOT));
+            builder.append(alias);
             first = false;
         }
         return builder.toString();
     }
 }
-

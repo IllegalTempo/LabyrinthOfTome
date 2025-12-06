@@ -4,16 +4,48 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="18b9d33a-a1ab-4c7e-badb-df567bdbf954" name="Changes" comment="idk">
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/boss/Boss.java" afterDir="false" />
+    <list default="true" id="18b9d33a-a1ab-4c7e-badb-df567bdbf954" name="Changes" comment="todo: move the boss enttiy to Boss.java, onentitydamage, change the bossbar name&#10;shift + f to find how.&#10;Entity -&gt; ?ME_Entity -&gt; Boss -&gt; super ultimate fire boss? (eg)&#10;=Done:&#10;-Bossbar other than boss bar">
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/GeneralEnemyInstance.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyTypes/Archer_Type.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyTypes/Boss_Type.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyTypes/Brute_Type.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyTypes/Grunt_Type.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyTypes/LaserZombie_Type.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyTypes/Mage_Type.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/system/AbstractEnemyType.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/system/EnemyClassification.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/checksums/checksums.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/checksums/checksums.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/checksums/sha1-checksums.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/checksums/sha1-checksums.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/executionHistory/executionHistory.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/executionHistory/executionHistory.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/fileHashes/fileHashes.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/fileHashes/fileHashes.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/fileHashes/fileHashes.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/fileHashes/fileHashes.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/fileHashes/resourceHashesCache.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/fileHashes/resourceHashesCache.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/gameloop/GameLoopManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/gameloop/GameLoopManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/Enemy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/Enemy.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Commands/Debugs/SpawnMobCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Commands/Debugs/SpawnMobCommand.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/boss/Boss.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/mob/LaserZombieEnemy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/LaserZombieEnemy.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/mob/WaveEnemyInstance.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/mob/WaveEnemyType.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/system/EnemyProjectile.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/system/EnemyProjectile.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/CustomHealthListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/CustomHealthListener.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/Enemy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/Enemy.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/Game.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/Game.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/GamePlayer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/GamePlayer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/ME_Enemy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/ME_Enemy.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/wave/WaveDifficulty.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/wave/WaveDifficulty.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/wave/WaveEnemyInstance.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/wave/WaveEnemyType.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/wave/WaveManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/wave/WaveManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/General/Projectile.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/General/Projectile.java" afterDir="false" />
     </list>
-    <list id="ed4ece3f-9002-43c6-988a-0eb8110adc25" name="Changes by user" comment="Changes by user" />
+    <list id="ed4ece3f-9002-43c6-988a-0eb8110adc25" name="Changes by user" comment="Changes by user">
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/gameloop/GameLoopConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/gameloop/GameLoopConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/gameloop/GameLoopManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/gameloop/GameLoopManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/gameloop/GameLoopPhase.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/gameloop/GameLoopPhase.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/map/MapManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/map/MapManager.java" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -65,6 +97,7 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Record" />
+        <option value="Enum" />
         <option value="Class" />
       </list>
     </option>
@@ -348,7 +381,15 @@
       <option name="project" value="LOCAL" />
       <updated>1764900505024</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="todo: move the boss enttiy to Boss.java, onentitydamage, change the bossbar name&#10;shift + f to find how.&#10;Entity -&gt; ?ME_Entity -&gt; Boss -&gt; super ultimate fire boss? (eg)&#10;=Done:&#10;-Bossbar other than boss bar">
+      <option name="closed" value="true" />
+      <created>1764984454594</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1764984454594</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -382,7 +423,8 @@
     <MESSAGE value="Restructured" />
     <MESSAGE value="Tab Formatted" />
     <MESSAGE value="idk" />
-    <option name="LAST_COMMIT_MESSAGE" value="idk" />
+    <MESSAGE value="todo: move the boss enttiy to Boss.java, onentitydamage, change the bossbar name&#10;shift + f to find how.&#10;Entity -&gt; ?ME_Entity -&gt; Boss -&gt; super ultimate fire boss? (eg)&#10;=Done:&#10;-Bossbar other than boss bar" />
+    <option name="LAST_COMMIT_MESSAGE" value="todo: move the boss enttiy to Boss.java, onentitydamage, change the bossbar name&#10;shift + f to find how.&#10;Entity -&gt; ?ME_Entity -&gt; Boss -&gt; super ultimate fire boss? (eg)&#10;=Done:&#10;-Bossbar other than boss bar" />
   </component>
   <component name="github-copilot-workspace">
     <instructionFileLocations>

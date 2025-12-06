@@ -1,7 +1,7 @@
 //package com.yourfault.Enemy.system;
 //
 //import com.yourfault.Main;
-//import com.yourfault.system.Enemy;
+//import com.yourfault.Enemy.Enemy;
 //import com.yourfault.system.GeneralPlayer.GamePlayer;
 //import com.yourfault.weapon.General.Projectile;
 //import org.bukkit.Bukkit;

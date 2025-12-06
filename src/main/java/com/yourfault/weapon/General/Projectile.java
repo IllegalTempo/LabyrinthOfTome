@@ -1,9 +1,8 @@
 package com.yourfault.weapon.General;
 
 import com.yourfault.Main;
-import com.yourfault.system.Enemy;
+import com.yourfault.Enemy.Enemy;
 import com.yourfault.system.GeneralPlayer.GamePlayer;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.ArmorStand;
