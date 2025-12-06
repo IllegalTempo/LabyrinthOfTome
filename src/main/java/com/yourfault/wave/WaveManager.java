@@ -7,17 +7,13 @@ import com.yourfault.Main;
 import com.yourfault.map.MapManager;
 import com.yourfault.system.Game;
 import com.yourfault.system.GeneralPlayer.GamePlayer;
+import com.yourfault.system.TabInfo;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
+import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.block.Block;
-import org.bukkit.scoreboard.ScoreboardManager;
 import org.bukkit.scoreboard.Team;
 
 import java.util.*;
@@ -42,6 +38,8 @@ public class WaveManager {
     private boolean autoAdvanceEnabled = true;
     private boolean bossEncounterActive = false;
     private WaveLifecycleListener lifecycleListener;
+
+    public int currentWaveEnemyCount = 0;
 
     public WaveManager(Game game, MapManager mapManager) {
         this.game = game;
@@ -96,6 +94,7 @@ public class WaveManager {
     }
 
     public void triggerNextWave() {
+
         if (!active) {
             Bukkit.broadcastMessage(ChatColor.RED + "Wave manager is not active.");
             return;
@@ -109,6 +108,7 @@ public class WaveManager {
             Bukkit.broadcastMessage(ChatColor.RED + "No players have joined the game. Wave cancelled.");
             return;
         }
+
         bossEncounterActive = false;
         waveInProgress = true;
         nextWaveScheduled = false;
@@ -118,9 +118,11 @@ public class WaveManager {
         activeWaveEnemies.clear();
         lastSpawnedEnemies.clear();
         WaveContext context = buildWaveContext(playersReady);
+
         Bukkit.broadcastMessage(ChatColor.AQUA + "Wave " + currentWave + " incoming! Weight budget: " + String.format("%.1f", context.totalWeightBudget()));
         List<WaveEnemyType> composition = planComposition(context);
         game.showWaveTitle(currentWave, composition.size());
+
         spawnWave(composition, context);
         notifyEncounterStarted(currentWave, WaveEncounterType.STANDARD, composition.size());
         if (activeWaveEnemyIds.isEmpty()) {
@@ -224,7 +226,10 @@ public class WaveManager {
         }
         if (!spawnCounts.isEmpty()) {
             broadcastSpawnSummary(spawnCounts);
+            currentWaveEnemyCount = spawnCounts.values().stream().mapToInt(Integer::intValue).sum();
         }
+        Main.game.onNextWave(currentWave);
+
     }
 
     private Location pickSpawnLocation(Set<String> usedBlocks) {
@@ -713,11 +718,7 @@ public class WaveManager {
         if (suffixValue == null) {
             return;
         }
-        ScoreboardManager manager = Bukkit.getScoreboardManager();
-        if (manager == null) {
-            return;
-        }
-        Team team = manager.getMainScoreboard().getTeam("21_WAVEINFO_CURRENTWAVE");
+        Team team = Main.tabInfo.GetTeam.get(TabInfo.TabType.WAVEINFO_CURRENTWAVE);
         if (team != null) {
             team.suffix(Component.text(suffixValue));
         }

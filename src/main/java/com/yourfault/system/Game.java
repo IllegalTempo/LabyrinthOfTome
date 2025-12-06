@@ -52,6 +52,7 @@ public class Game {
         RegisterPerksListener();
         perkShopManager = new PerkShopManager(this);
         InitializeTeam();
+        InitialzieBossBar();
     }
     private final JavaPlugin plugin;
     private BukkitRunnable updateTask;
@@ -87,6 +88,18 @@ public class Game {
     }
     private void InitialzieBossBar()
     {
+        MonsterRemaining = BossBar.bossBar(
+                Component.text("Monsters Remaining: 0"),
+                1.0f,
+                BossBar.Color.RED,
+                BossBar.Overlay.PROGRESS
+        );
+        BossHealthBar = BossBar.bossBar(
+                Component.text("Boss Health"),
+                1.0f,
+                BossBar.Color.PURPLE,
+                BossBar.Overlay.PROGRESS
+        );
     }
     private void RegisterPerks()
     {
@@ -131,6 +144,30 @@ public class Game {
         PLAYER_LIST.remove(player.getUniqueId());
         PlayerNumUpdate();
 
+    }
+    public void onBossStart()
+    {
+        for (GamePlayer gamePlayer : PLAYER_LIST.values()) {
+            gamePlayer.onBossStart();
+        }
+    }
+    public void onBossEnd()
+    {
+        for (GamePlayer gamePlayer : PLAYER_LIST.values()) {
+            gamePlayer.onBossEnd();
+        }
+    }
+    public void onNextWave(int nextwavenumber)
+    {
+        MonsterRemaining.name(Component.text("Monsters Remaining: " + Main.game.waveManager.currentWaveEnemyCount));
+        MonsterRemaining.progress(1.0f);
+        for (GamePlayer gamePlayer : PLAYER_LIST.values()) {
+            gamePlayer.onWaveStart(nextwavenumber);
+        }
+    }
+    public void onEnemyKilled(Enemy enemy)
+    {
+        MonsterRemaining.progress((float) ENEMY_LIST.size() / Main.game.waveManager.currentWaveEnemyCount);
     }
     private void showGameStartTitle(Player player) {
         Title title = Title.title(

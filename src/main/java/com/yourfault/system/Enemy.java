@@ -2,7 +2,6 @@ package com.yourfault.system;
 
 import com.yourfault.Main;
 import com.yourfault.system.GeneralPlayer.GamePlayer;
-import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Particle;
@@ -80,10 +79,12 @@ public abstract class Enemy {
     }
     public void Destroy()
     {
-        entity.remove();
         Main.game.ENEMY_LIST.remove(entity.getUniqueId());
         if (Main.game.getWaveManager() != null) {
             Main.game.getWaveManager().handleEnemyDeath(entity.getUniqueId(), null);
         }
+        Main.game.onEnemyKilled(this);
+        entity.remove();
+
     }
 }

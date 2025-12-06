@@ -517,6 +517,7 @@ public class GameLoopManager implements WaveLifecycleListener {
         if (!waveManager.startBossEncounter(spawn)) {
             failAndShutdown("Failed to start boss encounter.");
         }
+        Main.game.onBossStart();
     }
 
     private void handleBossDefeated() {
@@ -531,13 +532,8 @@ public class GameLoopManager implements WaveLifecycleListener {
         }
         phase = GameLoopPhase.POST_BOSS_READY;
         teleportPlayersExact(config.resolvePerkHub(world));
-        for (GamePlayer gamePlayer : game.PLAYER_LIST.values()) {
-            gamePlayer.grantPerkSelectionTokens(1);
-            Player bukkit = gamePlayer.getMinecraftPlayer();
-            if (bukkit != null) {
-                bukkit.sendMessage(ChatColor.AQUA + "Boss reward: +1 perk selection token (" + gamePlayer.getPerkSelectionTokens() + " total).");
-            }
-        }
+        Main.game.onBossEnd();
+
         if (game.getPerkShopManager() != null) {
             game.getPerkShopManager().openShopForPlayers(game.PLAYER_LIST.values());
         }

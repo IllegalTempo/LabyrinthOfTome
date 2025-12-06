@@ -12,15 +12,12 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.title.Title;
-import net.md_5.bungee.api.ChatColor;
 import net.minecraft.network.protocol.Packet;
 import org.bukkit.Bukkit;
-import org.bukkit.Color;
+import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
-import org.bukkit.attribute.Attribute;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
-import org.bukkit.entity.Display;
 import org.bukkit.entity.Mannequin;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Pose;
@@ -31,7 +28,6 @@ import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
 import java.time.Duration;
-import java.util.UUID;
 
 import static com.yourfault.Main.plugin;
 import static com.yourfault.system.BleedoutManager.BLEED_OUT_SECONDS;
@@ -139,6 +135,30 @@ public class GamePlayer
 
         // Return a new Location (don't mutate the player's eye location)
         return eye.clone().add(worldOffset);
+    }
+    //todo: trytofly Register these events pls :)
+    public void onGameStart()
+    {
+
+    }
+    public void onWaveStart(int NextWave)
+    {
+        MINECRAFT_PLAYER.showBossBar(Main.game.MonsterRemaining);
+    }
+    public void onBossStart()
+    {
+        MINECRAFT_PLAYER.hideBossBar(Main.game.MonsterRemaining);
+        MINECRAFT_PLAYER.showBossBar(Main.game.BossHealthBar);
+    }
+    public void onBossEnd()
+    {
+        grantPerkSelectionTokens(1);
+        if (MINECRAFT_PLAYER != null) {
+            MINECRAFT_PLAYER.sendMessage(ChatColor.AQUA + "Boss reward: +1 perk selection token (" + getPerkSelectionTokens() + " total).");
+        }
+        MINECRAFT_PLAYER.hideBossBar(Main.game.BossHealthBar);
+
+
     }
     public void sendPacket(Packet packet)
     {
