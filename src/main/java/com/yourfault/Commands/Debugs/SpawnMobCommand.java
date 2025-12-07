@@ -1,8 +1,7 @@
 package com.yourfault.Commands.Debugs;
 
 import com.yourfault.Enemy.Enemy;
-import com.yourfault.Enemy.EnemyTypes.*;
-import com.yourfault.Enemy.system.AbstractEnemyType;
+import com.yourfault.Enemy.EnemyTypes.AbstractEnemyType;
 import com.yourfault.Main;
 import com.yourfault.system.Game;
 import com.yourfault.wave.WaveManager;
@@ -12,9 +11,6 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
-import java.util.Locale;
-import java.util.Map;
 
 public class SpawnMobCommand implements CommandExecutor {
 

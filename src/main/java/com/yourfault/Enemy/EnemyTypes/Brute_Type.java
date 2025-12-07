@@ -1,9 +1,8 @@
 package com.yourfault.Enemy.EnemyTypes;
 
-import com.yourfault.Enemy.system.AbstractEnemyType;
-import com.yourfault.Enemy.system.EnemyClassification;
+import com.yourfault.Enemy.EnemyClassification;
 import org.bukkit.Location;
-import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Mob;
 
 public class Brute_Type extends AbstractEnemyType {
     public Brute_Type() {
@@ -12,7 +11,7 @@ public class Brute_Type extends AbstractEnemyType {
 
 
     @Override
-    public LivingEntity SpawnEntity(Location location) {
+    public Mob SpawnEntity(Location location) {
         return location.getWorld().spawn(location, org.bukkit.entity.Husk.class);
     }
 

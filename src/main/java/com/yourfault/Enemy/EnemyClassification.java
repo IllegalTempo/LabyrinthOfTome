@@ -1,4 +1,4 @@
-package com.yourfault.Enemy.system;
+package com.yourfault.Enemy;
 
 public enum EnemyClassification {
     NORMAL,

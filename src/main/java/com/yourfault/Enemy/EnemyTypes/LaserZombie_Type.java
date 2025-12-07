@@ -1,12 +1,11 @@
 package com.yourfault.Enemy.EnemyTypes;
 
 import com.yourfault.Enemy.EnemyInstances.LaserZombieEnemy;
-import com.yourfault.Enemy.system.AbstractEnemyType;
-import com.yourfault.Enemy.system.EnemyClassification;
+import com.yourfault.Enemy.EnemyClassification;
 import com.yourfault.Enemy.Enemy;
 import com.yourfault.wave.WaveContext;
 import org.bukkit.Location;
-import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Mob;
 
 public class LaserZombie_Type extends AbstractEnemyType {
     public LaserZombie_Type() {
@@ -14,12 +13,12 @@ public class LaserZombie_Type extends AbstractEnemyType {
     }
 
     @Override
-    public LivingEntity SpawnEntity(Location location) {
+    public Mob SpawnEntity(Location location) {
         return location.getWorld().spawn(location, org.bukkit.entity.Zombie.class);
     }
 
     @Override
-    public Enemy CreateEnemyInstance(LivingEntity e, WaveContext context) {
+    public Enemy CreateEnemyInstance(Mob e, WaveContext context) {
         return new LaserZombieEnemy(e,context,this);
     }
 

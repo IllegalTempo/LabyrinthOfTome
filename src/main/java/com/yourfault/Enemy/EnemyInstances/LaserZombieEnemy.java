@@ -9,6 +9,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -27,7 +28,7 @@ public class LaserZombieEnemy extends Enemy {
     private UUID lockedTarget;
     private int ticksUntilStrike = -1;
 
-    public LaserZombieEnemy(LivingEntity entity,
+    public LaserZombieEnemy(Mob entity,
                             WaveContext context,
                             LaserZombie_Type enemyTyperef
                             ) {

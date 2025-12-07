@@ -1,10 +1,11 @@
-package com.yourfault.Enemy.system;
+package com.yourfault.Enemy.EnemyTypes;
 
 import com.yourfault.Enemy.Enemy;
 import com.yourfault.Enemy.EnemyInstances.GeneralEnemyInstance;
+import com.yourfault.Enemy.EnemyClassification;
 import com.yourfault.wave.WaveContext;
 import org.bukkit.Location;
-import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Mob;
 
 public abstract class AbstractEnemyType {
     public final String displayName;
@@ -43,8 +44,8 @@ public abstract class AbstractEnemyType {
         this(displayName, weight, baseHealth, baseDamage, tier, minWave, spawnBias, hitCoins, hitXp, killCoins, killXp,classification,false);
     }
 
-    public abstract LivingEntity SpawnEntity(Location location);
-    public Enemy CreateEnemyInstance(LivingEntity e, WaveContext context)
+    public abstract Mob SpawnEntity(Location location);
+    public Enemy CreateEnemyInstance(Mob e, WaveContext context)
     {
         return new GeneralEnemyInstance(e,context,this);
     }

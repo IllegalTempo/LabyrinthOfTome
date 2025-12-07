@@ -1,6 +1,6 @@
 package com.yourfault.Enemy;
 
-import com.yourfault.Enemy.system.AbstractEnemyType;
+import com.yourfault.Enemy.EnemyTypes.AbstractEnemyType;
 import com.yourfault.Main;
 import com.yourfault.system.GeneralPlayer.GamePlayer;
 import com.yourfault.wave.WaveContext;
@@ -9,14 +9,16 @@ import org.bukkit.ChatColor;
 import org.bukkit.Particle;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.block.BlockType;
-import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Mob;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.util.Locale;
 
 import static com.yourfault.Main.plugin;
 
 public abstract class Enemy {
-    public LivingEntity entity;
+    public Mob entity;
     public float HEALTH;
     public float DEFENSE;
     public float MaxHealth;
@@ -24,22 +26,23 @@ public abstract class Enemy {
     public AbstractEnemyType enemyType;
     public WaveContext context;
 
-
+    BukkitTask updateTask;
+    BukkitTask tickTask;
     public float scale = 1;
 
     public float damageMultiplier = 1.0f;
 
-    public Enemy(LivingEntity entity,WaveContext context,AbstractEnemyType type)
+    public Enemy(Mob entity,WaveContext context,AbstractEnemyType type)
     {
         this(entity,type.getScaledHealth(context),type.getScaledDefense(context),type.getDamageMultipler(context),20L,type,context);
 
     }
-    public Enemy(LivingEntity entity,WaveContext context,long updateTime,AbstractEnemyType type)
+    public Enemy(Mob entity,WaveContext context,long updateTime,AbstractEnemyType type)
     {
         this(entity,type.getScaledHealth(context),type.getScaledDefense(context),type.getDamageMultipler(context),updateTime,type,context);
 
     }
-    public Enemy(LivingEntity entity, float MaxHealth, float defense, float damageMultiplier,long updateTime,AbstractEnemyType enemyType,WaveContext context)
+    public Enemy(Mob entity, float MaxHealth, float defense, float damageMultiplier,long updateTime,AbstractEnemyType enemyType,WaveContext context)
     {
         this.context = context;
 
@@ -72,16 +75,35 @@ public abstract class Enemy {
         }
 
     }
+    protected final GamePlayer getNearestPlayer()
+    {
+        double nearestDistance = Double.MAX_VALUE;
+        GamePlayer nearestPlayer = null;
+        for(GamePlayer gp : Main.game.PLAYER_LIST.values())
+        {
+            double distance = getDistance(gp.MINECRAFT_PLAYER);
+            if(distance < nearestDistance)
+            {
+                nearestDistance = distance;
+                nearestPlayer = gp;
+            }
+        }
+        return nearestPlayer;
+    }
+    public final float getDistance(Entity e)
+    {
+        return (float) e.getLocation().distance(entity.getLocation());
+    }
     private boolean isBoss()
     {
         return enemyType.isBoss;
     }
     public void startUpdate()
     {
-        Bukkit.getScheduler().runTaskTimer(plugin,()->{
+        updateTask= Bukkit.getScheduler().runTaskTimer(plugin,()->{
             update();
         },0L,updateTime);
-        Bukkit.getScheduler().runTaskTimer(plugin,()->{
+        tickTask = Bukkit.getScheduler().runTaskTimer(plugin,()->{
             tick();
             if(scale > 1)
             {
@@ -119,6 +141,16 @@ public abstract class Enemy {
         Main.game.ENEMY_LIST.remove(entity.getUniqueId());
         if (Main.game.getWaveManager() != null) {
             Main.game.getWaveManager().handleEnemyDeath(entity.getUniqueId(), null);
+        }
+        if(updateTask != null)
+        {
+            updateTask.cancel();
+            updateTask = null;
+        }
+        if(tickTask != null)
+        {
+            tickTask.cancel();
+            tickTask = null;
         }
         Main.game.onEnemyKilled(this);
         entity.remove();

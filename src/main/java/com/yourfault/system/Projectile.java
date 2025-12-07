@@ -1,4 +1,4 @@
-package com.yourfault.weapon.General;
+package com.yourfault.system;
 
 import com.yourfault.Main;
 import com.yourfault.Enemy.Enemy;

@@ -1,11 +1,8 @@
 package com.yourfault.weapon.Excalibur;
 
-import com.yourfault.Main;
 import com.yourfault.system.GeneralPlayer.GamePlayer;
-import com.yourfault.weapon.General.Projectile;
+import com.yourfault.system.Projectile;
 import org.bukkit.*;
-import org.bukkit.entity.Player;
-import org.bukkit.util.Vector;
 
 import static com.yourfault.Main.world;
 

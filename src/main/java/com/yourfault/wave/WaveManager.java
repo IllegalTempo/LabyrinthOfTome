@@ -2,7 +2,7 @@ package com.yourfault.wave;
 
 import com.yourfault.Enemy.Enemy;
 import com.yourfault.Enemy.EnemyTypes.*;
-import com.yourfault.Enemy.system.AbstractEnemyType;
+import com.yourfault.Enemy.EnemyTypes.AbstractEnemyType;
 import com.yourfault.Main;
 import com.yourfault.map.MapManager;
 import com.yourfault.system.Game;
@@ -13,6 +13,7 @@ import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Team;
 
@@ -47,6 +48,7 @@ public class WaveManager {
         put("brute",new Brute_Type());
         put("grunt",new Grunt_Type());
         put("mage",new Mage_Type());
+        put("spinny",new Spinny_Type());
     }};
 
     public WaveManager(Game game, MapManager mapManager) {
@@ -456,7 +458,7 @@ public class WaveManager {
         Bukkit.broadcastMessage(summary.toString());
     }
 
-    private Enemy InstantiateWaveEnemy(LivingEntity entity, AbstractEnemyType type, WaveContext context) {
+    private Enemy InstantiateWaveEnemy(Mob entity, AbstractEnemyType type, WaveContext context) {
 
 
         Enemy waveEnemy = type.CreateEnemyInstance(entity, context);
@@ -605,7 +607,7 @@ public class WaveManager {
         if (location == null || location.getWorld() == null || type == null) {
             return null;
         }
-        LivingEntity entity = type.SpawnEntity(location);
+        Mob entity = type.SpawnEntity(location);
         InstantiateWaveEnemy(entity, type, context);
         if (contributeToWave) {
             activeWaveEnemyIds.add(entity.getUniqueId());

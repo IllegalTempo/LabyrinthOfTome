@@ -1,7 +1,7 @@
 package com.yourfault.weapon.Excalibur;
 
 import com.yourfault.system.GeneralPlayer.GamePlayer;
-import com.yourfault.weapon.General.Projectile;
+import com.yourfault.system.Projectile;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Particle;

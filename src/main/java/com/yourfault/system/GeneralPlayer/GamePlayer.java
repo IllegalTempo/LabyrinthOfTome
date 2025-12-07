@@ -7,16 +7,14 @@ import com.yourfault.utils.AnimationInfo;
 import com.yourfault.utils.ItemUtil;
 import com.yourfault.weapon.WeaponType;
 import io.papermc.paper.datacomponent.item.ResolvableProfile;
+import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.title.Title;
 import net.minecraft.network.protocol.Packet;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
+import org.bukkit.*;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Mannequin;
 import org.bukkit.entity.Player;
@@ -214,23 +212,28 @@ public class GamePlayer
         int healthCodePoint = 0x1F00 + healthPercent;
         int manaCodePoint   = 0xe000 + manaPercent;
 
-        //String Preset = ChatColor.of("#000000") + "\u1f01";
-        String healthChar = new String(Character.toChars(healthCodePoint));
-        String manaChar   = new String(Character.toChars(manaCodePoint));
-        String weaponicon = SELECTED_WEAPON.weaponIcon;
+        TextColor kyColor = TextColor.color(78, 108, 128);
+
+        Component manaChar = Component.text(new String(Character.toChars(manaCodePoint))).color(kyColor);
+        Component healthChar = Component.text(new String(Character.toChars(healthCodePoint))).color(kyColor);
+        Component weaponIcon = Component.text(SELECTED_WEAPON.weaponIcon).color(TextColor.color(78,112,128));
+        Component infoDisplay = Component.text("\u2f01").color(TextColor.color(78,140,128));
+        Component moneydisplay = Component.text(coins).color(TextColor.color(78,172,106));
 
 
+        // Build the action bar component and apply the bitmap font
+        Component actionBar = Component.text("").font(Key.key("minecraft:bitmaps"))
+                .append(manaChar)
+                .append(Component.text("\uff00")) // keep separators as before
+                .append(healthChar)
+                .append(Component.text("\uff00"))
+                .append(weaponIcon)
+                .append(Component.text("\uff00"))
+                .append(infoDisplay)
+                .append(Component.text("\uff00"))
+                .append(moneydisplay);
 
-        String message =  "\uff00" + String.join("\uff00",manaChar,healthChar) + "\uff00";
-//        Component component = GsonComponentSerializer.gson().deserialize(
-//                "{\"text\":\"" + message + "\",\"shadow_color\":0}"
-//        );
-        //MINECRAFT_PLAYER.sendActionBar(component);
-        MINECRAFT_PLAYER.sendActionBar(
-                Component.text(message, TextColor.color(78,124,128)).font(Key.key("minecraft:bitmaps")).append(
-                        Component.text(SELECTED_WEAPON.weaponIcon + "\uff00",TextColor.color(78,128,128))
-                )
-        );
+        player.sendActionBar(actionBar);
     }
 
     public void ChangeMana(float amount)

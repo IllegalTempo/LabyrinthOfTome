@@ -1,14 +1,15 @@
 // Java
 package com.yourfault.Enemy;
 
-import com.yourfault.Enemy.system.AbstractEnemyType;
+import com.yourfault.Enemy.EnemyTypes.AbstractEnemyType;
 import com.yourfault.wave.WaveContext;
 import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Mob;
 import org.bukkit.util.Vector;
 
 public abstract class ME_Enemy extends Enemy {
-    public record EntityComponent(LivingEntity entity, Vector RelativeOffset, Vector Pivot, Vector direction) {}
+    public record EntityComponent(Mob entity, Vector RelativeOffset, Vector Pivot, Vector direction) {}
     public final EntityComponent[] parts;
 
     public ME_Enemy(EntityComponent[] entity, WaveContext context, AbstractEnemyType type) {
