@@ -1,6 +1,18 @@
 package com.yourfault.map;
 
-import com.yourfault.map.util.RadialTaskRunner;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Random;
+import java.util.Set;
+import java.util.function.Consumer;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -11,15 +23,15 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.BlockVector;
 
-import java.util.*;
-import java.util.function.Consumer;
+import com.yourfault.map.util.RadialTaskRunner;
 
 /**
  * Handles spawning and clearing the boss arena structure progressively from the center outward.
  */
 public class BossStructureSpawner {
     private static final String[] STRUCTURE_RESOURCES = {
-            "structures/bossRoomModel/BossRoom2.nbt"
+            "structures/bossRoomModel/BossRoom2.nbt",
+            "structures/bossRoomModel/BossRoom3.nbt"
     };
     private static final int PLACEMENTS_PER_TICK = 500;
     private static final int CLEAR_PLACEMENTS_TICK = 1500;
@@ -35,6 +47,7 @@ public class BossStructureSpawner {
     private final Map<BlockPosition, BlockData> originalBlocks = new HashMap<>();
     private Location activeCenter;
     private String activeTemplate;
+    private TemplateInfo reservedTemplate;
     private int nextBossRoomProgressBroadcast = PROGRESS_STEP_PERCENT;
 
     public BossStructureSpawner(JavaPlugin plugin) {
@@ -52,6 +65,17 @@ public class BossStructureSpawner {
 
     public synchronized boolean hasActiveBossRoom() {
         return !originalBlocks.isEmpty();
+    }
+
+    public synchronized Optional<TemplateInfo> previewNextTemplate() {
+        if (isGenerationRunning() || hasActiveBossRoom()) {
+            return Optional.empty();
+        }
+        TemplateInfo info = ensureReservedTemplate();
+        if (info == null) {
+            return Optional.empty();
+        }
+        return Optional.of(info.copy());
     }
 
     public synchronized void generateBossRoom(Location center,
@@ -76,8 +100,8 @@ public class BossStructureSpawner {
             return;
         }
 
-        Optional<String> resource = resolveTemplateResource();
-        if (resource.isEmpty()) {
+        TemplateInfo template = ensureReservedTemplate();
+        if (template == null) {
             onError.accept("Boss room template could not be loaded.");
             return;
         }
@@ -85,7 +109,7 @@ public class BossStructureSpawner {
         resetBossProgressGate();
 
         World world = center.getWorld();
-        BlockVector size = structureHelper.getStructureSize(resource.get());
+        BlockVector size = template.size();
         if (size == null) {
             onError.accept("Boss room template size information missing.");
             return;
@@ -100,7 +124,7 @@ public class BossStructureSpawner {
         snapshotOriginalBlocks(world, bounds);
 
         boolean placed = structureHelper.placeStructure(
-                resource.get(),
+            template.resourcePath(),
                 world,
                 center.getBlockX(),
                 bounds.minY,
@@ -126,7 +150,7 @@ public class BossStructureSpawner {
         }
 
         this.activeCenter = center.clone();
-        this.activeTemplate = resource.get();
+        this.activeTemplate = template.resourcePath();
         RadialTaskRunner task = new RadialTaskRunner(
                 steps,
                 PLACEMENTS_PER_TICK,
@@ -300,6 +324,7 @@ public class BossStructureSpawner {
 
     private synchronized void onGenerationFinished(Consumer<String> onSuccess) {
         activeGeneration = null;
+        reservedTemplate = null;
         onSuccess.accept("Boss room generated using " + (activeTemplate != null ? activeTemplate : "template") + ".");
     }
 
@@ -348,6 +373,22 @@ public class BossStructureSpawner {
         activeCenter = null;
         activeTemplate = null;
         resetBossProgressGate();
+    }
+
+    private TemplateInfo ensureReservedTemplate() {
+        if (reservedTemplate != null) {
+            return reservedTemplate;
+        }
+        Optional<String> resource = resolveTemplateResource();
+        if (resource.isEmpty()) {
+            return null;
+        }
+        BlockVector size = structureHelper.getStructureSize(resource.get());
+        if (size == null) {
+            return null;
+        }
+        reservedTemplate = new TemplateInfo(resource.get(), size.clone());
+        return reservedTemplate;
     }
 
     private static final class Bounds {
@@ -471,6 +512,28 @@ public class BossStructureSpawner {
         @Override
         public int hashCode() {
             return hash;
+        }
+    }
+
+    public static final class TemplateInfo {
+        private final String resourcePath;
+        private final BlockVector size;
+
+        private TemplateInfo(String resourcePath, BlockVector size) {
+            this.resourcePath = resourcePath;
+            this.size = size;
+        }
+
+        public String resourcePath() {
+            return resourcePath;
+        }
+
+        public BlockVector size() {
+            return size.clone();
+        }
+
+        private TemplateInfo copy() {
+            return new TemplateInfo(resourcePath, size.clone());
         }
     }
 }

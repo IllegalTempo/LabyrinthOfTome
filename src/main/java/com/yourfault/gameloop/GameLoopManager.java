@@ -1,36 +1,5 @@
 package com.yourfault.gameloop;
 
-import com.yourfault.Main;
-import com.yourfault.map.BossStructureSpawner;
-import com.yourfault.map.MapGenerationSummary;
-import com.yourfault.map.MapManager;
-import com.yourfault.system.Game;
-import com.yourfault.system.GeneralPlayer.GamePlayer;
-import com.yourfault.wave.WaveEncounterType;
-import com.yourfault.wave.WaveLifecycleListener;
-import com.yourfault.wave.WaveManager;
-import com.yourfault.wave.WaveDifficulty;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.event.ClickEvent;
-import net.kyori.adventure.text.event.HoverEvent;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
-import net.kyori.adventure.title.Title;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
-import org.bukkit.util.Vector;
-import org.bukkit.block.Block;
-
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -39,6 +8,39 @@ import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.GameMode;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.util.BlockVector;
+import org.bukkit.util.Vector;
+
+import com.yourfault.Main;
+import com.yourfault.map.BossStructureSpawner;
+import com.yourfault.map.MapGenerationSummary;
+import com.yourfault.map.MapManager;
+import com.yourfault.system.Game;
+import com.yourfault.system.GeneralPlayer.GamePlayer;
+import com.yourfault.wave.WaveDifficulty;
+import com.yourfault.wave.WaveEncounterType;
+import com.yourfault.wave.WaveLifecycleListener;
+import com.yourfault.wave.WaveManager;
+
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.title.Title;
 
 public class GameLoopManager implements WaveLifecycleListener {
     private static final int WAVES_PER_CYCLE = 10;
@@ -49,6 +51,8 @@ public class GameLoopManager implements WaveLifecycleListener {
     private static final long FINAL_WAVE_HOLD_TICKS = 20L * 3;
     private static final double SPAWN_BORDER_BUFFER = 8.0;
     private static final int MAX_SPAWN_ATTEMPTS = 24;
+        private static final double BOSS_FORMATION_RADIUS = 3.5;
+        private static final double MAP_BOSS_VERTICAL_GAP = 12.0;
     private static final Title.Times STANDARD_TITLE_TIMES = Title.Times.times(
             Duration.ofMillis(250),
             Duration.ofSeconds(2),
@@ -258,6 +262,7 @@ public class GameLoopManager implements WaveLifecycleListener {
         pendingStartScatter = null;
         bossPrepNoticeActive = false;
         Location center = config.resolvePlayMapCenter(world);
+        adjustMapCenterForBossRoom(world, center);
         Bukkit.broadcastMessage(ChatColor.YELLOW + "Map is currently generating...");
         mapManager.generateMapAsync(center,
                 summary -> Bukkit.getScheduler().runTask(plugin, () -> onMapGenerated(center, summary)),
@@ -438,7 +443,7 @@ public class GameLoopManager implements WaveLifecycleListener {
         }
         phase = GameLoopPhase.BOSS_TRANSITION;
         Location holdPoint = resolveMapCenter(world);
-        teleportPlayersExact(holdPoint);
+        teleportPlayersInCircle(holdPoint, BOSS_FORMATION_RADIUS);
         applyFallDamageProtection(getOnlineParticipants(), FALL_IMMUNITY_TICKS);
         Bukkit.broadcastMessage(ChatColor.YELLOW + "Clearing arena... hold steady near the center!");
         if (mapManager.hasActiveMap()) {
@@ -609,6 +614,30 @@ public class GameLoopManager implements WaveLifecycleListener {
         return active != null ? active : config.resolvePlayMapCenter(world);
     }
 
+    // Raises the combat map center if the next boss room would intersect vertically.
+    private void adjustMapCenterForBossRoom(World world, Location mapCenter) {
+        if (world == null || mapCenter == null) {
+            return;
+        }
+        Location bossCenter = config.resolveBossArenaCenter(world);
+        if (bossCenter == null) {
+            return;
+        }
+        bossSpawner.previewNextTemplate().ifPresent(info -> {
+            BlockVector size = info.size();
+            if (size == null) {
+                return;
+            }
+            int height = Math.max(1, size.getBlockY());
+            double halfHeight = (height - 1) / 2.0;
+            double bossTopY = bossCenter.getY() + halfHeight;
+            double minimumBaseY = bossTopY + MAP_BOSS_VERTICAL_GAP;
+            if (mapCenter.getY() < minimumBaseY) {
+                mapCenter.setY(minimumBaseY);
+            }
+        });
+    }
+
     private void teleportPlayersToStart(Location center) {
         List<Player> players = getOnlineParticipants();
         if (players.isEmpty() || center == null) {
@@ -717,6 +746,34 @@ public class GameLoopManager implements WaveLifecycleListener {
         for (int i = 0; i < players.size(); i++) {
             Player player = players.get(i);
             Location target = location.clone().add(randomOffset(i));
+            player.teleport(target);
+        }
+    }
+
+    // Evenly distribute players around the center point to avoid stacking.
+    private void teleportPlayersInCircle(Location center, double radius) {
+        List<Player> players = getOnlineParticipants();
+        if (players.isEmpty() || center == null) {
+            return;
+        }
+        World world = center.getWorld();
+        if (world == null) {
+            return;
+        }
+        double effectiveRadius = Math.max(0.5, radius);
+        int count = players.size();
+        for (int i = 0; i < count; i++) {
+            Player player = players.get(i);
+            double angle = (2 * Math.PI * i) / Math.max(1, count);
+            double x = center.getX() + Math.cos(angle) * effectiveRadius;
+            double z = center.getZ() + Math.sin(angle) * effectiveRadius;
+            Location landing = findSafeLandingLocation(world, x, z);
+            Location target = landing != null ? landing : new Location(world, x, center.getY(), z);
+            double dx = center.getX() - target.getX();
+            double dz = center.getZ() - target.getZ();
+            float yaw = (float) Math.toDegrees(Math.atan2(-dx, dz));
+            target.setYaw(yaw);
+            target.setPitch(0f);
             player.teleport(target);
         }
     }
