@@ -1,6 +1,7 @@
-package com.yourfault.perks;
+package com.yourfault.perks.perkType;
 
-import com.yourfault.system.GeneralPlayer.GamePlayer;
+import com.yourfault.perks.PerkCategory;
+import com.yourfault.perks.PerkType;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 
@@ -19,7 +20,8 @@ public class ScavengerPerk extends PerkType {
                 PerkCategory.LEVEL,
                 30,
                 100,
-                50
+                50,
+                '\u0004'
         );
     }
 

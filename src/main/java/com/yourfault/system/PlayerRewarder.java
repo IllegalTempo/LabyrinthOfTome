@@ -2,10 +2,11 @@ package com.yourfault.system;
 
 import java.util.Random;
 
+import com.yourfault.perks.perkType.ScavengerPerk;
 import org.bukkit.entity.Player;
 
 import com.yourfault.perks.PerkType;
-import com.yourfault.perks.VengeancePerk;
+import com.yourfault.perks.perkType.VengeancePerk;
 import com.yourfault.system.GeneralPlayer.GamePlayer;
 
 /**
@@ -29,7 +30,7 @@ public class PlayerRewarder {
         try {
             if (player.PLAYER_PERKS != null) {
                 for (com.yourfault.perks.PerkObject perk : player.PLAYER_PERKS.perks) {
-                    if (perk.perkType instanceof com.yourfault.perks.ScavengerPerk) {
+                    if (perk.perkType instanceof ScavengerPerk) {
                         if (random.nextDouble() < 0.25) {
                             finalCoins *= 2;
                             scavengerProc = true;

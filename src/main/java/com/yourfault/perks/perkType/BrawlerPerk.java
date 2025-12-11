@@ -1,5 +1,7 @@
-package com.yourfault.perks;
+package com.yourfault.perks.perkType;
 
+import com.yourfault.perks.PerkCategory;
+import com.yourfault.perks.PerkType;
 import com.yourfault.system.GeneralPlayer.GamePlayer;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -18,7 +20,8 @@ public class BrawlerPerk extends PerkType {
                 PerkCategory.LEVEL,
                 50,
                 100,
-                50
+                50,
+                '\u0002'
         );
     }
 

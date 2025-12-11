@@ -69,7 +69,7 @@ public abstract class Enemy {
         String label = ChatColor.RED + String.format(Locale.US, "%.0f/%.0f HP ", HEALTH, MaxHealth)
                 + ChatColor.GRAY + enemyType.displayName;
         entity.setCustomName(label);
-        if(isBoss())
+        if(isBoss() && HEALTH > 0)
         {
             Main.game.BossHealthBar.progress(HEALTH/MaxHealth);
         }

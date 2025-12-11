@@ -1,7 +1,8 @@
-package com.yourfault.perks;
+package com.yourfault.perks.perkType;
 
-import com.yourfault.Enemy.Enemy;
 import com.yourfault.Main;
+import com.yourfault.perks.PerkCategory;
+import com.yourfault.perks.PerkType;
 import com.yourfault.system.GeneralPlayer.GamePlayer;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -23,7 +24,8 @@ public class VengeancePerk extends PerkType {
                 PerkCategory.LEVEL,
                 20,
                 100,
-                50
+                50,
+                '\u0006'
         );
     }
 

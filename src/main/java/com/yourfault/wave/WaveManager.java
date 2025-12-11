@@ -14,6 +14,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 
+import com.yourfault.Enemy.EnemyTypes.*;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -27,15 +28,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Team;
 
 import com.yourfault.Enemy.Enemy;
-import com.yourfault.Enemy.EnemyTypes.AbstractEnemyType;
-import com.yourfault.Enemy.EnemyTypes.Archer_Type;
-import com.yourfault.Enemy.EnemyTypes.Boss_Type;
-import com.yourfault.Enemy.EnemyTypes.Brute_Type;
-import com.yourfault.Enemy.EnemyTypes.Grunt_Type;
-import com.yourfault.Enemy.EnemyTypes.LaserZombie_Type;
-import com.yourfault.Enemy.EnemyTypes.Mage_Type;
-import com.yourfault.Enemy.EnemyTypes.Spinny_Type;
-import com.yourfault.Enemy.EnemyTypes.VampiricPhantom_Type;
 import com.yourfault.Main;
 import com.yourfault.map.MapManager;
 import com.yourfault.system.Game;
@@ -73,6 +65,9 @@ public class WaveManager {
         put("brute",new Brute_Type());
         put("grunt",new Grunt_Type());
         put("mage",new Mage_Type());
+        put("netherbeast",new NetherBeast_Type());
+        put("frostwraith", new FrostWraith_Type());
+        put("stoneclawgolem",new StoneclawGolem_Type());
         put("spinny",new Spinny_Type());
         put("vampiricphantom",new VampiricPhantom_Type());
     }};

@@ -18,6 +18,7 @@ public class PerkType implements Listener {
     public final String displayName;
     public final List<String> description;
     public final ItemStack Icon;
+    public final char perkimage;
     private final PerkCategory category;
     private final int maxLevel;
     private final int baseCost;
@@ -25,8 +26,9 @@ public class PerkType implements Listener {
 
     protected PerkType(String displayName,
                        List<String> description,
-                       PerkCategory category) {
-        this(displayName, description, category,1, 0,0);
+                       PerkCategory category,
+                       char icon) {
+        this(displayName, description, category,1, 0,0,icon);
     }
 
     protected PerkType(String displayName,
@@ -34,9 +36,11 @@ public class PerkType implements Listener {
                        PerkCategory category,
                        int maxLevel,
                        int baseCost,
-                       int incrementalCost
+                       int incrementalCost,
+                       char icon
     )
     {
+        this.perkimage = icon;
         this.maxLevel = Math.max(1, maxLevel);
         this.displayName = displayName;
         this.description = Collections.unmodifiableList(new ArrayList<>(description));

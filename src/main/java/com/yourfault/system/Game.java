@@ -6,13 +6,11 @@ import com.yourfault.gameloop.GameLoopManager;
 import com.yourfault.listener.PerkSelectionListener;
 import com.yourfault.map.BossStructureSpawner;
 import com.yourfault.map.MapManager;
-import com.yourfault.perks.BrawlerPerk;
-import com.yourfault.perks.ScavengerPerk;
-import com.yourfault.perks.ThinkSkinPerk;
-import com.yourfault.perks.VengeancePerk;
+import com.yourfault.perks.perkType.BrawlerPerk;
+import com.yourfault.perks.perkType.ScavengerPerk;
+import com.yourfault.perks.perkType.ThinkSkinPerk;
+import com.yourfault.perks.perkType.VengeancePerk;
 import com.yourfault.perks.PerkType;
-import com.yourfault.perks.QuickdrawPerk;
-import com.yourfault.perks.SharpshooterPerk;
 import com.yourfault.perks.shop.PerkShopManager;
 import com.yourfault.system.GeneralPlayer.GamePlayer;
 import com.yourfault.wave.WaveDifficulty;
@@ -106,10 +104,17 @@ public class Game {
                 BossBar.Overlay.PROGRESS
         );
     }
+    public PerkType getRandomPerk()
+    {
+
+        PerkType[] arr = ALL_PERKS.values().toArray(new PerkType[0]);
+        int randomIndex = (int) (Math.random() * arr.length);
+        return arr[randomIndex];
+    }
     private void RegisterPerks()
     {
-        ALL_PERKS.put("Sharpshooter",new SharpshooterPerk());
-        ALL_PERKS.put("Quickdraw",new QuickdrawPerk());
+        //ALL_PERKS.put("Sharpshooter",new SharpshooterPerk());
+        //ALL_PERKS.put("Quickdraw",new QuickdrawPerk());
         ALL_PERKS.put("Brawler", new BrawlerPerk());
         ALL_PERKS.put("Thick Skin", new ThinkSkinPerk());
         ALL_PERKS.put("Vengeance", new VengeancePerk());
@@ -181,7 +186,11 @@ public class Game {
     public void onEnemyKilled(Enemy enemy)
     {
         MonsterRemaining.name(Component.text("Monsters Remaining: " + ENEMY_LIST.size()));
-
+        if(Main.game.waveManager.currentWaveEnemyCount == 0)
+        {
+            MonsterRemaining.progress(0f);
+            return;
+        }
         MonsterRemaining.progress((float) ENEMY_LIST.size() / Main.game.waveManager.currentWaveEnemyCount);
     }
     private void showGameStartTitle(Player player) {

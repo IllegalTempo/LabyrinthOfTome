@@ -1,21 +1,26 @@
 package com.yourfault.system.GeneralPlayer;
 
 import com.yourfault.Items.gui.General;
+import com.yourfault.Main;
 import com.yourfault.perks.PerkObject;
 import com.yourfault.perks.PerkType;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.title.TitlePart;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Perks {
     public final GamePlayer gamePlayer;
-    public final List<PerkObject> perks = new java.util.ArrayList<>();
+    public final List<PerkObject> perks = new ArrayList<>();
     private static final int[] PERK_SLOT_INDEXES = {9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20};
     private static final int SELECTOR_SLOT = 8;
 
+    public List<PerkType[]> availablePerks = new ArrayList<>();
 
     public Perks(GamePlayer gamePlayer) {
         this.gamePlayer = gamePlayer;
@@ -24,6 +29,18 @@ public class Perks {
     public void preparePerkSlots() {
         resetIndicators();
         reapplyIndicators();
+    }
+
+    public void getPerks_onLevelUp()
+    {
+        PerkType[] addingPerks = new PerkType[3];
+        for(int i = 0 ; i < 3 ; i++)
+        {
+            addingPerks[i] = Main.game.getRandomPerk();
+
+        }
+        availablePerks.add(addingPerks);
+        DisplayPerks(availablePerks.getFirst());
     }
     public boolean applyPerkSelection(PerkType perkType) {
         boolean added = addPerk(perkType);
@@ -64,6 +81,15 @@ public class Perks {
             }
         }
         bukkitPlayer.getInventory().addItem(indicator.clone());
+    }
+    public void DisplayPerks(PerkType[] perks)
+    {
+        Player bukkitPlayer = gamePlayer.getMinecraftPlayer();
+        StringBuilder perkNames = new StringBuilder();
+        for (PerkType perk : perks) {
+            perkNames.append(perk.perkimage);
+        }
+        bukkitPlayer.sendMessage(Component.text(perkNames.toString()));
     }
     public boolean addPerk(PerkType perk)
     {

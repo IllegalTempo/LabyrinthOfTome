@@ -37,14 +37,14 @@ public abstract class EnemyProjectile extends Projectile {
                 if(age == LastFor) Destroy();
                 Vector travel = entity.getLocation().getDirection().multiply(speed);
                 age += 1;
-                if(UseGravity) travel.subtract(Main.game.Gravity);
+                if(UseGravity) travel.add(Main.game.Gravity);
                 entity.teleport(entity.getLocation().add(travel));
                 Collection<? extends Player> online = Bukkit.getOnlinePlayers();
                 boolean hit = false;
                 for(Player p : online)
                 {
                     if(p.getWorld() != entity.getWorld()) continue;
-                    if(p.getLocation().distanceSquared(getDisplayedLocation()) <= radius * radius)
+                    if(p.getLocation().add(0,1,0).distanceSquared(getDisplayedLocation()) <= radius * radius) //check distance to player's eye or center, not just feet
                     {
                         hit = true;
                         GamePlayer pl = Main.game.GetPlayer(p);

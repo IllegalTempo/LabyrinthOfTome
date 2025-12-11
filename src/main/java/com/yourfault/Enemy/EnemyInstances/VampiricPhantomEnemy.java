@@ -126,7 +126,7 @@ public class VampiricPhantomEnemy extends Enemy {
                 target.setVelocity(oldVelocity); // no knockback woohoo
 
                 // Life Drain (Heal mob)
-                this.HEALTH = Math.min(this.HEALTH + 1.0f, this.MaxHealth);
+                this.HEALTH = Math.min(this.HEALTH + 1.0f, this.MaxHealth); // make sure no 100/20 <3 appears
                 updateDisplay();
 
                 // Visuals
