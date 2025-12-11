@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-public final class SharpshooterPerk extends PerkType {
+public final class SharpshooterPerk extends PerkType { // to be deleted i guess
 
 
     public SharpshooterPerk() {
@@ -42,6 +42,16 @@ public final class SharpshooterPerk extends PerkType {
     private static final double DAMAGE_PER_LEVEL = 0.25;
 
     private final Set<UUID> empoweredArrows = new HashSet<>();
+
+    @Override
+    public void applyStats(GamePlayer player, int level) {
+        player.bowDamageBonus += BASE_DAMAGE + (Math.max(0, level - 1) * DAMAGE_PER_LEVEL);
+    }
+
+    @Override
+    protected org.bukkit.Material resolveIconMaterial() {
+        return org.bukkit.Material.BOW;
+    }
 
     @EventHandler
     public void onProjectileLaunch(ProjectileLaunchEvent event) {
@@ -73,11 +83,10 @@ public final class SharpshooterPerk extends PerkType {
             return;
         }
 
-        if (!gamePlayer.PLAYER_PERKS.hasPerk(this)) return;
-        int level = gamePlayer.PLAYER_PERKS.getPerkLevel(this);
-        double bonusDamage = BASE_DAMAGE + (Math.max(0, level - 1) * DAMAGE_PER_LEVEL);
-        event.setDamage(event.getDamage() + bonusDamage);
-        player.sendMessage(ChatColor.AQUA + "Sharpshooter bonus applied! +" + String.format("%.1f", bonusDamage) + " damage");
+        if (gamePlayer.bowDamageBonus > 0) {
+            event.setDamage(event.getDamage() + gamePlayer.bowDamageBonus);
+            player.sendMessage(ChatColor.AQUA + "[Sharpshooter] +" + String.format("%.2f", gamePlayer.bowDamageBonus) + " bow damage applied!");
+        }
     }
 }
 

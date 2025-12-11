@@ -88,3 +88,8 @@ commands:
     usage: /ready
     permissions:
       labyrinthoftome.admin: true
+  giveperk:
+    description: Gives a perk to the player
+    usage: /giveperk <player_name> <perk_name> <level>
+    permissions:
+      labyrinthoftome.admin: true

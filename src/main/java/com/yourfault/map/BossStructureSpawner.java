@@ -36,7 +36,7 @@ public class BossStructureSpawner {
     private static final int PLACEMENTS_PER_TICK = 500;
     private static final int CLEAR_PLACEMENTS_TICK = 1500;
     private static final Set<Material> BLOCKED_TEMPLATE_MATERTIALS = EnumSet.of(Material.BARRIER);
-        private static final int PROGRESS_STEP_PERCENT = 10;
+    private static final int PROGRESS_STEP_PERCENT = 10;
 
     private final JavaPlugin plugin;
     private final StructurePlacementHelper structureHelper;
@@ -76,6 +76,13 @@ public class BossStructureSpawner {
             return Optional.empty();
         }
         return Optional.of(info.copy());
+    }
+
+    /**
+     * Safe accessor for callers that only need the template size without accessing internal types.
+     */
+    public synchronized Optional<BlockVector> previewNextTemplateSize() {
+        return previewNextTemplate().map(TemplateInfo::size);
     }
 
     public synchronized void generateBossRoom(Location center,
@@ -124,7 +131,7 @@ public class BossStructureSpawner {
         snapshotOriginalBlocks(world, bounds);
 
         boolean placed = structureHelper.placeStructure(
-            template.resourcePath(),
+                template.resourcePath(),
                 world,
                 center.getBlockX(),
                 bounds.minY,
@@ -155,8 +162,8 @@ public class BossStructureSpawner {
                 steps,
                 PLACEMENTS_PER_TICK,
                 () -> onGenerationFinished(onSuccess),
-            ex -> onGenerationFailed(ex, onError),
-            this::handleBossGenerationProgress
+                ex -> onGenerationFailed(ex, onError),
+                this::handleBossGenerationProgress
         );
         this.activeGeneration = task;
         task.runTaskTimer(plugin, 1L, 1L);

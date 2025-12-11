@@ -6,6 +6,10 @@ import com.yourfault.gameloop.GameLoopManager;
 import com.yourfault.listener.PerkSelectionListener;
 import com.yourfault.map.BossStructureSpawner;
 import com.yourfault.map.MapManager;
+import com.yourfault.perks.BrawlerPerk;
+import com.yourfault.perks.ScavengerPerk;
+import com.yourfault.perks.ThinkSkinPerk;
+import com.yourfault.perks.VengeancePerk;
 import com.yourfault.perks.PerkType;
 import com.yourfault.perks.QuickdrawPerk;
 import com.yourfault.perks.SharpshooterPerk;
@@ -60,6 +64,7 @@ public class Game {
     public HashMap<UUID, GamePlayer> PLAYER_LIST = new HashMap<>();
     public HashMap<UUID,Projectile> PROJECTILE_LIST = new HashMap<>();
     public HashMap<UUID, Enemy> ENEMY_LIST = new HashMap<>();
+    public HashMap<UUID,GamePlayer> getDeadPlayer = new HashMap<>();
     private PerkSelectionListener perkSelectionListener;
     public boolean isGameRunning()
     {
@@ -105,6 +110,10 @@ public class Game {
     {
         ALL_PERKS.put("Sharpshooter",new SharpshooterPerk());
         ALL_PERKS.put("Quickdraw",new QuickdrawPerk());
+        ALL_PERKS.put("Brawler", new BrawlerPerk());
+        ALL_PERKS.put("Thick Skin", new ThinkSkinPerk());
+        ALL_PERKS.put("Vengeance", new VengeancePerk());
+        ALL_PERKS.put("Scavenger", new ScavengerPerk());
     }
     private void RegisterPerksListener()
     {

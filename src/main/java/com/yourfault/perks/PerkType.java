@@ -1,6 +1,7 @@
 package com.yourfault.perks;
 
 import com.yourfault.NBT_namespace;
+import com.yourfault.system.GeneralPlayer.GamePlayer;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.event.Listener;
@@ -48,6 +49,10 @@ public class PerkType implements Listener {
 
     public PerkCategory getCategory() {
         return category;
+    }
+
+    public void applyStats(GamePlayer player, int level) {
+        //override in subclasses
     }
 
     public boolean isLevelPerk() {
@@ -100,7 +105,7 @@ public class PerkType implements Listener {
         return stack;
     }
 
-    private ItemStack buildBaseIcon() {
+    protected ItemStack buildBaseIcon() {
         ItemStack stack = new ItemStack(resolveIconMaterial());
         ItemMeta meta = stack.getItemMeta();
         if (meta != null) {

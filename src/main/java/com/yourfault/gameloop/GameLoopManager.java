@@ -51,8 +51,8 @@ public class GameLoopManager implements WaveLifecycleListener {
     private static final long FINAL_WAVE_HOLD_TICKS = 20L * 3;
     private static final double SPAWN_BORDER_BUFFER = 8.0;
     private static final int MAX_SPAWN_ATTEMPTS = 24;
-        private static final double BOSS_FORMATION_RADIUS = 3.5;
-        private static final double MAP_BOSS_VERTICAL_GAP = 12.0;
+    private static final double BOSS_FORMATION_RADIUS = 3.5;
+    private static final double MAP_BOSS_VERTICAL_GAP = 12.0;
     private static final Title.Times STANDARD_TITLE_TIMES = Title.Times.times(
             Duration.ofMillis(250),
             Duration.ofSeconds(2),
@@ -78,6 +78,7 @@ public class GameLoopManager implements WaveLifecycleListener {
     private BukkitTask scheduledWaveTask;
     private BukkitTask bossCountdownTask;
     private BukkitTask readyTimeoutTask;
+    private BukkitTask readyPositionTask;
     private boolean bossPrepNoticeActive = false;
     private boolean playersConfirmedNextCycle = false;
     private boolean pendingArenaReady = false;
@@ -125,6 +126,7 @@ public class GameLoopManager implements WaveLifecycleListener {
         phase = GameLoopPhase.INITIAL_READY;
         activeReadyCheck = new ReadyCheck(toUuidList(participants), ReadyCheck.Mode.YES_NO);
         scheduleReadyTimeout();
+        scheduleReadyPositionTask();
         Bukkit.broadcastMessage(ChatColor.AQUA + "Play session requested by " + initiator.getName() + ". Waiting for everyone to accept.");
         participants.forEach(this::sendInitialReadyPrompt);
         return true;
@@ -174,6 +176,7 @@ public class GameLoopManager implements WaveLifecycleListener {
             ReadyCheck completedCheck = activeReadyCheck;
             activeReadyCheck = null;
             cancelReadyTimeout();
+            cancelReadyPositionTask();
             onReadyCheckComplete(completedCheck.mode());
         }
         return true;
@@ -516,6 +519,7 @@ public class GameLoopManager implements WaveLifecycleListener {
         readyStage = ReadyStage.POST_BOSS;
         prepareNextCycleLaunchState(false);
         activeReadyCheck = new ReadyCheck(toUuidList(getOnlineParticipants()), ReadyCheck.Mode.CONFIRM_ONLY);
+        scheduleReadyPositionTask();
         if (activeReadyCheck.totalParticipants() == 0) {
             activeReadyCheck = null;
             onReadyCheckComplete(ReadyCheck.Mode.CONFIRM_ONLY);
@@ -623,8 +627,7 @@ public class GameLoopManager implements WaveLifecycleListener {
         if (bossCenter == null) {
             return;
         }
-        bossSpawner.previewNextTemplate().ifPresent(info -> {
-            BlockVector size = info.size();
+        bossSpawner.previewNextTemplateSize().ifPresent(size -> {
             if (size == null) {
                 return;
             }
@@ -862,6 +865,7 @@ public class GameLoopManager implements WaveLifecycleListener {
             readyTimeoutTask.cancel();
             readyTimeoutTask = null;
         }
+        cancelReadyPositionTask();
     }
 
     private void scheduleReadyTimeout() {
@@ -881,6 +885,45 @@ public class GameLoopManager implements WaveLifecycleListener {
             }
             failAndShutdown("Ready check timed out.");
         }, INITIAL_READY_TIMEOUT_TICKS);
+    }
+
+    private void scheduleReadyPositionTask() {
+        cancelReadyPositionTask();
+        if (activeReadyCheck == null) return;
+        // Check every 10 ticks for players standing in the ready area
+        readyPositionTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+            if (activeReadyCheck == null) return;
+            for (UUID id : activeReadyCheck.participants()) {
+                if (!activeReadyCheck.contains(id)) continue;
+                Player p = Bukkit.getPlayer(id);
+                if (p == null || !p.isOnline() || p.isDead()) continue;
+                Location loc = p.getLocation();
+                World w = resolveWorld();
+                if (w != null && loc.getWorld() != null && !loc.getWorld().equals(w)) continue;
+                if (config.isLocationInReadyArea(loc)) {
+                    boolean changed = activeReadyCheck.markReady(id);
+                    if (changed) {
+                        int ready = activeReadyCheck.readyCount();
+                        int total = activeReadyCheck.totalParticipants();
+                        Bukkit.broadcastMessage(ChatColor.GREEN + p.getName() + " has ready up (" + ready + "/" + total + ").");
+                    }
+                }
+            }
+            if (activeReadyCheck != null && activeReadyCheck.isComplete()) {
+                ReadyCheck completed = activeReadyCheck;
+                activeReadyCheck = null;
+                cancelReadyTimeout();
+                cancelReadyPositionTask();
+                onReadyCheckComplete(completed.mode());
+            }
+        }, 0L, 10L);
+    }
+
+    private void cancelReadyPositionTask() {
+        if (readyPositionTask != null) {
+            readyPositionTask.cancel();
+            readyPositionTask = null;
+        }
     }
 
     private void hardResetState() {

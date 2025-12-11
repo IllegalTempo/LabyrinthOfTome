@@ -38,105 +38,92 @@ public class Excalibur_Main implements Listener {
     public void OnRightClick(PlayerInteractEvent e)
     {
         GamePlayer gamePlayer = Main.game.GetPlayer(e.getPlayer().getUniqueId());
-        if (gamePlayer == null) return;
-        if(gamePlayer.inActionTicks > 0) return;
-        WeaponType selectedWeapon = gamePlayer.SELECTED_WEAPON;
-        if(selectedWeapon != WeaponType.Excalibur) return;
-        if(e.getPlayer().getInventory().getItemInMainHand().getItemMeta() == null) return;
-        List<String> customData = e.getPlayer().getInventory().getItemInMainHand().getItemMeta().getCustomModelDataComponent().getStrings();
-        if(customData.size() == 0) return;
-        String itemname = customData.get(0);
-        if(itemname.equals("excalibur")) {
-            if (e.getAction() == Action.RIGHT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_AIR) {
+        if(!gamePlayer.ActionReady(WeaponType.Excalibur,5f)) return;
+        if (e.getAction() == Action.RIGHT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_AIR) {
+            gamePlayer.playAnimation(ANIMATION_RC);
+            gamePlayer.ChangeMana(-5f);
+            Location locz = e.getPlayer().getLocation();
+
+            e.getPlayer().getWorld().playSound(Sound.sound(Key.key("minecraft:entity.player.attack.sweep"),Sound.Source.PLAYER,1.0f,0.5f),locz.getX(),locz.getY(),locz.getZ());
 
 
-                gamePlayer.playAnimation(ANIMATION_RC);
-                gamePlayer.ChangeMana(-5f);
-                Location locz = e.getPlayer().getLocation();
-
-                e.getPlayer().getWorld().playSound(Sound.sound(Key.key("minecraft:entity.player.attack.sweep"),Sound.Source.PLAYER,1.0f,0.5f),locz.getX(),locz.getY(),locz.getZ());
-                e.getPlayer().getWorld().playSound(Sound.sound(Key.key("minecraft:entity.ender_dragon.ambient"),Sound.Source.PLAYER,1.0f,2.0f),locz.getX(),locz.getY(),locz.getZ());
-
-
-                // sweep the spawn directions from +22.5° to -22.5° over i = 5..10
-                for(int i = 5 ; i <= 10; i++)
-                {
-                    int finalI = i;
-
-                    Bukkit.getScheduler().runTaskLater(plugin, ()-> {
-                        Location loc = gamePlayer.GetForward(1);
-                        //Location loc = gamePlayer.getLocationRelativeToPlayer(new Vector(finalI -7,0,0));
-                        loc.setYaw(loc.getYaw() + (finalI-7.5f) * 20f);
-
-                        new Sword_Aura(loc, 10f,gamePlayer);
-                    }, i);
-                }
-
-            }
-            if(e.getAction() == Action.LEFT_CLICK_AIR || e.getAction() == Action.LEFT_CLICK_BLOCK)
+            // sweep the spawn directions from +22.5° to -22.5° over i = 5..10
+            for(int i = 5 ; i <= 10; i++)
             {
-                gamePlayer.playAnimation(ANIMATION_LC);
+                int finalI = i;
 
+                Bukkit.getScheduler().runTaskLater(plugin, ()-> {
+                    Location loc = gamePlayer.GetForward(1);
+                    //Location loc = gamePlayer.getLocationRelativeToPlayer(new Vector(finalI -7,0,0));
+                    loc.setYaw(loc.getYaw() + (finalI-7.5f) * 20f);
+
+                    new Sword_Aura(loc, 10f,gamePlayer);
+                }, i);
             }
+
         }
+        if(e.getAction() == Action.LEFT_CLICK_AIR || e.getAction() == Action.LEFT_CLICK_BLOCK)
+        {
+            onMeleeAttack(gamePlayer);
+
+        }
+
+
+    }
+    private void onMeleeAttack(GamePlayer player)
+    {
+        player.playAnimation(ANIMATION_LC);
+        Location locz = player.getMinecraftPlayer().getLocation();
+        locz.getWorld().playSound(Sound.sound(Key.key("minecraft:entity.player.attack.sweep"),Sound.Source.PLAYER,1.0f,0.5f),locz.getX(),locz.getY(),locz.getZ());
 
     }
     @EventHandler
     public void OnMelee(PrePlayerAttackEntityEvent e)
     {
         GamePlayer gamePlayer = Main.game.GetPlayer(e.getPlayer().getUniqueId());
-        if (gamePlayer == null) return;
-        if(gamePlayer.inActionTicks > 0) {e.setCancelled(true);return;}
-        WeaponType selectedWeapon = gamePlayer.SELECTED_WEAPON;
-        if(selectedWeapon != WeaponType.Excalibur) return;
-        if(e.getPlayer().getInventory().getItemInMainHand().getItemMeta() == null) return;
-        List<String> customData = e.getPlayer().getInventory().getItemInMainHand().getItemMeta().getCustomModelDataComponent().getStrings();
-        if(customData.size() == 0) return;
-        String itemname = customData.get(0);
-        if(itemname.equals("excalibur")) {
-            gamePlayer.playAnimation(ANIMATION_LC);
+        if(!gamePlayer.ActionReady(WeaponType.Excalibur,0f)) return;
+
+        Location locz = e.getPlayer().getLocation();
+        onMeleeAttack(gamePlayer);
 
 
-        }
+
+
     }
     @EventHandler
     public void on_F_clicked(PlayerSwapHandItemsEvent e)
     {
         e.setCancelled(true);
         GamePlayer gamePlayer = Main.game.GetPlayer(e.getPlayer().getUniqueId());
-        if (gamePlayer == null) return;
-        if(gamePlayer.inActionTicks > 0) return;
-        WeaponType selectedWeapon = gamePlayer.SELECTED_WEAPON;
-        if(selectedWeapon != WeaponType.Excalibur) return;
-        if(e.getPlayer().getInventory().getItemInMainHand().getItemMeta() == null) return;
-        List<String> customData = e.getPlayer().getInventory().getItemInMainHand().getItemMeta().getCustomModelDataComponent().getStrings();
-        if(customData.size() == 0) return;
-        String itemname = customData.get(0);
-        if(itemname.equals("excalibur")) {
-            gamePlayer.playAnimation(ANIMATION_FC);
-            gamePlayer.ChangeMana(-20f);
-            Location locz = e.getPlayer().getLocation();
-            double grav = e.getPlayer().getAttribute(Attribute.GRAVITY).getValue();
-            e.getPlayer().getAttribute(Attribute.GRAVITY).setBaseValue(-0.01);
-            Bukkit.getScheduler().runTaskLater(plugin, ()-> {
-                e.getPlayer().getAttribute(Attribute.GRAVITY).setBaseValue(grav);
+        if(!gamePlayer.ActionReady(WeaponType.Excalibur,20f)) return;
 
-            }, ANIMATION_FC.durationTicks());
-            Bukkit.getScheduler().runTaskLater(plugin, ()-> {
-                e.getPlayer().getAttribute(Attribute.GRAVITY).setBaseValue(1);
+        gamePlayer.playAnimation(ANIMATION_FC);
+        gamePlayer.ChangeMana(-20f);
+        Location locz = e.getPlayer().getLocation();
+        double grav = e.getPlayer().getAttribute(Attribute.GRAVITY).getValue();
+        e.getPlayer().getAttribute(Attribute.GRAVITY).setBaseValue(-0.01);
+        Bukkit.getScheduler().runTaskLater(plugin, ()-> {
+            e.getPlayer().getAttribute(Attribute.GRAVITY).setBaseValue(grav);
 
-            }, 20);
-            // capture the effect center and owner now so the scheduled task can use them
-            Bukkit.getScheduler().runTaskLater(plugin, ()-> {
-                Location effectCenter = e.getPlayer().getLocation().clone().add(0, 1.0, 0);
+        }, ANIMATION_FC.durationTicks());
+        Bukkit.getScheduler().runTaskLater(plugin, ()-> {
+            e.getPlayer().getAttribute(Attribute.GRAVITY).setBaseValue(1);
+            locz.getWorld().playSound(Sound.sound(Key.key("minecraft:entity.ender_dragon.ambient"),Sound.Source.PLAYER,1.0f,2.0f),locz.getX(),locz.getY(),locz.getZ());
 
-                F_MainEffect(effectCenter, gamePlayer);
 
-            }, 30L);
-        }
+        }, 20);
+        // capture the effect center and owner now so the scheduled task can use them
+        Bukkit.getScheduler().runTaskLater(plugin, ()-> {
+            Location effectCenter = e.getPlayer().getLocation().clone().add(0, 1.0, 0);
+
+            F_MainEffect(effectCenter, gamePlayer);
+
+        }, 30L);
+
     }
     private void F_MainEffect(Location center, GamePlayer owner)
     {
+
         Player bukkitOwner = owner != null ? owner.getMinecraftPlayer() : null;
         if (bukkitOwner == null) {
             return;

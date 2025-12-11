@@ -40,6 +40,10 @@ public final class QuickdrawPerk extends PerkType {
     }
     private final Map<UUID, Long> cooldowns = new HashMap<>();
 
+    @Override
+    protected Material resolveIconMaterial() {
+        return Material.BOW;
+    }
 
     @EventHandler
     public void onBowUse(PlayerInteractEvent event) {

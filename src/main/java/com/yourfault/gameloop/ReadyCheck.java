@@ -80,4 +80,9 @@ public class ReadyCheck {
     public boolean isComplete() {
         return !responses.isEmpty() && readyCount >= responses.size();
     }
+
+
+    public java.util.Set<UUID> participants() {
+        return java.util.Collections.unmodifiableSet(responses.keySet());
+    }
 }

@@ -77,6 +77,7 @@ public class Main extends JavaPlugin {
         this.getCommand("startgame").setExecutor(new StartGame());
         this.getCommand("endgame").setExecutor(new EndGameCommand());
         this.getCommand("get").setExecutor(new GetCommand());
+        this.getCommand("giveperk").setExecutor((new GivePerkCommand()));
         this.getCommand("readyfornextwave").setExecutor(new ReadyForNextWave());
         this.getCommand("spawnnpc").setExecutor(new SummonNPC());
         this.getCommand("getcoins").setExecutor(new GetCoinsCommand());

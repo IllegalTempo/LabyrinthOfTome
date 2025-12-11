@@ -1,15 +1,24 @@
 package com.yourfault.wave;
 
-import com.yourfault.Enemy.Enemy;
-import com.yourfault.Enemy.EnemyTypes.*;
-import com.yourfault.Enemy.EnemyTypes.AbstractEnemyType;
-import com.yourfault.Main;
-import com.yourfault.map.MapManager;
-import com.yourfault.system.Game;
-import com.yourfault.system.GeneralPlayer.GamePlayer;
-import com.yourfault.system.TabInfo;
-import net.kyori.adventure.text.Component;
-import org.bukkit.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Random;
+import java.util.Set;
+import java.util.UUID;
+
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.LivingEntity;
@@ -17,7 +26,23 @@ import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Team;
 
-import java.util.*;
+import com.yourfault.Enemy.Enemy;
+import com.yourfault.Enemy.EnemyTypes.AbstractEnemyType;
+import com.yourfault.Enemy.EnemyTypes.Archer_Type;
+import com.yourfault.Enemy.EnemyTypes.Boss_Type;
+import com.yourfault.Enemy.EnemyTypes.Brute_Type;
+import com.yourfault.Enemy.EnemyTypes.Grunt_Type;
+import com.yourfault.Enemy.EnemyTypes.LaserZombie_Type;
+import com.yourfault.Enemy.EnemyTypes.Mage_Type;
+import com.yourfault.Enemy.EnemyTypes.Spinny_Type;
+import com.yourfault.Enemy.EnemyTypes.VampiricPhantom_Type;
+import com.yourfault.Main;
+import com.yourfault.map.MapManager;
+import com.yourfault.system.Game;
+import com.yourfault.system.GeneralPlayer.GamePlayer;
+import com.yourfault.system.TabInfo;
+
+import net.kyori.adventure.text.Component;
 
 public class WaveManager {
     private final Game game;
@@ -49,11 +74,13 @@ public class WaveManager {
         put("grunt",new Grunt_Type());
         put("mage",new Mage_Type());
         put("spinny",new Spinny_Type());
+        put("vampiricphantom",new VampiricPhantom_Type());
     }};
 
     public WaveManager(Game game, MapManager mapManager) {
         this.game = game;
         this.mapManager = mapManager;
+        this.rewarder = new com.yourfault.system.PlayerRewarder(this.game);
     }
 
     public void initializeSession(WaveDifficulty difficulty) {
@@ -488,7 +515,7 @@ public class WaveManager {
         if (instance == null) {
             return;
         }
-        rewardPlayer(attacker, instance.enemyType.hitCoins, instance.enemyType.hitXp);
+        rewardPlayer(attacker, instance.enemyType.hitCoins, instance.enemyType.hitXp, false);
     }
 
     public void handleEnemyDeath(UUID enemyId, GamePlayer killer) {
@@ -497,34 +524,26 @@ public class WaveManager {
         if (!active || instance == null) {
             return;
         }
-        rewardPlayer(killer, instance.enemyType.killCoins, instance.enemyType.killXp);
+        rewardPlayer(killer, instance.enemyType.killCoins, instance.enemyType.killXp, true);
         checkWaveCompletion();
     }
 
-    private void rewardPlayer(GamePlayer player, int coins, int xp) {
-        if (player == null) {
-            return;
-        }
-        boolean rewarded = false;
-        if (coins > 0) {
-            player.addCoins(coins);
-            rewarded = true;
-        }
-        if (xp > 0) {
-            player.addExperience(xp);
-            rewarded = true;
-        }
-        if (rewarded) {
-            sendRewardMessage(player, coins, xp);
-        }
+    private final com.yourfault.system.PlayerRewarder rewarder;
+
+    private void rewardPlayer(GamePlayer player, int coins, int xp, boolean isKill) {
+        rewarder.rewardPlayer(player, coins, xp, isKill);
     }
 
-    private void sendRewardMessage(GamePlayer player, int coins, int xp) {
+    private void sendRewardMessage(GamePlayer player, int coins, int xp, boolean scavengerProc) {
         Player bukkitPlayer = player.getMinecraftPlayer();
         if (bukkitPlayer == null) {
             return;
         }
-        String message = String.format("+%d coins, + %d XP", coins, xp);
+        String coinMsg = "+" + coins + " coins";
+        if (scavengerProc) {
+            coinMsg += " (Scavenger)";
+        }
+        String message = String.format("%s, + %d XP", coinMsg, xp);
         bukkitPlayer.sendMessage(message);
     }
 

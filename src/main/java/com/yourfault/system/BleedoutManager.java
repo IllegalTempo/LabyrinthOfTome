@@ -5,6 +5,8 @@ import com.yourfault.system.GeneralPlayer.GamePlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Mannequin;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -230,20 +232,29 @@ public class BleedoutManager implements Listener {
     private GamePlayer findNearbyDowned(Player rescuer) {
         Location rescuerLocation = rescuer.getLocation();
         double maxDistanceSquared = REVIVE_RADIUS * REVIVE_RADIUS;
-        for (Player targetPlayer : Bukkit.getOnlinePlayers()) {
-            if (targetPlayer.equals(rescuer)) {
+//        for (Player targetPlayer : Bukkit.getOnlinePlayers()) {
+//            if (targetPlayer.equals(rescuer)) {
+//                continue;
+//            }
+//            GamePlayer targetState = Main.game.GetPlayer(targetPlayer);
+//            if (targetState == null || targetState.CurrentState != GamePlayer.SurvivalState.DOWNED) {
+//                continue;
+//            }
+//            if (!Objects.equals(targetPlayer.getWorld(), rescuerLocation.getWorld())) {
+//                continue;
+//            }
+//            Location reviveLocation = targetPlayer.getLocation().clone().subtract(GamePlayer.Downed_WatchOffset);
+//            if (reviveLocation.distanceSquared(rescuerLocation) <= maxDistanceSquared) {
+//                return targetState;
+//            }
+//        }
+        for (Entity entity : rescuer.getNearbyEntities(REVIVE_RADIUS, REVIVE_RADIUS, REVIVE_RADIUS)) {
+            if (entity instanceof Mannequin) {
                 continue;
             }
-            GamePlayer targetState = Main.game.GetPlayer(targetPlayer);
-            if (targetState == null || targetState.CurrentState != GamePlayer.SurvivalState.DOWNED) {
-                continue;
-            }
-            if (!Objects.equals(targetPlayer.getWorld(), rescuerLocation.getWorld())) {
-                continue;
-            }
-            Location reviveLocation = targetPlayer.getLocation().clone().subtract(GamePlayer.Downed_WatchOffset);
-            if (reviveLocation.distanceSquared(rescuerLocation) <= maxDistanceSquared) {
-                return targetState;
+            if (Main.game.getDeadPlayer.containsKey(entity.getUniqueId()))
+            {
+                return Main.game.getDeadPlayer.get(entity.getUniqueId());
             }
         }
         return null;

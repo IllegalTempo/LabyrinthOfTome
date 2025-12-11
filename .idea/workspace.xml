@@ -4,12 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="18b9d33a-a1ab-4c7e-badb-df567bdbf954" name="Changes" comment="Changed Enemy Structure, removed WaveEnemyInstance, Instead made AbstractEnemyType which is instanced in WaveManager and Made Enemy.java Great Again.&#10;Fixed issue with bossbar, bossbars should be completely working.&#10;Fixed issue with Tab where one more row is added when reload">
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/SpinnyEnemy.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyProjectiles/EnemyProjectile.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyProjectiles/Musket.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyTypes/Spinny_Type.java" afterDir="false" />
+    <list default="true" id="18b9d33a-a1ab-4c7e-badb-df567bdbf954" name="Changes" comment="a lot">
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/CustomGUI/CustomGUI.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/CustomGUI/DisplayMethod.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/CustomGUI/GUIComponent.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/checksums/checksums.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/checksums/checksums.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/checksums/md5-checksums.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/checksums/md5-checksums.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/checksums/sha1-checksums.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/checksums/sha1-checksums.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/executionHistory/executionHistory.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/executionHistory/executionHistory.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/executionHistory/executionHistory.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/executionHistory/executionHistory.lock" afterDir="false" />
@@ -19,26 +19,26 @@
       <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Commands/Debugs/SpawnMobCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Commands/Debugs/SpawnMobCommand.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/BleedoutManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/BleedoutManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/Game.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/Game.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/GamePlayer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/GamePlayer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/Excalibur/Excalibur_Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/Excalibur/Excalibur_Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/WeaponType.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/WeaponType.java" afterDir="false" />
+    </list>
+    <list id="67b63174-0f9f-4a20-97c7-a9058f4f4a81" name="Changes by user" comment="">
       <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/Enemy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/Enemy.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/GeneralEnemyInstance.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/GeneralEnemyInstance.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/LaserZombieEnemy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/LaserZombieEnemy.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyTypes/Archer_Type.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyTypes/Archer_Type.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyTypes/Boss_Type.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyTypes/Boss_Type.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyTypes/Brute_Type.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyTypes/Brute_Type.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyTypes/Grunt_Type.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyTypes/Grunt_Type.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyTypes/LaserZombie_Type.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyTypes/LaserZombie_Type.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyTypes/Mage_Type.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyTypes/Mage_Type.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/ME_Enemy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/ME_Enemy.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/system/AbstractEnemyType.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyTypes/AbstractEnemyType.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/system/EnemyClassification.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyClassification.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/system/EnemyProjectile.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/gameloop/GameLoopConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/gameloop/GameLoopConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/gameloop/GameLoopManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/gameloop/GameLoopManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/gameloop/ReadyCheck.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/gameloop/ReadyCheck.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/map/BossStructureSpawner.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/map/BossStructureSpawner.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/perks/PerkType.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/perks/PerkType.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/perks/QuickdrawPerk.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/perks/QuickdrawPerk.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/perks/SharpshooterPerk.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/perks/SharpshooterPerk.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/Game.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/Game.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/GamePlayer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/GamePlayer.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/wave/WaveManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/wave/WaveManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/Excalibur/HolySword.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/Excalibur/HolySword.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/Excalibur/Sword_Aura.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/Excalibur/Sword_Aura.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/General/Projectile.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/Projectile.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/plugin.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/plugin.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -129,6 +129,44 @@
     &quot;accountId&quot;: &quot;112ddd4e-714d-4256-9e6c-ae35ccb9cbbe&quot;
   }
 }</component>
+  <component name="LineStatusTrackerManager">
+    <file path="$PROJECT_DIR$/src/main/java/com/yourfault/system/Game.java">
+      <ranges>
+        <range start1="8" end1="8" start2="8" end2="12" changelist="67b63174-0f9f-4a20-97c7-a9058f4f4a81" />
+        <range start1="62" end1="62" start2="66" end2="67" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="107" end1="107" start2="112" end2="116" changelist="67b63174-0f9f-4a20-97c7-a9058f4f4a81" />
+      </ranges>
+    </file>
+    <file path="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/GamePlayer.java">
+      <ranges>
+        <range start1="2" end1="2" start2="2" end2="4" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="4" end1="4" start2="6" end2="7" changelist="67b63174-0f9f-4a20-97c7-a9058f4f4a81" />
+        <range start1="9" end1="11" start2="12" end2="12" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="13" end1="14" start2="14" end2="14" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="17" end1="17" start2="17" end2="18" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="28" end1="28" start2="29" end2="31" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="36" end1="36" start2="39" end2="41" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="62" end1="62" start2="67" end2="71" changelist="67b63174-0f9f-4a20-97c7-a9058f4f4a81" />
+        <range start1="68" end1="68" start2="77" end2="79" changelist="67b63174-0f9f-4a20-97c7-a9058f4f4a81" />
+        <range start1="80" end1="80" start2="91" end2="92" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="95" end1="95" start2="107" end2="109" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="97" end1="97" start2="111" end2="141" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="104" end1="104" start2="148" end2="158" changelist="67b63174-0f9f-4a20-97c7-a9058f4f4a81" />
+        <range start1="105" end1="105" start2="159" end2="182" changelist="67b63174-0f9f-4a20-97c7-a9058f4f4a81" />
+        <range start1="204" end1="208" start2="281" end2="285" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="210" end1="210" start2="287" end2="299" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="211" end1="215" start2="300" end2="316" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="216" end1="221" start2="317" end2="317" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="222" end1="236" start2="318" end2="319" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="275" end1="276" start2="358" end2="363" changelist="67b63174-0f9f-4a20-97c7-a9058f4f4a81" />
+        <range start1="292" end1="292" start2="379" end2="392" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="294" end1="294" start2="394" end2="395" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="302" end1="302" start2="403" end2="404" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="458" end1="458" start2="560" end2="564" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="459" end1="459" start2="565" end2="566" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+      </ranges>
+    </file>
+  </component>
   <component name="ProblemsViewState">
     <option name="selectedTabId" value="CurrentFile" />
   </component>
@@ -160,7 +198,7 @@
     &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
     &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
     &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settingsdialog.project.gradle&quot;
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
   }
 }</component>
   <component name="RecentsManager">
@@ -391,7 +429,15 @@
       <option name="project" value="LOCAL" />
       <updated>1765062979082</updated>
     </task>
-    <option name="localTasksCounter" value="15" />
+    <task id="LOCAL-00015" summary="a lot">
+      <option name="closed" value="true" />
+      <created>1765148999090</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1765148999091</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -427,7 +473,8 @@
     <MESSAGE value="idk" />
     <MESSAGE value="todo: move the boss enttiy to Boss.java, onentitydamage, change the bossbar name&#10;shift + f to find how.&#10;Entity -&gt; ?ME_Entity -&gt; Boss -&gt; super ultimate fire boss? (eg)&#10;=Done:&#10;-Bossbar other than boss bar" />
     <MESSAGE value="Changed Enemy Structure, removed WaveEnemyInstance, Instead made AbstractEnemyType which is instanced in WaveManager and Made Enemy.java Great Again.&#10;Fixed issue with bossbar, bossbars should be completely working.&#10;Fixed issue with Tab where one more row is added when reload" />
-    <option name="LAST_COMMIT_MESSAGE" value="Changed Enemy Structure, removed WaveEnemyInstance, Instead made AbstractEnemyType which is instanced in WaveManager and Made Enemy.java Great Again.&#10;Fixed issue with bossbar, bossbars should be completely working.&#10;Fixed issue with Tab where one more row is added when reload" />
+    <MESSAGE value="a lot" />
+    <option name="LAST_COMMIT_MESSAGE" value="a lot" />
   </component>
   <component name="github-copilot-workspace">
     <instructionFileLocations>

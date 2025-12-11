@@ -1,9 +1,7 @@
 package com.yourfault.Enemy;
 
-import com.yourfault.Enemy.EnemyTypes.AbstractEnemyType;
-import com.yourfault.Main;
-import com.yourfault.system.GeneralPlayer.GamePlayer;
-import com.yourfault.wave.WaveContext;
+import java.util.Locale;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Particle;
@@ -13,9 +11,11 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Mob;
 import org.bukkit.scheduler.BukkitTask;
 
-import java.util.Locale;
-
+import com.yourfault.Enemy.EnemyTypes.AbstractEnemyType;
+import com.yourfault.Main;
 import static com.yourfault.Main.plugin;
+import com.yourfault.system.GeneralPlayer.GamePlayer;
+import com.yourfault.wave.WaveContext;
 
 public abstract class Enemy {
     public Mob entity;
@@ -64,7 +64,7 @@ public abstract class Enemy {
         entity.addScoreboardTag("lot_wave_enemy");
         entity.addScoreboardTag("lot_wave_enemy_" + enemyType.displayName.toLowerCase(Locale.ROOT));
     }
-    private void updateDisplay() {
+    protected void updateDisplay() {
 
         String label = ChatColor.RED + String.format(Locale.US, "%.0f/%.0f HP ", HEALTH, MaxHealth)
                 + ChatColor.GRAY + enemyType.displayName;
@@ -133,14 +133,18 @@ public abstract class Enemy {
 
         if(HEALTH <= 0)
         {
-            Destroy();
+            Destroy(damageDealer);
         }
     }
     public void Destroy()
     {
+        Destroy(null);
+    }
+    public void Destroy(GamePlayer killer)
+    {
         Main.game.ENEMY_LIST.remove(entity.getUniqueId());
         if (Main.game.getWaveManager() != null) {
-            Main.game.getWaveManager().handleEnemyDeath(entity.getUniqueId(), null);
+            Main.game.getWaveManager().handleEnemyDeath(entity.getUniqueId(), killer);
         }
         if(updateTask != null)
         {

@@ -1,20 +1,21 @@
 package com.yourfault.system.GeneralPlayer;
 
+import com.yourfault.CustomGUI.CustomGUI;
+import com.yourfault.CustomGUI.GUIComponent;
 import com.yourfault.Main;
 import com.yourfault.Enemy.Enemy;
+import com.yourfault.perks.PerkObject;
 import com.yourfault.system.TabInfo;
 import com.yourfault.utils.AnimationInfo;
 import com.yourfault.utils.ItemUtil;
 import com.yourfault.weapon.WeaponType;
 import io.papermc.paper.datacomponent.item.ResolvableProfile;
-import net.kyori.adventure.bossbar.BossBar;
-import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.title.Title;
 import net.minecraft.network.protocol.Packet;
 import org.bukkit.*;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Mannequin;
 import org.bukkit.entity.Player;
@@ -26,6 +27,8 @@ import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.yourfault.Main.plugin;
 import static com.yourfault.system.BleedoutManager.BLEED_OUT_SECONDS;
@@ -34,6 +37,8 @@ import static com.yourfault.utils.ItemUtil.PlayAnimation;
 
 public class GamePlayer
 {
+    private final CustomGUI playerGUI;
+
     public static final Vector Downed_WatchOffset = new Vector(0,5,0);
     private static final Title.Times DEATH_TITLE_TIMES = Title.Times.times(
             Duration.ofMillis(300),
@@ -60,12 +65,18 @@ public class GamePlayer
     private float HEALTH;
     private float MANA;
     public float DEFENSE;
+    public float Speed = 100;
+    public float AttackSpeed = 100;
+    public float flatDamageBonus = 0;
+    public float bowDamageBonus = 0; //temp for bow dmg buffs (sharpshooter
     public WeaponType SELECTED_WEAPON = null;
     private int coins = 0;
     private int level = 1;
     private int experience = 0;
     private int perkSelectionTokens = 0;
     public long inActionTicks = 0;
+    private float temporarySpeedBonus = 0;
+    private int speedBoostTicks = 0;
     public SurvivalState CurrentState = SurvivalState.ALIVE;
     public GamePlayer Reviving_Someone = null;
     public GamePlayer Being_Revived = null;
@@ -78,6 +89,7 @@ public class GamePlayer
     public int projectileMultiplier = 1;
     public float projectileSizeMultiplier = 1.0f;
     public float damageMultiplier = 1.0f;
+    public float manaRegenRate = 0.2f;
 
 
 
@@ -93,8 +105,40 @@ public class GamePlayer
         PLAYER_PERKS = new Perks(this);
         PLAYER_TAB = new TabManager(this);
         MINECRAFT_PLAYER.activeBossBars().forEach(MINECRAFT_PLAYER::hideBossBar);
+        recalculateStats();
+        playerGUI = new CustomGUI(InitializeGUI());
         refillVanillaHealth();
     }
+    private List<GUIComponent> InitializeGUI()
+    {
+        List<GUIComponent> actionBarComponents = new ArrayList<>();
+
+        actionBarComponents.add(new GUIComponent(128,"\ue101",0,-180));
+        actionBarComponents.add(new GUIComponent(128,"\ue000",0,-180));
+        actionBarComponents.add(new GUIComponent(128,"\u1f00",0,-180));
+
+
+
+        return actionBarComponents;
+    }
+
+    public void recalculateStats() {
+        this.DEFENSE = SELECTED_WEAPON.Defense;
+        this.Speed = 100;
+        this.AttackSpeed = 100;
+        this.flatDamageBonus = 0;
+        this.bowDamageBonus = 0;
+
+        //apply perk stats (perk bonus buff -> gameplayer)
+        if(PLAYER_PERKS != null) {
+            for (PerkObject perk : PLAYER_PERKS.perks) {
+                perk.perkType.applyStats(this, perk.getLevel());
+            }
+        }
+
+        updatePlayerSpeed();
+    }
+
     public void Update()
     {
         DisplayStatToPlayer();
@@ -102,7 +146,40 @@ public class GamePlayer
         {
             inActionTicks--;
         }
+
+        MANA += manaRegenRate;
+        if(MANA > MAX_MANA) MANA = MAX_MANA;
+        if (speedBoostTicks > 0) {
+            speedBoostTicks--;
+            if (speedBoostTicks <= 0) {
+                temporarySpeedBonus = 0;
+                updatePlayerSpeed();
+            }
+        }
     }
+
+    public void applySpeedBoost(float amount, int ticks) {
+        this.temporarySpeedBonus = amount;
+        this.speedBoostTicks = ticks;
+        updatePlayerSpeed();
+    }
+
+    private void updatePlayerSpeed() {
+        if (MINECRAFT_PLAYER == null) return;
+        float totalSpeed = Speed + temporarySpeedBonus;
+
+        // Use Attribute.MOVEMENT_SPEED to ensure it applies to both walking and sprinting
+        // Base attribute value for players is 0.1.
+        // 100 Speed => 0.1 attribute value (default)
+        double attributeValue = (totalSpeed / 100.0) * 0.1;
+
+        var attribute = MINECRAFT_PLAYER.getAttribute(Attribute.MOVEMENT_SPEED);
+        if (attribute != null) {
+            MINECRAFT_PLAYER.getAttribute(Attribute.MOVEMENT_SPEED).setBaseValue(attributeValue);
+        }
+
+    }
+
     public Location getLocationRelativeToPlayer(Vector offset)
     {
         // Convert a local offset (x = right, y = up, z = forward) into world coordinates
@@ -202,38 +279,44 @@ public class GamePlayer
     }
     public void DisplayStatToPlayer()
     {
-        Player player = MINECRAFT_PLAYER;
-        if (player == null) {
-            return;
-        }
+//        Player player = MINECRAFT_PLAYER;
+//        if (player == null) {
+//            return;
+//        }
         int healthPercent = Math.round(GetHealth_Ratio() * 100);
         int manaPercent = Math.round(GetMana_Ratio() * 100);
 //
         int healthCodePoint = 0x1F00 + healthPercent;
         int manaCodePoint   = 0xe000 + manaPercent;
+//
+//        TextColor kyColor = TextColor.color(78, 108, 128);
+//
+//        Component manaChar = Component.text(new String(Character.toChars(manaCodePoint))).color(kyColor);
+//        Component healthChar = Component.text(new String(Character.toChars(healthCodePoint))).color(kyColor);
+//        Component weaponIcon = Component.text(SELECTED_WEAPON.weaponIcon).color(TextColor.color(78,112,128));
+//        Component infoDisplay = Component.text("\u2f01").color(TextColor.color(78,140,128));
+//        Component moneydisplay = Component.text(coins).color(TextColor.color(78,172,106));
+//
+//
+//        // Build the action bar component and apply the bitmap font
+//        Component actionBar = Component.text("").font(Key.key("minecraft:bitmaps"))
+//                .append(manaChar)
+//                .append(Component.text("\uff00")) // keep separators as before
+//                .append(healthChar)
+//                .append(Component.text("\uff00"))
+//                .append(weaponIcon)
+//                .append(Component.text("\uff00"))
+//                .append(infoDisplay)
+//                .append(Component.text("\uff00"))
+//                .append(moneydisplay);
+//
+//        player.sendActionBar(actionBar);
+        //1 = hb 2 = mb
+        playerGUI.getActionBarComponent(1).setCharacter(String.valueOf((char)healthCodePoint));
+        playerGUI.getActionBarComponent(2).setCharacter(String.valueOf((char)manaCodePoint));
 
-        TextColor kyColor = TextColor.color(78, 108, 128);
 
-        Component manaChar = Component.text(new String(Character.toChars(manaCodePoint))).color(kyColor);
-        Component healthChar = Component.text(new String(Character.toChars(healthCodePoint))).color(kyColor);
-        Component weaponIcon = Component.text(SELECTED_WEAPON.weaponIcon).color(TextColor.color(78,112,128));
-        Component infoDisplay = Component.text("\u2f01").color(TextColor.color(78,140,128));
-        Component moneydisplay = Component.text(coins).color(TextColor.color(78,172,106));
-
-
-        // Build the action bar component and apply the bitmap font
-        Component actionBar = Component.text("").font(Key.key("minecraft:bitmaps"))
-                .append(manaChar)
-                .append(Component.text("\uff00")) // keep separators as before
-                .append(healthChar)
-                .append(Component.text("\uff00"))
-                .append(weaponIcon)
-                .append(Component.text("\uff00"))
-                .append(infoDisplay)
-                .append(Component.text("\uff00"))
-                .append(moneydisplay);
-
-        player.sendActionBar(actionBar);
+        playerGUI.DisplayActionBar(MINECRAFT_PLAYER);
     }
 
     public void ChangeMana(float amount)
@@ -273,7 +356,11 @@ public class GamePlayer
         if (CurrentState != SurvivalState.ALIVE) {
             return;
         }
-        HEALTH -= amount;
+
+        float damageMultiplier = 100.0f / (100.0f + DEFENSE);
+        float actualDamage = amount * damageMultiplier;
+
+        HEALTH -= actualDamage;
 
         if(HEALTH <= 0) {
             HEALTH = 0;
@@ -290,8 +377,22 @@ public class GamePlayer
         }
 
     }
+    public boolean ActionReady(WeaponType weapon,float manaCost)
+    {
+        if(inActionTicks > 0) return false;
+        if(SELECTED_WEAPON != weapon) return false;
+
+        if(MINECRAFT_PLAYER.getInventory().getItemInMainHand().getItemMeta() == null) return false;
+        List<String> customData = MINECRAFT_PLAYER.getInventory().getItemInMainHand().getItemMeta().getCustomModelDataComponent().getStrings();
+        if(customData.size() == 0) return false;
+        String itemname = customData.get(0);
+        if(!itemname.equals(weapon.weaponNBT)) return false;
+        if(MANA < manaCost) return false;
+        return true;
+    }
     public Mannequin SpawnSecondPerson()
     {
+
         return Main.world.spawn(MINECRAFT_PLAYER.getLocation(), Mannequin.class, mannequin -> {
             mannequin.setCustomName(MINECRAFT_PLAYER.getName());
             mannequin.setCustomNameVisible(true);
@@ -300,6 +401,7 @@ public class GamePlayer
             mannequin.setPose(Pose.SLEEPING);
             mannequin.setProfile(ResolvableProfile.resolvableProfile(MINECRAFT_PLAYER.getPlayerProfile()));
             SndPerson = mannequin;
+            Main.game.getDeadPlayer.put(mannequin.getUniqueId(),this);
         });
     }
     public void start_down() {
@@ -456,7 +558,12 @@ public class GamePlayer
             downTask = null;
         }
         if (SndPerson != null) {
+            if(Main.game.getDeadPlayer.containsKey(SndPerson.getUniqueId()))
+            {
+                Main.game.getDeadPlayer.remove(SndPerson.getUniqueId());
+            }
             SndPerson.remove();
+
             SndPerson = null;
         }
     }
