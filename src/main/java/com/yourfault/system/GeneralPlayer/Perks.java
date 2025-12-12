@@ -40,7 +40,7 @@ public class Perks {
 
         }
         availablePerks.add(addingPerks);
-        DisplayPerks(availablePerks.getFirst());
+        DisplayPerksInTitle(availablePerks.getFirst());
     }
     public boolean applyPerkSelection(PerkType perkType) {
         boolean added = addPerk(perkType);
@@ -48,6 +48,20 @@ public class Perks {
             placeIndicator(perkType);
         }
         return added;
+    }
+    public void selectPerk(int pressedKey)
+    {
+        if(availablePerks.size() == 0) return;
+        PerkType perksToChoose = availablePerks.get(0)[pressedKey];
+        if(perksToChoose != null)
+        {
+            applyPerkSelection(perksToChoose);
+        }
+        availablePerks.remove(0);
+        if(availablePerks.size() != 0)
+        {
+            DisplayPerksInTitle(availablePerks.getFirst());
+        }
     }
     private void resetIndicators() {
         for (int slot : PERK_SLOT_INDEXES) {
@@ -82,18 +96,18 @@ public class Perks {
         }
         bukkitPlayer.getInventory().addItem(indicator.clone());
     }
-    public void DisplayPerks(PerkType[] perks)
+    public void DisplayPerksInTitle(PerkType[] perks)
     {
         Player bukkitPlayer = gamePlayer.getMinecraftPlayer();
         StringBuilder perkNames = new StringBuilder();
         for (PerkType perk : perks) {
             perkNames.append(perk.perkimage);
         }
-        bukkitPlayer.sendMessage(Component.text(perkNames.toString()));
+        bukkitPlayer.sendTitlePart(TitlePart.TITLE,Component.text(perkNames.toString()));
     }
     public boolean addPerk(PerkType perk)
     {
-        boolean added = perks.add(new PerkObject(perk));
+        boolean added = perks.add(new PerkObject(perk, gamePlayer));
         if (added) {
             gamePlayer.PLAYER_TAB.updatePerkTabDisplay();
         }
@@ -139,6 +153,7 @@ public class Perks {
             return false;
         }
         boolean leveled = perkObject.levelUp();
+
         if (leveled) {
             preparePerkSlots();
         }

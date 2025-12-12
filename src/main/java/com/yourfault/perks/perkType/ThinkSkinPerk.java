@@ -26,7 +26,7 @@ public class ThinkSkinPerk extends PerkType {
     }
 
     @Override
-    public void applyStats(GamePlayer player, int level) {
+    public void onLevelUp(GamePlayer player, int level) {
         player.DEFENSE += (level * 10);
     }
 

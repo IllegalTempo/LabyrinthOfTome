@@ -31,6 +31,8 @@ import static com.yourfault.Main.plugin;
 
 public class Excalibur_Main implements Listener {
     private static final AnimationInfo ANIMATION_LC = new AnimationInfo("animation_lc",15L);
+    private static final AnimationInfo ANIMATION_LC2 = new AnimationInfo("animation_lc2",20L);
+
     private static final AnimationInfo ANIMATION_RC = new AnimationInfo("animation_rc",10L);
     private static final AnimationInfo ANIMATION_FC = new AnimationInfo("animation_fc",40L);
 
@@ -77,6 +79,13 @@ public class Excalibur_Main implements Listener {
         locz.getWorld().playSound(Sound.sound(Key.key("minecraft:entity.player.attack.sweep"),Sound.Source.PLAYER,1.0f,0.5f),locz.getX(),locz.getY(),locz.getZ());
 
     }
+    private void on2MeleeAttack(GamePlayer player)
+    {
+        player.playAnimation(ANIMATION_LC);
+        Location locz = player.getMinecraftPlayer().getLocation();
+        locz.getWorld().playSound(Sound.sound(Key.key("minecraft:entity.player.attack.sweep"),Sound.Source.PLAYER,1.0f,0.5f),locz.getX(),locz.getY(),locz.getZ());
+
+    }
     @EventHandler
     public void OnMelee(PrePlayerAttackEntityEvent e)
     {
@@ -84,7 +93,14 @@ public class Excalibur_Main implements Listener {
         if(!gamePlayer.ActionReady(WeaponType.Excalibur,0f)) return;
 
         Location locz = e.getPlayer().getLocation();
-        onMeleeAttack(gamePlayer);
+        if(gamePlayer.weapondata[0] == 0)
+        {
+            onMeleeAttack(gamePlayer);
+            gamePlayer.weapondata[0] = 1;
+
+        } else {
+            on2MeleeAttack(gamePlayer);
+        }
 
 
 

@@ -68,6 +68,7 @@ public class WaveManager {
         put("netherbeast",new NetherBeast_Type());
         put("frostwraith", new FrostWraith_Type());
         put("stoneclawgolem",new StoneclawGolem_Type());
+        put("creeperlingswarmer",new CreeperlingSwarmer_Type());
         put("spinny",new Spinny_Type());
         put("vampiricphantom",new VampiricPhantom_Type());
     }};

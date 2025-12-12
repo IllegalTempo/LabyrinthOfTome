@@ -78,7 +78,7 @@ public class GivePerkCommand implements CommandExecutor {
             }
 
             // Recalculate stats on player to apply perk effects
-            gp.recalculateStats();
+            //gp.recalculateStats();
 
             sender.sendMessage(ChatColor.GREEN + "Gave perk " + perk.displayName + " (Level " + gp.PLAYER_PERKS.getPerkLevel(perk) + ") to " + bukkitTarget.getName());
             bukkitTarget.sendMessage(ChatColor.GREEN + "You received perk: " + perk.displayName + " (Level " + gp.PLAYER_PERKS.getPerkLevel(perk) + ")");

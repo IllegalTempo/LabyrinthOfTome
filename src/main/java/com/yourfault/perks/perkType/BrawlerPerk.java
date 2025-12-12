@@ -26,7 +26,7 @@ public class BrawlerPerk extends PerkType {
     }
 
     @Override
-    public void applyStats(GamePlayer player, int level) {
+    public void onLevelUp(GamePlayer player, int level) {
         player.flatDamageBonus += (level * 4);
     }
 

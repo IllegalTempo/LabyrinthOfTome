@@ -55,8 +55,8 @@ public class PerkType implements Listener {
         return category;
     }
 
-    public void applyStats(GamePlayer player, int level) {
-        //override in subclasses
+    public void onLevelUp(GamePlayer player, int level) {
+        //Marginal Increase per level, (dy/dl)
     }
 
     public boolean isLevelPerk() {

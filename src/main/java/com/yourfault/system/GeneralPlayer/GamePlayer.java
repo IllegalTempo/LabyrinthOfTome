@@ -90,7 +90,7 @@ public class GamePlayer
     public float projectileSizeMultiplier = 1.0f;
     public float damageMultiplier = 1.0f;
     public float manaRegenRate = 0.2f;
-
+    public int[] weapondata = new int[10];
 
 
     public GamePlayer(Player minecraftplayer)
@@ -105,7 +105,7 @@ public class GamePlayer
         PLAYER_PERKS = new Perks(this);
         PLAYER_TAB = new TabManager(this);
         MINECRAFT_PLAYER.activeBossBars().forEach(MINECRAFT_PLAYER::hideBossBar);
-        recalculateStats();
+        //recalculateStats();
         playerGUI = new CustomGUI(InitializeGUI());
         refillVanillaHealth();
     }
@@ -122,22 +122,22 @@ public class GamePlayer
         return actionBarComponents;
     }
 
-    public void recalculateStats() {
-        this.DEFENSE = SELECTED_WEAPON.Defense;
-        this.Speed = 100;
-        this.AttackSpeed = 100;
-        this.flatDamageBonus = 0;
-        this.bowDamageBonus = 0;
-
-        //apply perk stats (perk bonus buff -> gameplayer)
-        if(PLAYER_PERKS != null) {
-            for (PerkObject perk : PLAYER_PERKS.perks) {
-                perk.perkType.applyStats(this, perk.getLevel());
-            }
-        }
-
-        updatePlayerSpeed();
-    }
+//    public void recalculateStats() {
+//        this.DEFENSE = SELECTED_WEAPON.Defense;
+//        this.Speed = 100;
+//        this.AttackSpeed = 100;
+//        this.flatDamageBonus = 0;
+//        this.bowDamageBonus = 0;
+//
+//        //apply perk stats (perk bonus buff -> gameplayer)
+//        if(PLAYER_PERKS != null) {
+//            for (PerkObject perk : PLAYER_PERKS.perks) {
+//                perk.perkType.applyStats(this, perk.getLevel());
+//            }
+//        }
+//
+//        updatePlayerSpeed();
+//    }
 
     public void Update()
     {
