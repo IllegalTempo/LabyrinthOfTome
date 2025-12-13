@@ -67,4 +67,9 @@ public abstract class EnemyProjectile extends Projectile {
 
     }
 
+    @Override
+    protected void ChildUpdate() {
+        // Default no-op child update for enemy projectiles
+    }
+
 }

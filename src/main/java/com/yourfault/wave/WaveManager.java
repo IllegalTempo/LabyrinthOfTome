@@ -71,6 +71,13 @@ public class WaveManager {
         put("creeperlingswarmer",new CreeperlingSwarmer_Type());
         put("spinny",new Spinny_Type());
         put("vampiricphantom",new VampiricPhantom_Type());
+        put("tarantula", new Tarantula_Type());
+        put("mudpuppet", new MudPuppet_Type());
+        put("boneslinger", new BoneSlinger_Type());
+        put("frostbitebat", new FrostbiteBat_Type());
+        put("cinderhound", new CinderHound_Type());
+        put("chainlasher", new ChainLasher_Type());
+        put("staticwisp", new StaticWisp_Type());
     }};
 
     public WaveManager(Game game, MapManager mapManager) {
