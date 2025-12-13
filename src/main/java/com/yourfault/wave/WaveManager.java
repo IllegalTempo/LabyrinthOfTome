@@ -78,6 +78,11 @@ public class WaveManager {
         put("cinderhound", new CinderHound_Type());
         put("chainlasher", new ChainLasher_Type());
         put("staticwisp", new StaticWisp_Type());
+        put("frostshardarcher", new FrostShardArcher_Type());
+        put("amalgamation", new Amalgamation_Type());
+        put("amalgamationsplit", new AmalgamationSplit_Type());
+        put("glacierheart", new Glacierheart_Type());
+        put("nexus", new Nexus_Type());
     }};
 
     public WaveManager(Game game, MapManager mapManager) {
