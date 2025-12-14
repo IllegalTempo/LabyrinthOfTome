@@ -66,7 +66,6 @@ public class GamePlayer
     private float MANA;
     public float DEFENSE;
     public float Speed = 100;
-    public float AttackSpeed = 100;
     public float flatDamageBonus = 0;
     public float bowDamageBonus = 0; //temp for bow dmg buffs (sharpshooter
     public WeaponType SELECTED_WEAPON = null;
@@ -86,10 +85,11 @@ public class GamePlayer
     private BukkitTask ReviveTask;
 
     //Perk Stats
-    public int projectileMultiplier = 1;
+    public float projectileMultiplier = 1;
     public float projectileSizeMultiplier = 1.0f;
     public float damageMultiplier = 1.0f;
     public float manaRegenRate = 0.2f;
+    public int attackSpeed = 0;
     public int[] weapondata = new int[10];
 
 
@@ -256,17 +256,17 @@ public class GamePlayer
     }
     public void playAnimation(String animationName, long durationTicks)
     {
-        inActionTicks = durationTicks;
+        inActionTicks = Math.max(0,(durationTicks - attackSpeed));
         ItemStack itemInHand = MINECRAFT_PLAYER.getInventory().getItemInMainHand();
         if (itemInHand == null || itemInHand.getItemMeta() == null) {
             return;
         }
-        ItemMeta meta = PlayAnimation(itemInHand.getItemMeta(), animationName, durationTicks);
+        ItemMeta meta = PlayAnimation(itemInHand.getItemMeta(), animationName, durationTicks,attackSpeed);
         MINECRAFT_PLAYER.getInventory().getItemInMainHand().setItemMeta(meta);
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             itemInHand.setItemMeta(ItemUtil.SetCustomModelData(itemInHand.getItemMeta(),1,"0"));
 
-        }, durationTicks);
+        }, inActionTicks);
     }
     public void playAnimation(AnimationInfo info)
     {
@@ -606,6 +606,15 @@ public class GamePlayer
         coins += amount;
     }
 
+    public void onLevelUp()
+    {
+        PLAYER_PERKS.getPerks_onLevelUp();
+        experience -= xpForNextLevel();
+        level++;
+        //grantPerkSelectionTokens(1); only get token via boss
+        MINECRAFT_PLAYER.playSound(MINECRAFT_PLAYER,Sound.ENTITY_PLAYER_LEVELUP,1.0f,0.8f);
+        MINECRAFT_PLAYER.spawnParticle(Particle.FLAME, MINECRAFT_PLAYER.getLocation().add(0,1,0), 30, 0.5, 0.5, 0.5, 0.1);
+    }
     public void addExperience(int amount) {
         if (amount <= 0) {
             return;
@@ -613,14 +622,13 @@ public class GamePlayer
         experience += amount;
         int levelsGained = 0;
         while (experience >= xpForNextLevel()) {
-            experience -= xpForNextLevel();
-            level++;
+            onLevelUp();
             levelsGained++;
-            grantPerkSelectionTokens(1);
+
         }
         if (levelsGained > 0 && MINECRAFT_PLAYER != null) {
             MINECRAFT_PLAYER.sendMessage("§6Level Up! You are now level " + level + "!");
-            MINECRAFT_PLAYER.sendMessage(org.bukkit.ChatColor.AQUA + "+" + levelsGained + " perk selection" + (levelsGained > 1 ? "s" : "") + " available.");
+            //MINECRAFT_PLAYER.sendMessage(org.bukkit.ChatColor.AQUA + "+" + levelsGained + " perk selection" + (levelsGained > 1 ? "s" : "") + " available.");
         }
     }
 

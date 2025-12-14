@@ -6,10 +6,7 @@ import com.yourfault.gameloop.GameLoopManager;
 import com.yourfault.listener.PerkSelectionListener;
 import com.yourfault.map.BossStructureSpawner;
 import com.yourfault.map.MapManager;
-import com.yourfault.perks.perkType.BrawlerPerk;
-import com.yourfault.perks.perkType.ScavengerPerk;
-import com.yourfault.perks.perkType.ThinkSkinPerk;
-import com.yourfault.perks.perkType.VengeancePerk;
+import com.yourfault.perks.perkType.*;
 import com.yourfault.perks.PerkType;
 import com.yourfault.perks.shop.PerkShopManager;
 import com.yourfault.system.GeneralPlayer.GamePlayer;
@@ -115,10 +112,12 @@ public class Game {
     {
         //ALL_PERKS.put("Sharpshooter",new SharpshooterPerk());
         //ALL_PERKS.put("Quickdraw",new QuickdrawPerk());
-        ALL_PERKS.put("Brawler", new BrawlerPerk());
-        ALL_PERKS.put("Thick Skin", new ThinkSkinPerk());
-        ALL_PERKS.put("Vengeance", new VengeancePerk());
-        ALL_PERKS.put("Scavenger", new ScavengerPerk());
+        ALL_PERKS.put("brawler", new BrawlerPerk());
+        ALL_PERKS.put("thickskin", new ThinkSkinPerk());
+        ALL_PERKS.put("vengeance", new VengeancePerk());
+        ALL_PERKS.put("scavenger", new ScavengerPerk());
+        ALL_PERKS.put("arrowrain", new ArrowRain());
+        ALL_PERKS.put("giantbreath", new GiantsBreath());
     }
     private void RegisterPerksListener()
     {

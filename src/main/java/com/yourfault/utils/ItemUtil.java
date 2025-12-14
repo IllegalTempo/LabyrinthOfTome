@@ -34,13 +34,14 @@ public class ItemUtil {
         meta.setCustomModelDataComponent(com);
         return meta;
     }
-    public static ItemMeta PlayAnimation(ItemMeta org,String animationName,long DurationTicks)
+    public static ItemMeta PlayAnimation(ItemMeta org,String animationName,long DurationTicks,long startTick)
     {
+        long realDuration = DurationTicks - startTick;
         ItemMeta meta = org;
         CustomModelDataComponent com = meta.getCustomModelDataComponent();
         List<String> cmds = new ArrayList<String>(com.getStrings());
         cmds.add(1,animationName);
-        long frameoffset = ((Main.world.getGameTime() % 24000) - 0) % DurationTicks;
+        long frameoffset = ((Main.world.getGameTime() % 24000) - Math.clamp(startTick,0,DurationTicks-1)) % realDuration;
         com.setStrings(cmds);
         meta.setCustomModelDataComponent(com);
         meta = ItemUtil.SetItemCMDTint(meta,frameoffset);

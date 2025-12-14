@@ -63,6 +63,11 @@ public class VengeancePerk extends PerkType {
     }
 
     @Override
+    public void onLevelUp(GamePlayer player, int level) {
+
+    }
+
+    @Override
     protected Material resolveIconMaterial() {
         return Material.REDSTONE;
     }

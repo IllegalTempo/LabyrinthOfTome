@@ -7,12 +7,13 @@ import com.yourfault.system.GeneralPlayer.GamePlayer;
 import java.util.Collections;
 import java.util.List;
 
-public class ArrowRain extends PerkType {
-    public ArrowRain() {
-        super("Arrow Rain", Collections.singletonList("More Projectiles!"), PerkCategory.LEVEL, 99, 0, 0, '\u0007');
+public class MotorHand extends PerkType {
+    public MotorHand() {
+        super("Motor Hand", Collections.singletonList("Increase your attack speed"), PerkCategory.LEVEL, 99, 0, 0, '\u0009');
     }
+
     @Override
     public void onLevelUp(GamePlayer player, int level) {
-        player.projectileMultiplier += 0.5f;
+        player.attackSpeed += 2; //2tick
     }
 }

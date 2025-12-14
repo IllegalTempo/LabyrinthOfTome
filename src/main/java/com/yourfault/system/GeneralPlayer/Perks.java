@@ -4,6 +4,7 @@ import com.yourfault.Items.gui.General;
 import com.yourfault.Main;
 import com.yourfault.perks.PerkObject;
 import com.yourfault.perks.PerkType;
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.TitlePart;
 import org.bukkit.ChatColor;
@@ -103,15 +104,19 @@ public class Perks {
         for (PerkType perk : perks) {
             perkNames.append(perk.perkimage);
         }
-        bukkitPlayer.sendTitlePart(TitlePart.TITLE,Component.text(perkNames.toString()));
+        bukkitPlayer.sendTitlePart(TitlePart.TITLE,Component.text(perkNames.toString()).font(Key.key("minecraft:font/perks")));
     }
     public boolean addPerk(PerkType perk)
     {
-        boolean added = perks.add(new PerkObject(perk, gamePlayer));
-        if (added) {
+        if (levelUpPerk(perk)) {
             gamePlayer.PLAYER_TAB.updatePerkTabDisplay();
+
+            return true;
         }
-        return added;
+        perks.add(new PerkObject(perk, gamePlayer));
+        gamePlayer.PLAYER_TAB.updatePerkTabDisplay();
+
+        return true;
     }
     public boolean removePerk(PerkType perk) {
         PerkObject toRemove = null;

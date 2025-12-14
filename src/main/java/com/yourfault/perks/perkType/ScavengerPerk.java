@@ -2,6 +2,7 @@ package com.yourfault.perks.perkType;
 
 import com.yourfault.perks.PerkCategory;
 import com.yourfault.perks.PerkType;
+import com.yourfault.system.GeneralPlayer.GamePlayer;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 
@@ -23,6 +24,11 @@ public class ScavengerPerk extends PerkType {
                 50,
                 '\u0004'
         );
+    }
+
+    @Override
+    public void onLevelUp(GamePlayer player, int level) {
+
     }
 
     @Override

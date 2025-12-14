@@ -49,18 +49,26 @@ public class Excalibur_Main implements Listener {
             e.getPlayer().getWorld().playSound(Sound.sound(Key.key("minecraft:entity.player.attack.sweep"),Sound.Source.PLAYER,1.0f,0.5f),locz.getX(),locz.getY(),locz.getZ());
 
 
-            // sweep the spawn directions from +22.5° to -22.5° over i = 5..10
-            for(int i = 5 ; i <= 10; i++)
-            {
+
+            //AIhere
+
+            int baseCount = 6;
+            int projectileCount = Math.max(1, (int)(baseCount * gamePlayer.projectileMultiplier));
+            float totalSpreadDegrees = 100f; // total angular span across all projectiles
+            float angleStep = projectileCount > 1 ? totalSpreadDegrees / (projectileCount - 1) : 0f;
+            double midpoint = (projectileCount - 1) / 2.0;
+            int startDelay = 5;
+
+            for (int i = 0; i < projectileCount; i++) {
                 int finalI = i;
+                float angleOffset = (float) ((finalI - midpoint) * angleStep);
+                long delay = (startDelay + finalI);
 
-                Bukkit.getScheduler().runTaskLater(plugin, ()-> {
+                Bukkit.getScheduler().runTaskLater(plugin, () -> {
                     Location loc = gamePlayer.GetForward(1);
-                    //Location loc = gamePlayer.getLocationRelativeToPlayer(new Vector(finalI -7,0,0));
-                    loc.setYaw(loc.getYaw() + (finalI-7.5f) * 20f);
-
-                    new Sword_Aura(loc, 10f,gamePlayer);
-                }, i);
+                    loc.setYaw(loc.getYaw() + angleOffset);
+                    new Sword_Aura(loc, 10f, gamePlayer);
+                }, delay);
             }
 
         }
@@ -74,16 +82,25 @@ public class Excalibur_Main implements Listener {
     }
     private void onMeleeAttack(GamePlayer player)
     {
-        player.playAnimation(ANIMATION_LC);
-        Location locz = player.getMinecraftPlayer().getLocation();
-        locz.getWorld().playSound(Sound.sound(Key.key("minecraft:entity.player.attack.sweep"),Sound.Source.PLAYER,1.0f,0.5f),locz.getX(),locz.getY(),locz.getZ());
+        if(player.weapondata[0] == 0)
+        {
+            player.playAnimation(ANIMATION_LC);
+            Location locz = player.getMinecraftPlayer().getLocation();
+            locz.getWorld().playSound(Sound.sound(Key.key("minecraft:entity.player.attack.sweep"),Sound.Source.PLAYER,1.0f,0.5f),locz.getX(),locz.getY(),locz.getZ());
+
+        } else {
+            player.MINECRAFT_PLAYER.sendMessage("Second Swing!");
+            player.playAnimation(ANIMATION_LC2);
+            Location locz = player.getMinecraftPlayer().getLocation();
+            locz.getWorld().playSound(Sound.sound(Key.key("minecraft:entity.player.attack.sweep"),Sound.Source.PLAYER,1.0f,0.3f),locz.getX(),locz.getY(),locz.getZ());
+        }
+        player.weapondata[0] = (player.weapondata[0] + 1) % 2;
+
 
     }
     private void on2MeleeAttack(GamePlayer player)
     {
-        player.playAnimation(ANIMATION_LC);
-        Location locz = player.getMinecraftPlayer().getLocation();
-        locz.getWorld().playSound(Sound.sound(Key.key("minecraft:entity.player.attack.sweep"),Sound.Source.PLAYER,1.0f,0.5f),locz.getX(),locz.getY(),locz.getZ());
+
 
     }
     @EventHandler
@@ -93,14 +110,8 @@ public class Excalibur_Main implements Listener {
         if(!gamePlayer.ActionReady(WeaponType.Excalibur,0f)) return;
 
         Location locz = e.getPlayer().getLocation();
-        if(gamePlayer.weapondata[0] == 0)
-        {
             onMeleeAttack(gamePlayer);
-            gamePlayer.weapondata[0] = 1;
 
-        } else {
-            on2MeleeAttack(gamePlayer);
-        }
 
 
 
@@ -144,8 +155,7 @@ public class Excalibur_Main implements Listener {
         if (bukkitOwner == null) {
             return;
         }
-        // spawn 16 projectiles arranged in a circle around `center`, each facing outward
-        final int count = 32;
+        final int count = (int)(8 * owner.projectileMultiplier);
         final double radius = 2.0;
         final float damage = 6f;
 

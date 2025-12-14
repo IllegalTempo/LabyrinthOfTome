@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class PerkType implements Listener {
+public abstract class PerkType implements Listener {
 
     public final String displayName;
     public final List<String> description;
@@ -24,14 +24,14 @@ public class PerkType implements Listener {
     private final int baseCost;
     private final int incrementalCost;
 
-    protected PerkType(String displayName,
+    public PerkType(String displayName,
                        List<String> description,
                        PerkCategory category,
                        char icon) {
         this(displayName, description, category,1, 0,0,icon);
     }
 
-    protected PerkType(String displayName,
+    public PerkType(String displayName,
                        List<String> description,
                        PerkCategory category,
                        int maxLevel,
@@ -55,9 +55,7 @@ public class PerkType implements Listener {
         return category;
     }
 
-    public void onLevelUp(GamePlayer player, int level) {
-        //Marginal Increase per level, (dy/dl)
-    }
+    public abstract void onLevelUp(GamePlayer player, int level);
 
     public boolean isLevelPerk() {
         return category == PerkCategory.LEVEL;

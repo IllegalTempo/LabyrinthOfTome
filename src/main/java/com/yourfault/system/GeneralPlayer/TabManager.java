@@ -72,12 +72,15 @@ public class TabManager {
         Team waveTop = Main.tabInfo.GetTeam.get(TabInfo.TabType.WAVEINFO_TOP);
         sendFakePlayer("Current Wave");
         if (waveTop != null) waveTop.addEntry("Game Info");
+        sendFakePlayer("Player Info");
         for(int i = 0 ; i < TAB_HEIGHT-2;i++)
         {
             sendFakePlayer("　　　　　　　　　　　　　");
 
         }
+
     }
+
     private void FILL_PLAYER_LIST()
     {
         Scoreboard board = Bukkit.getScoreboardManager().getMainScoreboard();
@@ -146,10 +149,11 @@ public class TabManager {
         // (additional perk list population would go here)
         for(PerkObject p:player.PLAYER_PERKS.perks)
         {
-            UUID perkUuid = sendFakePlayer(p.perkType.displayName);
+            String name = p.getTabDisplay();
+            UUID perkUuid = sendFakePlayer(name);
             Team perkTeam = Main.tabInfo.GetTeam.get(TabInfo.TabType.PERKLIST);
-            if (perkTeam != null) perkTeam.addEntry(p.perkType.displayName);
-            TAB_PERKLIST.put(perkUuid, p.perkType.displayName);
+            if (perkTeam != null) perkTeam.addEntry(name);
+            TAB_PERKLIST.put(perkUuid, name);
         }
         for(int i = 0; i < TAB_HEIGHT - player.PLAYER_PERKS.perks.size();i++)
         {

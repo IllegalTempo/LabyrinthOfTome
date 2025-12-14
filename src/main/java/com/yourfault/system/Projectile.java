@@ -5,6 +5,7 @@ import com.yourfault.Enemy.Enemy;
 import com.yourfault.system.GeneralPlayer.GamePlayer;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.EquipmentSlot;
@@ -38,14 +39,27 @@ public abstract class Projectile {
         //boundingbox is relative to 0 0 0
 
         this.speed = speed;
-        this.damage = damage;
         this.UseGravity = UseGravity;
         this.projectileItem = projectileItem;
         this.owner = owner;
 
         age = 0;
-        this.LastFor = LastFor;
-        this.radius = radius;
+        if(owner == null)
+        {
+            this.LastFor = LastFor;
+            this.damage = damage;
+            this.radius = radius;
+        } else {
+            this.LastFor = LastFor + owner.projectileSizeMultiplier * 5f;
+            this.damage = damage * owner.damageMultiplier;
+            this.radius = radius * owner.projectileSizeMultiplier;
+        }
+
+
+
+
+
+
 
         entity = eyeLocation.getWorld().spawn(eyeLocation.subtract(0,1,0), ArmorStand.class, e ->{
             e.setVisible(false);
@@ -53,6 +67,7 @@ public abstract class Projectile {
             e.setBasePlate(false);
             e.setMarker(true);
             e.setSmall(true);
+            e.getAttribute(Attribute.SCALE).setBaseValue(owner.projectileSizeMultiplier);
             for (EquipmentSlot slot : EquipmentSlot.values()) {
                 e.addEquipmentLock(slot, ArmorStand.LockType.ADDING_OR_CHANGING);
                 e.addEquipmentLock(slot, ArmorStand.LockType.REMOVING_OR_CHANGING);

@@ -46,7 +46,22 @@ public class GivePerkCommand implements CommandExecutor {
 
         if (perk == null) {
             sender.sendMessage(ChatColor.RED + "Perk not found: " + perkName);
-            return true;
+            //return list of perks
+            StringBuilder perkList = new StringBuilder(ChatColor.YELLOW + "Available perks: ");
+            if (Main.game != null && Main.game.ALL_PERKS != null) {
+                for (String key : Main.game.ALL_PERKS.keySet()) {
+                    perkList.append(key).append(", ");
+                }
+                // remove trailing comma and space
+                if (perkList.length() > 0) {
+                    perkList.setLength(perkList.length() - 2);
+                }
+            } else {
+                perkList.append("No perks available.");
+            }
+            sender.sendMessage(perkList.toString());
+            return false;
+
         }
 
         GamePlayer gp = Main.game.GetPlayer(bukkitTarget);

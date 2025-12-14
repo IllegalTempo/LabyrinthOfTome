@@ -11,6 +11,8 @@ public class PerkObject {
         this.perkType = perkType;
         this.level = 1;
         this.belongsTo = player;
+        perkType.onLevelUp(belongsTo,1);
+
     }
 
     public int getLevel() {
@@ -30,5 +32,13 @@ public class PerkObject {
         perkType.onLevelUp(belongsTo,level);
 
         return true;
+    }
+    public String getTabDisplay()
+    {
+        if (perkType.displayName.length() >= 5) {
+            return perkType.displayName.substring(0, 5) + "... LV." + level;
+        } else {
+            return perkType.displayName + " LV." + level;
+        }
     }
 }
