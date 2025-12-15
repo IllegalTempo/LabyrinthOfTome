@@ -67,7 +67,14 @@ public abstract class Projectile {
             e.setBasePlate(false);
             e.setMarker(true);
             e.setSmall(true);
-            e.getAttribute(Attribute.SCALE).setBaseValue(owner.projectileSizeMultiplier);
+            try {
+                if (owner != null) {
+                    if (e.getAttribute(Attribute.SCALE) != null) {
+                        e.getAttribute(Attribute.SCALE).setBaseValue(owner.projectileSizeMultiplier);
+                    }
+                }
+            } catch (Throwable ignored) {
+            }
             for (EquipmentSlot slot : EquipmentSlot.values()) {
                 e.addEquipmentLock(slot, ArmorStand.LockType.ADDING_OR_CHANGING);
                 e.addEquipmentLock(slot, ArmorStand.LockType.REMOVING_OR_CHANGING);
@@ -89,6 +96,12 @@ public abstract class Projectile {
     protected Location getDisplayedLocation()
     {
         return entity.getLocation().add(0,1,0);
+    }
+
+    public void setDirection(Vector dir) {
+        Location loc = entity.getLocation();
+        loc.setDirection(dir);
+        entity.teleport(loc);
     }
     protected abstract void ChildUpdate();
     public void Update()
