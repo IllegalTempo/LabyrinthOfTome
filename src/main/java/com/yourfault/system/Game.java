@@ -9,6 +9,7 @@ import com.yourfault.map.MapManager;
 import com.yourfault.perks.perkType.*;
 import com.yourfault.perks.PerkType;
 import com.yourfault.perks.shop.PerkShopManager;
+import com.yourfault.projectiles.Projectile;
 import com.yourfault.system.GeneralPlayer.GamePlayer;
 import com.yourfault.wave.WaveDifficulty;
 import com.yourfault.wave.WaveManager;
@@ -57,9 +58,14 @@ public class Game {
     private BukkitRunnable updateTask;
     public Vector Gravity = new Vector(0,-0.5,0);
     public HashMap<UUID, GamePlayer> PLAYER_LIST = new HashMap<>();
-    public HashMap<UUID,Projectile> PROJECTILE_LIST = new HashMap<>();
+    public HashMap<UUID, Projectile> PROJECTILE_LIST = new HashMap<>();
     public HashMap<UUID, Enemy> ENEMY_LIST = new HashMap<>();
     public HashMap<UUID,GamePlayer> getDeadPlayer = new HashMap<>();
+    public HashMap<UUID,LabyrinthCreature> CREATURE_LIST = new HashMap<>();
+
+
+
+
     private PerkSelectionListener perkSelectionListener;
     public boolean isGameRunning()
     {
@@ -118,6 +124,7 @@ public class Game {
         ALL_PERKS.put("scavenger", new ScavengerPerk());
         ALL_PERKS.put("arrowrain", new ArrowRain());
         ALL_PERKS.put("giantbreath", new GiantsBreath());
+        ALL_PERKS.put("archmage",new ArchMage());
     }
     private void RegisterPerksListener()
     {
@@ -221,7 +228,19 @@ public class Game {
         };
         updateTask.runTaskTimer(plugin, 0L, 1L);
     }
-
+    public LabyrinthCreature[] findNearbyCreature(Location loc, double xRadius, double yRadius, double zRadius, int ownteam)
+    {
+        return loc.getWorld().getNearbyEntities(loc,xRadius,yRadius,zRadius).stream()
+                .map(entity -> CREATURE_LIST.get(entity.getUniqueId()))
+                .filter(creature -> creature.team != ownteam)
+                .filter(creature -> {
+                    Location creatureLoc = creature.minecraftEntity.getLocation();
+                    return Math.abs(creatureLoc.getX() - loc.getX()) <= xRadius &&
+                            Math.abs(creatureLoc.getY() - loc.getY()) <= yRadius &&
+                            Math.abs(creatureLoc.getZ() - loc.getZ()) <= zRadius;
+                })
+                .toArray(LabyrinthCreature[]::new);
+    }
     public void EndGame()
     {
 

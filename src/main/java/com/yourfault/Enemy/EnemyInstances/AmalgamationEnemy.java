@@ -1,7 +1,7 @@
 package com.yourfault.Enemy.EnemyInstances;
 
 import com.yourfault.Enemy.Enemy;
-import com.yourfault.Enemy.EnemyProjectiles.PlagueCarrierProjectile;
+import com.yourfault.projectiles.PlagueCarrierProjectile;
 import com.yourfault.Enemy.EnemyTypes.AbstractEnemyType;
 import com.yourfault.Enemy.EnemyTypes.AmalgamationSplit_Type;
 import com.yourfault.Main;
@@ -27,7 +27,7 @@ public class AmalgamationEnemy extends Enemy {
     @Override
     public void update() {
         if (entity.isDead()) return;
-        if (!split && HEALTH <= MaxHealth * 0.5) {
+        if (!split && HEALTH <= MAX_HEALTH * 0.5) {
             performSplit();
             return;
         }

@@ -1,5 +1,6 @@
 package com.yourfault.Enemy.EnemyInstances;
 
+import com.yourfault.system.LabyrinthCreature;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.entity.Mob;
@@ -37,9 +38,9 @@ public class IronboundMarauderEnemy extends Enemy {
     }
 
     @Override
-    public void OnBeingDamage(float damage, GamePlayer damageDealer) {
+    public void applyDamage(float damage, LabyrinthCreature damageDealer, boolean bypassChain) {
         if (damageDealer != null) {
-            Vector toAttacker = damageDealer.MINECRAFT_PLAYER.getLocation().toVector().subtract(entity.getLocation().toVector());
+            Vector toAttacker = damageDealer.minecraftEntity.getLocation().toVector().subtract(entity.getLocation().toVector());
             Vector direction = entity.getLocation().getDirection();
             toAttacker.setY(0).normalize();
             direction.setY(0).normalize();
@@ -50,6 +51,6 @@ public class IronboundMarauderEnemy extends Enemy {
                 return;
             }
         }
-        super.OnBeingDamage(damage, damageDealer);
+        super.applyDamage(damage, damageDealer,bypassChain); //todo check
     }
 }

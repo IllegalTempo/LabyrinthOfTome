@@ -5,9 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="18b9d33a-a1ab-4c7e-badb-df567bdbf954" name="Changes" comment="l">
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/perks/perkType/GiantsBreath.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/perks/perkType/MotorHand.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/perks/perkType/ArchMage.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/pet/pet.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/projectiles/ChainProjectile.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/LabyrinthCreature.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/ThouserHand/Thouser_Main.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/WeaponListener.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/checksums/checksums.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/checksums/checksums.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/checksums/md5-checksums.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/checksums/md5-checksums.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/checksums/sha1-checksums.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/checksums/sha1-checksums.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/executionHistory/executionHistory.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/executionHistory/executionHistory.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/executionHistory/executionHistory.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/executionHistory/executionHistory.lock" afterDir="false" />
@@ -15,23 +20,70 @@
       <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/fileHashes/fileHashes.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/fileHashes/fileHashes.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/fileHashes/resourceHashesCache.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/fileHashes/resourceHashesCache.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/caches/paperweight/taskCache/mappedServerJar.jar" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/caches/paperweight/taskCache/mappedServerJar.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Commands/Debugs/GivePerkCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Commands/Debugs/GivePerkCommand.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/perks/PerkObject.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/perks/PerkObject.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Commands/Debugs/SummonNPC.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Commands/Debugs/SummonNPC.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Commands/Debugs/changehealth.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Commands/Debugs/changehealth.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/Enemy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/Enemy.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/AmalgamationEnemy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/AmalgamationEnemy.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/AmalgamationSplitEnemy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/AmalgamationSplitEnemy.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/ArachnidFabricatorEnemy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/ArachnidFabricatorEnemy.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/BoneSlingerEnemy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/BoneSlingerEnemy.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/ChainLasherEnemy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/ChainLasherEnemy.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/ChainWardenEnemy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/ChainWardenEnemy.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/ChimeraEnemy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/ChimeraEnemy.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/FrostShardArcherEnemy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/FrostShardArcherEnemy.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/FrostWraithEnemy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/FrostWraithEnemy.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/FrostbiteBatEnemy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/FrostbiteBatEnemy.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/GlacierheartEnemy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/GlacierheartEnemy.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/IronboundMarauderEnemy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/IronboundMarauderEnemy.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/LaserZombieEnemy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/LaserZombieEnemy.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/MudPuppetEnemy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/MudPuppetEnemy.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/NetherBeastEnemy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/NetherBeastEnemy.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/NexusEnemy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/NexusEnemy.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/SpinnyEnemy.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/StaticWispEnemy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/StaticWispEnemy.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/StoneclawGolemEnemy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/StoneclawGolemEnemy.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/TarantulaEnemy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/TarantulaEnemy.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/VampiricPhantomEnemy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/VampiricPhantomEnemy.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyProjectiles/BoneProjectile.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/projectiles/BoneProjectile.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyProjectiles/ChainProjectile.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyProjectiles/ChainWardenHookProjectile.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/projectiles/ChainWardenHookProjectile.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyProjectiles/EnemyProjectile.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyProjectiles/FireBreathProjectile.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/projectiles/FireBreathProjectile.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyProjectiles/FrostWraithProjectile.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/projectiles/FrostWraithProjectile.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyProjectiles/IceArrowProjectile.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/projectiles/IceArrowProjectile.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyProjectiles/IceShardProjectile.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/projectiles/IceShardProjectile.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyProjectiles/MudBallProjectile.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/projectiles/MudBallProjectile.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyProjectiles/Musket.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/projectiles/Musket.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyProjectiles/NetherBeastProjectile.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/projectiles/NetherBeastProjectile.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyProjectiles/PlagueCarrierProjectile.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/projectiles/PlagueCarrierProjectile.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyProjectiles/PoisonSpitProjectile.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/projectiles/PoisonSpitProjectile.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyProjectiles/SoulMissileProjectile.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/projectiles/SoulMissileProjectile.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyProjectiles/StoneclawProjectile.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/projectiles/StoneclawProjectile.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyProjectiles/TarantulaWebProjectile.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/projectiles/TarantulaWebProjectile.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyProjectiles/WebRocketProjectile.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/projectiles/WebRocketProjectile.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyTypes/Spinny_Type.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Items/weapons.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Items/weapons.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/npcinteraction/WeaponSelect.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/npcinteraction/WeaponSelect.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/perks/PerkType.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/perks/PerkType.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/perks/perkType/ArrowRain.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/perks/perkType/ArrowRain.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/perks/perkType/ScavengerPerk.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/perks/perkType/ScavengerPerk.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/perks/perkType/VengeancePerk.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/perks/perkType/VengeancePerk.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/CustomHealthListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/CustomHealthListener.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/Game.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/Game.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/GamePlayer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/GamePlayer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/Perks.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/Perks.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/TabManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/TabManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/Projectile.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/Projectile.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/utils/ItemUtil.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/utils/ItemUtil.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/Projectile.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/projectiles/Projectile.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/wave/WaveManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/wave/WaveManager.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/Excalibur/Excalibur_Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/Excalibur/Excalibur_Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/Excalibur/HolySword.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/Excalibur/HolySword.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/Excalibur/Sword_Aura.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/Excalibur/Sword_Aura.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/Excalibur/HolySword.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/projectiles/HolySword.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/Excalibur/Sword_Aura.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/projectiles/Sword_Aura.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/WeaponType.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/WeaponType.java" afterDir="false" />
+    </list>
+    <list id="2f4080a5-7227-4fae-9fa6-28b60a3aa71c" name="Changes by user" comment="">
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/CustomHealthListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/CustomHealthListener.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/GamePlayer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/GamePlayer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/wave/WaveManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/wave/WaveManager.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -122,8 +174,63 @@
     &quot;accountId&quot;: &quot;112ddd4e-714d-4256-9e6c-ae35ccb9cbbe&quot;
   }
 }</component>
+  <component name="LineStatusTrackerManager">
+    <file path="$PROJECT_DIR$/src/main/java/com/yourfault/system/CustomHealthListener.java">
+      <ranges>
+        <range start1="2" end1="4" start2="2" end2="2" changelist="2f4080a5-7227-4fae-9fa6-28b60a3aa71c" />
+        <range start1="5" end1="5" start2="3" end2="4" changelist="2f4080a5-7227-4fae-9fa6-28b60a3aa71c" />
+        <range start1="11" end1="11" start2="10" end2="11" changelist="2f4080a5-7227-4fae-9fa6-28b60a3aa71c" />
+        <range start1="12" end1="12" start2="12" end2="14" changelist="2f4080a5-7227-4fae-9fa6-28b60a3aa71c" />
+        <range start1="27" end1="27" start2="29" end2="40" changelist="2f4080a5-7227-4fae-9fa6-28b60a3aa71c" />
+        <range start1="36" end1="37" start2="49" end2="50" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="38" end1="39" start2="51" end2="52" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="43" end1="44" start2="56" end2="57" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="52" end1="53" start2="65" end2="66" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+      </ranges>
+    </file>
+    <file path="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/GamePlayer.java">
+      <ranges>
+        <range start1="2" end1="17" start2="2" end2="14" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="28" end1="32" start2="25" end2="29" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="35" end1="35" start2="32" end2="36" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="36" end1="36" start2="37" end2="38" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="37" end1="38" start2="39" end2="46" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="62" end1="70" start2="70" end2="71" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="76" end1="78" start2="77" end2="77" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="86" end1="92" start2="85" end2="86" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="97" end1="97" start2="91" end2="92" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="98" end1="104" start2="93" end2="94" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="109" end1="110" start2="99" end2="99" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="111" end1="111" start2="100" end2="113" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="141" end1="141" start2="143" end2="144" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="143" end1="143" start2="146" end2="147" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="151" end1="158" start2="155" end2="156" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="160" end1="165" start2="158" end2="158" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="166" end1="169" start2="159" end2="159" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="170" end1="174" start2="160" end2="160" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="175" end1="181" start2="161" end2="161" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="203" end1="204" start2="183" end2="184" changelist="2f4080a5-7227-4fae-9fa6-28b60a3aa71c" />
+        <range start1="353" end1="355" start2="333" end2="336" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="358" end1="358" start2="339" end2="345" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="359" end1="361" start2="346" end2="348" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="364" end1="365" start2="351" end2="352" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="367" end1="368" start2="354" end2="354" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="436" end1="437" start2="422" end2="423" changelist="2f4080a5-7227-4fae-9fa6-28b60a3aa71c" />
+      </ranges>
+    </file>
+    <file path="$PROJECT_DIR$/src/main/java/com/yourfault/wave/WaveManager.java">
+      <ranges>
+        <range start1="38" end1="38" start2="38" end2="39" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="58" end1="59" start2="59" end2="60" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="64" end1="64" start2="65" end2="66" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="106" end1="107" start2="108" end2="108" changelist="2f4080a5-7227-4fae-9fa6-28b60a3aa71c" />
+        <range start1="114" end1="114" start2="115" end2="116" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="131" end1="131" start2="133" end2="135" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+      </ranges>
+    </file>
+  </component>
   <component name="ProblemsViewState">
-    <option name="selectedTabId" value="CurrentFile" />
+    <option name="selectedTabId" value="ProjectErrors" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;customColor&quot;: &quot;&quot;,
@@ -424,7 +531,15 @@
       <option name="project" value="LOCAL" />
       <updated>1765648699289</updated>
     </task>
-    <option name="localTasksCounter" value="20" />
+    <task id="LOCAL-00020" summary="l">
+      <option name="closed" value="true" />
+      <created>1765673286036</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1765673286036</updated>
+    </task>
+    <option name="localTasksCounter" value="21" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -438,7 +553,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="origin/master" />
+                        <option value="master" />
                       </list>
                     </value>
                   </entry>

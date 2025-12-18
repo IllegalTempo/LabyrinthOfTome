@@ -1,20 +1,17 @@
 package com.yourfault.system.GeneralPlayer;
 
-import com.yourfault.CustomGUI.CustomGUI;
-import com.yourfault.CustomGUI.GUIComponent;
-import com.yourfault.Main;
-import com.yourfault.Enemy.Enemy;
-import com.yourfault.perks.PerkObject;
-import com.yourfault.system.TabInfo;
-import com.yourfault.utils.AnimationInfo;
-import com.yourfault.utils.ItemUtil;
-import com.yourfault.weapon.WeaponType;
-import io.papermc.paper.datacomponent.item.ResolvableProfile;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.title.Title;
-import net.minecraft.network.protocol.Packet;
-import org.bukkit.*;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.yourfault.system.LabyrinthCreature;
+import net.kyori.adventure.text.SelectorComponent;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.GameMode;
+import org.bukkit.Location;
+import org.bukkit.Particle;
+import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Mannequin;
@@ -26,16 +23,27 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
-
+import com.yourfault.CustomGUI.CustomGUI;
+import com.yourfault.CustomGUI.GUIComponent;
+import com.yourfault.Enemy.Enemy;
+import com.yourfault.Main;
 import static com.yourfault.Main.plugin;
 import static com.yourfault.system.BleedoutManager.BLEED_OUT_SECONDS;
 import static com.yourfault.system.BleedoutManager.REVIVE_SECONDS;
+import com.yourfault.system.TabInfo;
+import com.yourfault.listener.ChainLinkManager;
+import com.yourfault.utils.AnimationInfo;
+import com.yourfault.utils.ItemUtil;
 import static com.yourfault.utils.ItemUtil.PlayAnimation;
+import com.yourfault.weapon.WeaponType;
 
-public class GamePlayer
+import io.papermc.paper.datacomponent.item.ResolvableProfile;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.title.Title;
+import net.minecraft.network.protocol.Packet;
+
+public class GamePlayer extends LabyrinthCreature
 {
     private final CustomGUI playerGUI;
 
@@ -60,22 +68,13 @@ public class GamePlayer
     public final Player MINECRAFT_PLAYER;
     public Perks PLAYER_PERKS;
     public final TabManager PLAYER_TAB;
-    private final float MAX_HEALTH;
-    private final float MAX_MANA;
-    private float HEALTH;
-    private float MANA;
-    public float DEFENSE;
-    public float Speed = 100;
-    public float flatDamageBonus = 0;
-    public float bowDamageBonus = 0; //temp for bow dmg buffs (sharpshooter
+
     public WeaponType SELECTED_WEAPON = null;
     private int coins = 0;
     private int level = 1;
     private int experience = 0;
     private int perkSelectionTokens = 0;
     public long inActionTicks = 0;
-    private float temporarySpeedBonus = 0;
-    private int speedBoostTicks = 0;
     public SurvivalState CurrentState = SurvivalState.ALIVE;
     public GamePlayer Reviving_Someone = null;
     public GamePlayer Being_Revived = null;
@@ -84,30 +83,33 @@ public class GamePlayer
     private BukkitTask downTask;
     private BukkitTask ReviveTask;
 
-    //Perk Stats
-    public float projectileMultiplier = 1;
-    public float projectileSizeMultiplier = 1.0f;
-    public float damageMultiplier = 1.0f;
-    public float manaRegenRate = 0.2f;
-    public int attackSpeed = 0;
+
     public int[] weapondata = new int[10];
 
 
     public GamePlayer(Player minecraftplayer)
     {
+        super(minecraftplayer,100,100,100,50,0);
         this.MINECRAFT_PLAYER = minecraftplayer;
-        this.SELECTED_WEAPON = GetSelectedWeapon_From_Scoreboardtag();
-        this.MAX_HEALTH = SELECTED_WEAPON.Health;
-        this.MAX_MANA = SELECTED_WEAPON.Mana;
-        this.HEALTH = MAX_HEALTH;
-        this.MANA = MAX_MANA;
-        this.DEFENSE = SELECTED_WEAPON.Defense;
+        onPlayerSelectWeapon(GetSelectedWeapon_From_Scoreboardtag());
         PLAYER_PERKS = new Perks(this);
         PLAYER_TAB = new TabManager(this);
         MINECRAFT_PLAYER.activeBossBars().forEach(MINECRAFT_PLAYER::hideBossBar);
         //recalculateStats();
         playerGUI = new CustomGUI(InitializeGUI());
+    }
+    public void onPlayerSelectWeapon(WeaponType type)
+    {
+        this.SELECTED_WEAPON = type;
+        this.MAX_HEALTH = SELECTED_WEAPON.Health;
+        this.MAX_MANA = SELECTED_WEAPON.Mana;
+        this.HEALTH = MAX_HEALTH;
+        this.MANA = MAX_MANA;
+        this.DEFENSE = SELECTED_WEAPON.Defense;
+        MINECRAFT_PLAYER.getInventory().setItem(4,type.GetItem());
+        MINECRAFT_PLAYER.playSound(MINECRAFT_PLAYER.getLocation(), Sound.ENTITY_ARROW_HIT_PLAYER,1,1);
         refillVanillaHealth();
+        updateSpeed();
     }
     private List<GUIComponent> InitializeGUI()
     {
@@ -139,8 +141,10 @@ public class GamePlayer
 //        updatePlayerSpeed();
 //    }
 
+    @Override
     public void Update()
     {
+        super.Update();
         DisplayStatToPlayer();
         if(inActionTicks > 0)
         {
@@ -149,36 +153,12 @@ public class GamePlayer
 
         MANA += manaRegenRate;
         if(MANA > MAX_MANA) MANA = MAX_MANA;
-        if (speedBoostTicks > 0) {
-            speedBoostTicks--;
-            if (speedBoostTicks <= 0) {
-                temporarySpeedBonus = 0;
-                updatePlayerSpeed();
-            }
-        }
-    }
-
-    public void applySpeedBoost(float amount, int ticks) {
-        this.temporarySpeedBonus = amount;
-        this.speedBoostTicks = ticks;
-        updatePlayerSpeed();
-    }
-
-    private void updatePlayerSpeed() {
-        if (MINECRAFT_PLAYER == null) return;
-        float totalSpeed = Speed + temporarySpeedBonus;
-
-        // Use Attribute.MOVEMENT_SPEED to ensure it applies to both walking and sprinting
-        // Base attribute value for players is 0.1.
-        // 100 Speed => 0.1 attribute value (default)
-        double attributeValue = (totalSpeed / 100.0) * 0.1;
-
-        var attribute = MINECRAFT_PLAYER.getAttribute(Attribute.MOVEMENT_SPEED);
-        if (attribute != null) {
-            MINECRAFT_PLAYER.getAttribute(Attribute.MOVEMENT_SPEED).setBaseValue(attributeValue);
-        }
 
     }
+
+
+
+
 
     public Location getLocationRelativeToPlayer(Vector offset)
     {
@@ -201,7 +181,7 @@ public class GamePlayer
         // the cross product will be very small; in that case use the horizontal forward to compute right
         Vector right = forward.clone().crossProduct(up);
 
-            right.normalize();
+        right.normalize();
 
 
         // Compose world offset: forward * z + right * x + up * y
@@ -351,21 +331,27 @@ public class GamePlayer
     public void setHealth(float amount) {
         HEALTH = Math.max(0, Math.min(amount, MAX_HEALTH));
     }
-    public void damage(float amount)
-    {
+
+    @Override
+    public void applyDamage(float amount, LabyrinthCreature source,boolean bypassChainShare) {
         if (CurrentState != SurvivalState.ALIVE) {
             return;
         }
+        if (amount <= 0) {
+            return;
+        }
+        if (!bypassChainShare && ChainLinkManager.handleSharedDamage(this, amount)) {
+            return;
+        }
 
-        float damageMultiplier = 100.0f / (100.0f + DEFENSE);
-        float actualDamage = amount * damageMultiplier;
+        float mitigation = 100.0f / (100.0f + DEFENSE);
+        float actualDamage = amount * mitigation;
 
         HEALTH -= actualDamage;
 
-        if(HEALTH <= 0) {
+        if (HEALTH <= 0) {
             HEALTH = 0;
             start_down();
-
         } else {
             refillVanillaHealth();
         }
@@ -434,7 +420,7 @@ public class GamePlayer
                     Title title;
                     if(Being_Revived == null)
                     {
-                         title = Title.title(
+                        title = Title.title(
                                 Component.text("Waiting For Teammates to Revive", NamedTextColor.RED),
                                 Component.text("Bleeding out - " + seconds + "s", NamedTextColor.RED),
                                 NO_FADE

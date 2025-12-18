@@ -32,6 +32,17 @@ public abstract class PerkType implements Listener {
     }
 
     public PerkType(String displayName,
+                    String description,
+                    PerkCategory category,
+                    int maxLevel,
+                    int baseCost,
+                    int incrementalCost,
+                    char icon
+    )
+    {
+        this(displayName, Collections.singletonList(description), category, maxLevel, baseCost, incrementalCost, icon);
+    }
+    public PerkType(String displayName,
                        List<String> description,
                        PerkCategory category,
                        int maxLevel,

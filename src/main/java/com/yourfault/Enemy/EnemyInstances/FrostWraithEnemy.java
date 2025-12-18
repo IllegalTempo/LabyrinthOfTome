@@ -1,9 +1,8 @@
 package com.yourfault.Enemy.EnemyInstances;
 
 import com.yourfault.Enemy.Enemy;
-import com.yourfault.Enemy.EnemyProjectiles.FrostWraithProjectile;
+import com.yourfault.projectiles.FrostWraithProjectile;
 import com.yourfault.Enemy.EnemyTypes.FrostWraith_Type;
-import com.yourfault.Main;
 import com.yourfault.system.GeneralPlayer.GamePlayer;
 import com.yourfault.wave.WaveContext;
 import org.bukkit.Color;

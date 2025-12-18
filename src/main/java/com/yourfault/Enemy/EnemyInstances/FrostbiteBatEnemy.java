@@ -2,7 +2,6 @@ package com.yourfault.Enemy.EnemyInstances;
 
 import com.yourfault.Enemy.Enemy;
 import com.yourfault.Enemy.EnemyTypes.AbstractEnemyType;
-import com.yourfault.Main;
 import com.yourfault.system.GeneralPlayer.GamePlayer;
 import com.yourfault.wave.WaveContext;
 import org.bukkit.Location;
@@ -36,7 +35,7 @@ public class FrostbiteBatEnemy extends Enemy {
 
         if (entity.getLocation().distance(targetLoc) < 1.5) {
              if (attackCooldown <= 0) {
-                 gp.damage(enemyType.baseDamage);
+                 gp.applyDamage(enemyType.baseDamage,this,false);//todo check
                  gp.applySpeedBoost(-30, 60);
                  attackCooldown = 20;
              }

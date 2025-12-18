@@ -1,7 +1,7 @@
 package com.yourfault.Enemy.EnemyInstances;
 
 import com.yourfault.Enemy.Enemy;
-import com.yourfault.Enemy.EnemyProjectiles.IceArrowProjectile;
+import com.yourfault.projectiles.IceArrowProjectile;
 import com.yourfault.Enemy.EnemyTypes.AbstractEnemyType;
 import com.yourfault.wave.WaveContext;
 import org.bukkit.Location;

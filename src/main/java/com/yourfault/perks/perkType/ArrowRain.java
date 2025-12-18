@@ -9,7 +9,7 @@ import java.util.List;
 
 public class ArrowRain extends PerkType {
     public ArrowRain() {
-        super("Arrow Rain", Collections.singletonList("More Projectiles!"), PerkCategory.LEVEL, 99, 0, 0, '\u0007');
+        super("Arrow Rain", Collections.singletonList("Increase Projectile Multiplier"), PerkCategory.LEVEL, 99, 0, 0, '\u0007');
     }
     @Override
     public void onLevelUp(GamePlayer player, int level) {

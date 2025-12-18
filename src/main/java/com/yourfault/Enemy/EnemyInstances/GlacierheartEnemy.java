@@ -1,7 +1,7 @@
 package com.yourfault.Enemy.EnemyInstances;
 
 import com.yourfault.Enemy.Enemy;
-import com.yourfault.Enemy.EnemyProjectiles.IceShardProjectile;
+import com.yourfault.projectiles.IceShardProjectile;
 import com.yourfault.Enemy.EnemyTypes.AbstractEnemyType;
 import com.yourfault.Enemy.EnemyTypes.FrostShardArcher_Type;
 import com.yourfault.Enemy.EnemyTypes.FrostbiteBat_Type;
@@ -33,7 +33,7 @@ public class GlacierheartEnemy extends Enemy {
     @Override
     public void update() {
         if (entity.isDead()) return;
-        boolean phase2 = HEALTH <= MaxHealth * 0.5;
+        boolean phase2 = HEALTH <= MAX_HEALTH * 0.5;
         if (entity.getTarget() == null && getNearestPlayer() != null) {
             entity.setTarget(getNearestPlayer().MINECRAFT_PLAYER);
         }

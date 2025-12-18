@@ -1,0 +1,35 @@
+package com.yourfault.projectiles;
+
+import com.yourfault.system.GeneralPlayer.GamePlayer;
+import org.bukkit.Color;
+import org.bukkit.Location;
+import org.bukkit.Particle;
+
+import static com.yourfault.Main.world;
+
+public class HolySword extends Projectile {
+
+    public HolySword(Location StartLocation, float damage, GamePlayer owner) {
+        super(StartLocation, 1, damage, 1f, false, 10,owner);
+        // store the starting age set by the super constructor
+
+    }
+    // initial lifetime preserved so we can compute elapsed ticks from inherited `age`
+
+    @Override
+    public void ChildUpdate()
+    {
+        Color color = Color.fromRGB(255,255,Math.clamp(125+(int)age* 20L,0,255));
+        Particle.DustOptions dust = new Particle.DustOptions(color, 0.5f + age*0.2f);
+
+        world.spawnParticle(Particle.DUST, getDisplayedLocation(),  (int) (100*radius), radius*0.25, radius*0.25, radius*0.25, 0.0, dust);
+        world.spawnParticle(Particle.END_ROD, getDisplayedLocation(),  (int) (1*radius), radius, radius, radius, 0.5, null);
+
+
+    }
+    @Override
+    public void Destroy()
+    {
+        super.Destroy();
+    }
+}

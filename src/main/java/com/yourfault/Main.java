@@ -17,6 +17,8 @@ import com.yourfault.system.GeneralPlayer.GamePlayer;
 import com.yourfault.wave.WaveCombatListener;
 import com.yourfault.wave.WaveManager;
 import com.yourfault.weapon.Excalibur.Excalibur_Main;
+import com.yourfault.weapon.ThouserHand.Thouser_Main;
+import com.yourfault.weapon.WeaponType;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -50,7 +52,6 @@ public class Main extends JavaPlugin {
         plugin = this;
         world = Bukkit.getWorld("world");
         tabInfo = new TabInfo();
-
         new Game(this);
         mapManager = new MapManager(this, game);
         bossStructureSpawner = new BossStructureSpawner(this);
@@ -107,7 +108,11 @@ public class Main extends JavaPlugin {
         this.getServer().getPluginManager().registerEvents(new CustomHealthListener(game), this);
     }
     public void RegisterWeapons() {
-        this.getServer().getPluginManager().registerEvents(new Excalibur_Main(), this);
+        Bukkit.getScheduler().runTaskLater(this, () -> {
+            this.getServer().getPluginManager().registerEvents(new Excalibur_Main(), this);
+            this.getServer().getPluginManager().registerEvents(new Thouser_Main(),this);
+        }, 40L); // Delay of 20 ticks (1 second) to ensure the server is fully started
+
         this.getServer().getPluginManager().registerEvents(perkSelectionListener, this);
     }
     @Override

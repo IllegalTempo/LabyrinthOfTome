@@ -1,10 +1,11 @@
 package com.yourfault.Enemy.EnemyInstances;
 
 import com.yourfault.Enemy.Enemy;
-import com.yourfault.Enemy.EnemyProjectiles.NetherBeastProjectile;
+import com.yourfault.projectiles.NetherBeastProjectile;
 import com.yourfault.Enemy.EnemyTypes.NetherBeast_Type;
 import com.yourfault.Main;
 import com.yourfault.system.GeneralPlayer.GamePlayer;
+import com.yourfault.system.LabyrinthCreature;
 import com.yourfault.wave.WaveContext;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -55,7 +56,7 @@ public class NetherBeastEnemy extends Enemy {
     public void tick() {}
 
     @Override
-    public void OnBeingDamage(float damage, GamePlayer damageDealer) {
+    public void applyDamage(float damage, LabyrinthCreature damageDealer, boolean bypassChain) {
         if (shieldCount > 0) {
             shieldCount--;
             entity.getWorld().playSound(entity.getLocation(), Sound.ITEM_SHIELD_BLOCK, 1f, 1f);
@@ -63,7 +64,7 @@ public class NetherBeastEnemy extends Enemy {
             updateDisplay();
             return;
         }
-        super.OnBeingDamage(damage, damageDealer);
+        super.applyDamage(damage, damageDealer, bypassChain);
     }
 
     @Override
@@ -73,13 +74,13 @@ public class NetherBeastEnemy extends Enemy {
             shieldStr.append("\\");
         }
 
-        String label = ChatColor.RED + String.format(Locale.US, "%.0f/%.0f HP ", HEALTH, MaxHealth)
+        String label = ChatColor.RED + String.format(Locale.US, "%.0f/%.0f HP ", HEALTH, MAX_HEALTH)
                 + ChatColor.GOLD + shieldStr.toString() + " "
                 + ChatColor.GRAY + enemyType.displayName;
         entity.setCustomName(label);
 
         if(enemyType.isBoss) {
-            Main.game.BossHealthBar.progress(HEALTH/MaxHealth);
+            Main.game.BossHealthBar.progress(HEALTH/MAX_HEALTH);
         }
     }
 

@@ -8,7 +8,6 @@ import com.yourfault.wave.WaveContext;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Particle;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -134,7 +133,7 @@ public class LaserZombieEnemy extends Enemy {
         float damage = enemyType.baseDamage * damageMultiplier;
 
         if (gamePlayer != null) {
-            gamePlayer.damage(damage);
+            gamePlayer.applyDamage(damage,this,false); //todo check
         }
         target.sendMessage(ChatColor.RED + "The laser burns through you for " + String.format("%.1f", damage) + " damage!");
         target.getWorld().spawnParticle(Particle.CRIT, target.getEyeLocation(), 15, 0.2, 0.2, 0.2, 0.01);

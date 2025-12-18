@@ -74,7 +74,7 @@ public class StaticWispEnemy extends Enemy {
     private void damagePlayer(Player p) {
         GamePlayer gp = Main.game.GetPlayer(p);
         if (gp != null) {
-            gp.damage(4.0f * damageMultiplier); // base dmgs
+            gp.applyDamage(4.0f * damageMultiplier,this,false); //todo check
             //maybe add a stun or slow?
         }
     }

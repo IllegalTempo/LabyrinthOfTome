@@ -2,6 +2,7 @@ package com.yourfault.Enemy;
 
 import java.util.Locale;
 
+import com.yourfault.system.LabyrinthCreature;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Particle;
@@ -17,11 +18,8 @@ import static com.yourfault.Main.plugin;
 import com.yourfault.system.GeneralPlayer.GamePlayer;
 import com.yourfault.wave.WaveContext;
 
-public abstract class Enemy {
+public abstract class Enemy extends LabyrinthCreature {
     public Mob entity;
-    public float HEALTH;
-    public float DEFENSE;
-    public float MaxHealth;
     private final long updateTime;
     public AbstractEnemyType enemyType;
     public WaveContext context;
@@ -30,7 +28,6 @@ public abstract class Enemy {
     BukkitTask tickTask;
     public float scale = 1;
 
-    public float damageMultiplier = 1.0f;
 
     public Enemy(Mob entity,WaveContext context,AbstractEnemyType type)
     {
@@ -42,21 +39,20 @@ public abstract class Enemy {
         this(entity,type.getScaledHealth(context),type.getScaledDefense(context),type.getDamageMultipler(context),updateTime,type,context);
 
     }
-    public Enemy(Mob entity, float MaxHealth, float defense, float damageMultiplier,long updateTime,AbstractEnemyType enemyType,WaveContext context)
+    public Enemy(Mob entity, float Health, float defense, float damageMultiplier,long updateTime,AbstractEnemyType enemyType,WaveContext context)
     {
+        this(entity,Health,0f,defense,damageMultiplier,updateTime,enemyType,context);
+    }
+    public Enemy(Mob entity, float Health, float Mana,float defense, float damageMultiplier,long updateTime,AbstractEnemyType enemyType,WaveContext context)
+    {
+        super(entity,Health,Mana,defense,1,1);
+        this.updateTime = updateTime;
         this.context = context;
-
-        this.HEALTH = MaxHealth;
-        this.MaxHealth = MaxHealth;
-        this.DEFENSE = defense;
         this.entity = entity;
         this.damageMultiplier = damageMultiplier;
         this.enemyType = enemyType;
         entity.setCustomNameVisible(true);
         updateDisplay();
-        this.updateTime = updateTime;
-
-
         Main.game.ENEMY_LIST.put(entity.getUniqueId(),this);
         startUpdate();
         Main.game.EnemyTeam.addEntity(entity);
@@ -66,12 +62,12 @@ public abstract class Enemy {
     }
     protected void updateDisplay() {
 
-        String label = ChatColor.RED + String.format(Locale.US, "%.0f/%.0f HP ", HEALTH, MaxHealth)
+        String label = ChatColor.RED + String.format(Locale.US, "%.0f/%.0f HP ", HEALTH, MAX_HEALTH)
                 + ChatColor.GRAY + enemyType.displayName;
         entity.setCustomName(label);
         if(isBoss() && HEALTH > 0)
         {
-            Main.game.BossHealthBar.progress(HEALTH/MaxHealth);
+            Main.game.BossHealthBar.progress(HEALTH/MAX_HEALTH);
         }
 
     }
@@ -105,36 +101,38 @@ public abstract class Enemy {
         },0L,updateTime);
         tickTask = Bukkit.getScheduler().runTaskTimer(plugin,()->{
             tick();
-            if(scale > 1)
-            {
-                entity.getAttribute(Attribute.SCALE).setBaseValue(1);
-            }
         },0L,1L);
     }
     public abstract void update();
     public abstract void tick();
     public abstract void OnAttack();
     public abstract void OnDealDamage();
-    public void OnBeingDamage(float damage, GamePlayer damageDealer)
+    @Override
+    public void applyDamage(float damage, LabyrinthCreature damageDealer, boolean bypassChain)
     {
         HEALTH -= damage;
         entity.damage(0);
         updateDisplay();
-        if(damageDealer != null)
-        {
-            damageDealer.onDoDamage(this,damage);
-
-        }
-
-        entity.getAttribute(Attribute.SCALE).setBaseValue(1.1);
-        scale = 1.1f;
         entity.getWorld().spawnParticle(Particle.BLOCK, entity.getLocation().add(0,1,0),50,0.3,0.6,0.3,0, BlockType.REDSTONE_BLOCK.createBlockData() );
 
-
-        if(HEALTH <= 0)
+        if(damageDealer != null && damageDealer instanceof GamePlayer)
         {
-            Destroy(damageDealer);
+            ((GamePlayer)damageDealer).onDoDamage(this,damage);
+            if(HEALTH <= 0)
+            {
+                Destroy((GamePlayer) damageDealer);
+            }
+
+        } else {
+            if(HEALTH <= 0)
+            {
+                Destroy();
+            }
         }
+
+
+
+
     }
     public void Destroy()
     {

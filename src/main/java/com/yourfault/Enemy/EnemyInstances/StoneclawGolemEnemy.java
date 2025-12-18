@@ -1,7 +1,7 @@
 package com.yourfault.Enemy.EnemyInstances;
 
 import com.yourfault.Enemy.Enemy;
-import com.yourfault.Enemy.EnemyProjectiles.StoneclawProjectile;
+import com.yourfault.projectiles.StoneclawProjectile;
 import com.yourfault.Enemy.EnemyTypes.StoneclawGolem_Type;
 import com.yourfault.Main;
 import com.yourfault.system.GeneralPlayer.GamePlayer;
@@ -10,7 +10,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
-import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;

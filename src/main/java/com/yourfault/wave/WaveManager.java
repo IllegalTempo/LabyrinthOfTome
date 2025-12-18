@@ -36,6 +36,7 @@ import com.yourfault.Enemy.EnemyTypes.Archer_Type;
 import com.yourfault.Enemy.EnemyTypes.BoneSlinger_Type;
 import com.yourfault.Enemy.EnemyTypes.Boss_Type;
 import com.yourfault.Enemy.EnemyTypes.Brute_Type;
+import com.yourfault.Enemy.EnemyTypes.ChainBinder_Type;
 import com.yourfault.Enemy.EnemyTypes.ChainLasher_Type;
 import com.yourfault.Enemy.EnemyTypes.ChainWarden_Type;
 import com.yourfault.Enemy.EnemyTypes.Chimera_Type;
@@ -56,12 +57,13 @@ import com.yourfault.Enemy.EnemyTypes.Mage_Type;
 import com.yourfault.Enemy.EnemyTypes.MudPuppet_Type;
 import com.yourfault.Enemy.EnemyTypes.NetherBeast_Type;
 import com.yourfault.Enemy.EnemyTypes.Nexus_Type;
-import com.yourfault.Enemy.EnemyTypes.Spinny_Type;
+import com.yourfault.Enemy.EnemyTypes.PhaseGuardian_Type;
 import com.yourfault.Enemy.EnemyTypes.StaticWisp_Type;
 import com.yourfault.Enemy.EnemyTypes.StoneclawGolem_Type;
 import com.yourfault.Enemy.EnemyTypes.StormcallerDisciple_Type;
 import com.yourfault.Enemy.EnemyTypes.SunderMaw_Type;
 import com.yourfault.Enemy.EnemyTypes.Tarantula_Type;
+import com.yourfault.Enemy.EnemyTypes.TimeDilator_Type;
 import com.yourfault.Enemy.EnemyTypes.VampiricPhantom_Type;
 import com.yourfault.Main;
 import com.yourfault.map.MapManager;
@@ -104,7 +106,6 @@ public class WaveManager {
         put("frostwraith", new FrostWraith_Type());
         put("stoneclawgolem",new StoneclawGolem_Type());
         put("creeperlingswarmer",new CreeperlingSwarmer_Type());
-        put("spinny",new Spinny_Type());
         put("vampiricphantom",new VampiricPhantom_Type());
         put("tarantula", new Tarantula_Type());
         put("mudpuppet", new MudPuppet_Type());
@@ -112,6 +113,7 @@ public class WaveManager {
         put("frostbitebat", new FrostbiteBat_Type());
         put("cinderhound", new CinderHound_Type());
         put("chainlasher", new ChainLasher_Type());
+        put("chainbinder", new ChainBinder_Type());
         put("staticwisp", new StaticWisp_Type());
         put("crystalhopper", new CrystalHopper_Type());
         put("dustdevil", new DustDevil_Type());
@@ -129,6 +131,8 @@ public class WaveManager {
         put("amalgamationsplit", new AmalgamationSplit_Type());
         put("glacierheart", new Glacierheart_Type());
         put("nexus", new Nexus_Type());
+        put("timedilator", new TimeDilator_Type());
+        put("phaseguardian", new PhaseGuardian_Type());
     }};
 
     public WaveManager(Game game, MapManager mapManager) {

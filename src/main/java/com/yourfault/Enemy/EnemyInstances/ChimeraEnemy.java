@@ -3,15 +3,14 @@ package com.yourfault.Enemy.EnemyInstances;
 import com.yourfault.Enemy.Enemy;
 import com.yourfault.Enemy.EnemyTypes.AbstractEnemyType;
 import com.yourfault.Main;
+import com.yourfault.projectiles.FireBreathProjectile;
+import com.yourfault.projectiles.PoisonSpitProjectile;
 import com.yourfault.wave.WaveContext;
 import org.bukkit.Color;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.entity.*;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
@@ -32,7 +31,7 @@ public class ChimeraEnemy extends Enemy {
     public void update() {
         if (entity.isDead()) return;
 
-        float hpPercent = HEALTH / MaxHealth;
+        float hpPercent = HEALTH / MAX_HEALTH;
 
         if (phase == 1 && hpPercent <= 0.66) {
             startPhase2();
@@ -135,7 +134,7 @@ public class ChimeraEnemy extends Enemy {
         Location spawnLoc = entity.getEyeLocation();
         Vector direction = entity.getTarget().getLocation().toVector().subtract(entity.getLocation().toVector()).normalize();
         spawnLoc.setDirection(direction);
-        new com.yourfault.Enemy.EnemyProjectiles.PoisonSpitProjectile(spawnLoc, this);
+        new PoisonSpitProjectile(spawnLoc, this);
     }
 
     private void toxicFumes() {
@@ -159,7 +158,7 @@ public class ChimeraEnemy extends Enemy {
             Location spreadLoc = spawnLoc.clone();
             Vector spreadDir = direction.clone().add(new Vector((random.nextDouble()-0.5)*0.2, (random.nextDouble()-0.5)*0.2, (random.nextDouble()-0.5)*0.2));
             spreadLoc.setDirection(spreadDir);
-            new com.yourfault.Enemy.EnemyProjectiles.FireBreathProjectile(spreadLoc, this);
+            new FireBreathProjectile(spreadLoc, this);
         }
         entity.getWorld().playSound(entity.getLocation(), Sound.ENTITY_BLAZE_SHOOT, 1.0f, 0.5f);
     }

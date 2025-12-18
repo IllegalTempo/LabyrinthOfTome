@@ -1,5 +1,7 @@
 package com.yourfault.Items;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -11,11 +13,11 @@ import java.util.List;
 import java.util.Map;
 
 public class weapons {
-    public static final Map<String, ItemStack> ITEM_MAP = new HashMap<>();
-    static {
-        REG_EXCALIBUR();
-    }
-    private static void REG_EXCALIBUR()
+    public static final Map<String, ItemStack> ITEM_MAP = Map.of(
+            "excalibur", EXCALIBUR(),
+            "thouserhand", THOUSER()
+    );
+    public static ItemStack EXCALIBUR()
     {
         ItemStack result = new ItemStack(Material.DIAMOND_SWORD);
         ItemMeta meta = result.getItemMeta();
@@ -38,9 +40,27 @@ public class weapons {
 
             result.setItemMeta(meta);
         }
-        // Register items in the map
-        ITEM_MAP.put("excalibur", result);
-        // Add more items here as needed, e.g.:
-        // ITEM_MAP.put("anotheritem", ANOTHER_ITEMSTACK);
+        return result;
+    }
+    public static ItemStack THOUSER()
+    {
+        ItemStack result = new ItemStack(Material.COPPER_SWORD);
+        ItemMeta meta = result.getItemMeta();
+        if (meta != null) {
+            // Set multi-colored display name using hex color codes (Spigot 1.16+)
+            meta.customName(Component.text("Thouser Hand").color(TextColor.color(255,247,166)));
+            List<Component> Lore = Arrays.asList(
+                    Component.text("Thousand of Hands",TextColor.color(255, 255, 255)),
+                    Component.text("Attack wholeheartedly",TextColor.color(200, 200, 200))
+            );
+            meta.lore();
+            meta.setUnbreakable(true);
+            CustomModelDataComponent component = meta.getCustomModelDataComponent();
+            component.setStrings(List.of("thouserhand","idle"));
+            meta.setCustomModelDataComponent(component);
+
+            result.setItemMeta(meta);
+        }
+        return result;
     }
 }

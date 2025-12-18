@@ -46,9 +46,8 @@ public class WeaponSelect implements Listener {
     }
     public void EquipWeapon(Player player, WeaponType weaponType)
     {
-        Main.game.GetPlayer(player.getUniqueId()).SELECTED_WEAPON = weaponType;
-        player.getInventory().setItem(4,weaponType.GetItem());
-        player.playSound(player.getLocation(), Sound.ENTITY_ARROW_HIT_PLAYER,1,1);
+        Main.game.GetPlayer(player.getUniqueId()).onPlayerSelectWeapon(weaponType);
+
     }
 
 

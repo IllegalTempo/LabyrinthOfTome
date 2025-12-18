@@ -3,6 +3,7 @@ package com.yourfault.Enemy.EnemyInstances;
 import com.yourfault.Enemy.Enemy;
 import com.yourfault.Enemy.EnemyTypes.AbstractEnemyType;
 import com.yourfault.Main;
+import com.yourfault.projectiles.WebRocketProjectile;
 import com.yourfault.wave.WaveContext;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -39,7 +40,7 @@ public class ArachnidFabricatorEnemy extends Enemy {
             return;
         }
 
-        float hpPercent = HEALTH / MaxHealth;
+        float hpPercent = HEALTH / MAX_HEALTH;
 
         if (phase == 1 && hpPercent <= 0.70) {
             startPhase2();
@@ -133,7 +134,7 @@ public class ArachnidFabricatorEnemy extends Enemy {
         Location spawnLoc = entity.getEyeLocation();
         Vector direction = entity.getTarget().getLocation().toVector().subtract(entity.getLocation().toVector()).normalize();
         spawnLoc.setDirection(direction);
-        new com.yourfault.Enemy.EnemyProjectiles.WebRocketProjectile(spawnLoc, this);
+        new WebRocketProjectile(spawnLoc, this);
     }
 
     private void createWeb(Location loc) {

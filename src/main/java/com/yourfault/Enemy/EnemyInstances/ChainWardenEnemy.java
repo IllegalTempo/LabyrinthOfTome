@@ -3,6 +3,7 @@ package com.yourfault.Enemy.EnemyInstances;
 import com.yourfault.Enemy.Enemy;
 import com.yourfault.Enemy.EnemyTypes.AbstractEnemyType;
 import com.yourfault.Main;
+import com.yourfault.projectiles.ChainWardenHookProjectile;
 import com.yourfault.wave.WaveContext;
 import org.bukkit.Color;
 import org.bukkit.Location;
@@ -91,7 +92,7 @@ public class ChainWardenEnemy extends Enemy implements Listener {
         Location targetLoc = target.getEyeLocation();
         Vector dir = targetLoc.toVector().subtract(origin.toVector()).normalize();
         origin.add(dir.clone().multiply(0.5));
-        com.yourfault.Enemy.EnemyProjectiles.ChainWardenHookProjectile hook = new com.yourfault.Enemy.EnemyProjectiles.ChainWardenHookProjectile(origin, this);
+        ChainWardenHookProjectile hook = new ChainWardenHookProjectile(origin, this);
         hook.setDirection(dir);
         entity.getWorld().playSound(origin, Sound.ENTITY_FISHING_BOBBER_THROW, 1.0f, 0.5f);
     }

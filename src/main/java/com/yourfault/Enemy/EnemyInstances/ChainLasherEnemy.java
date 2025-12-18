@@ -1,7 +1,7 @@
 package com.yourfault.Enemy.EnemyInstances;
 
 import com.yourfault.Enemy.Enemy;
-import com.yourfault.Enemy.EnemyProjectiles.ChainProjectile;
+import com.yourfault.projectiles.ChainProjectile;
 import com.yourfault.Enemy.EnemyTypes.AbstractEnemyType;
 import com.yourfault.wave.WaveContext;
 import org.bukkit.Location;
@@ -46,7 +46,7 @@ public class ChainLasherEnemy extends Enemy {
         Location spawnLoc = entity.getEyeLocation();
         Vector direction = target.getEyeLocation().toVector().subtract(spawnLoc.toVector()).normalize();
         spawnLoc.setDirection(direction);
-        new ChainProjectile(spawnLoc, this);
+        new ChainProjectile(spawnLoc,this);
     }
 
     @Override

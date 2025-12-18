@@ -54,8 +54,8 @@ public class AmalgamationSplitEnemy extends Enemy {
 
     private void finishAbsorption() {
         absorbing = false;
-        float healAmount = MaxHealth * 0.25f;
-        HEALTH = Math.min(MaxHealth, HEALTH + healAmount);
+        float healAmount = MAX_HEALTH * 0.25f;
+        HEALTH = Math.min(MAX_HEALTH, HEALTH + healAmount);
         updateDisplay();
         entity.getWorld().spawnParticle(Particle.HEART, entity.getLocation().add(0, 2, 0), 10);
         sibling = null;

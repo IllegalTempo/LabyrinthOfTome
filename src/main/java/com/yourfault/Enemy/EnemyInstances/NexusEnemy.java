@@ -1,10 +1,11 @@
 package com.yourfault.Enemy.EnemyInstances;
 
 import com.yourfault.Enemy.Enemy;
-import com.yourfault.Enemy.EnemyProjectiles.SoulMissileProjectile;
+import com.yourfault.projectiles.SoulMissileProjectile;
 import com.yourfault.Enemy.EnemyTypes.AbstractEnemyType;
 import com.yourfault.Main;
 import com.yourfault.system.GeneralPlayer.GamePlayer;
+import com.yourfault.system.LabyrinthCreature;
 import com.yourfault.wave.WaveContext;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -14,9 +15,7 @@ import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.util.EulerAngle;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
@@ -61,7 +60,7 @@ public class NexusEnemy extends Enemy {
             performSoulDrain();
             return;
         }
-        if (HEALTH <= MaxHealth * 0.4 && !channeling) {
+        if (HEALTH <= MAX_HEALTH * 0.4 && !channeling) {
             if (attackCooldown <= 0) {
                 startChanneling();
             }
@@ -124,8 +123,8 @@ public class NexusEnemy extends Enemy {
             Player p = getNearestPlayer().MINECRAFT_PLAYER;
             if (p != null && entity.hasLineOfSight(p)) {
                 GamePlayer gp = Main.game.GetPlayer(p);
-                gp.damage(1.0f);
-                HEALTH = Math.min(MaxHealth, HEALTH + 2.0f);
+                gp.applyDamage(1.0f,this,false);//todo check
+                HEALTH = Math.min(MAX_HEALTH, HEALTH + 2.0f);
                 updateDisplay();
                 drawBeam(entity.getEyeLocation(), p.getEyeLocation());
             }
@@ -150,9 +149,9 @@ public class NexusEnemy extends Enemy {
     }
 
     @Override
-    public void OnBeingDamage(float damage, GamePlayer damageDealer) {
-        if (damageDealer != null && damageDealer.MINECRAFT_PLAYER != null) {
-            Vector toAttacker = damageDealer.MINECRAFT_PLAYER.getLocation().toVector().subtract(entity.getLocation().toVector()).normalize();
+    public void applyDamage(float damage, LabyrinthCreature damageDealer, boolean bypassChain) {
+        if (damageDealer != null && damageDealer.minecraftEntity != null) {
+            Vector toAttacker = damageDealer.minecraftEntity.getLocation().toVector().subtract(entity.getLocation().toVector()).normalize();
             boolean blocked = false;
             for (ArmorStand shield : shields) {
                 Vector toShield = shield.getLocation().toVector().subtract(entity.getLocation().toVector()).normalize();
@@ -169,7 +168,7 @@ public class NexusEnemy extends Enemy {
             }
         }
 
-        super.OnBeingDamage(damage, damageDealer);
+        super.applyDamage(damage, damageDealer,bypassChain);
 
         if (channeling) {
             damageTakenDuringChannel += damage;
