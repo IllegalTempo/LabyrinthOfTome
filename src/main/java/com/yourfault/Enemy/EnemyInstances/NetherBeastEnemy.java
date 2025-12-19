@@ -68,7 +68,7 @@ public class NetherBeastEnemy extends Enemy {
     }
 
     @Override
-    protected void updateDisplay() {
+    public void updateDisplay() {
         StringBuilder shieldStr = new StringBuilder();
         for (int i = 0; i < shieldCount; i++) {
             shieldStr.append("\\");

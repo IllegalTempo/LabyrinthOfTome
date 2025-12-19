@@ -60,7 +60,7 @@ public abstract class Enemy extends LabyrinthCreature {
         entity.addScoreboardTag("lot_wave_enemy");
         entity.addScoreboardTag("lot_wave_enemy_" + enemyType.displayName.toLowerCase(Locale.ROOT));
     }
-    protected void updateDisplay() {
+    public void updateDisplay() {
 
         String label = ChatColor.RED + String.format(Locale.US, "%.0f/%.0f HP ", HEALTH, MAX_HEALTH)
                 + ChatColor.GRAY + enemyType.displayName;
