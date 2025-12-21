@@ -18,6 +18,7 @@ import com.yourfault.wave.WaveCombatListener;
 import com.yourfault.wave.WaveManager;
 import com.yourfault.weapon.Excalibur.Excalibur_Main;
 import com.yourfault.weapon.ThouserHand.Thouser_Main;
+import com.yourfault.weapon.WeaponListener;
 import com.yourfault.weapon.WeaponType;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -109,8 +110,7 @@ public class Main extends JavaPlugin {
     }
     public void RegisterWeapons() {
         Bukkit.getScheduler().runTaskLater(this, () -> {
-            this.getServer().getPluginManager().registerEvents(new Excalibur_Main(), this);
-            this.getServer().getPluginManager().registerEvents(new Thouser_Main(),this);
+            this.getServer().getPluginManager().registerEvents(new WeaponListener(), this);
         }, 40L); // Delay of 20 ticks (1 second) to ensure the server is fully started
 
         this.getServer().getPluginManager().registerEvents(perkSelectionListener, this);

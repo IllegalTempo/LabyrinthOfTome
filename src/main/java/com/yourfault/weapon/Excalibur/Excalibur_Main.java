@@ -4,6 +4,7 @@ import com.yourfault.projectiles.HolySword;
 import com.yourfault.projectiles.Sword_Aura;
 import com.yourfault.system.GeneralPlayer.GamePlayer;
 import com.yourfault.utils.AnimationInfo;
+import com.yourfault.weapon.WeaponAttachment;
 import com.yourfault.weapon.WeaponListener;
 import com.yourfault.weapon.WeaponType;
 import net.kyori.adventure.key.Key;
@@ -16,21 +17,21 @@ import org.bukkit.entity.Player;
 
 import static com.yourfault.Main.plugin;
 
-public class Excalibur_Main extends WeaponListener {
+public class Excalibur_Main extends WeaponAttachment {
     private static final AnimationInfo ANIMATION_LC = new AnimationInfo("animation_lc",15L);
     private static final AnimationInfo ANIMATION_LC2 = new AnimationInfo("animation_lc2",20L);
 
     private static final AnimationInfo ANIMATION_RC = new AnimationInfo("animation_rc",10L);
     private static final AnimationInfo ANIMATION_FC = new AnimationInfo("animation_fc",40L);
 
-    public Excalibur_Main() {
-        super(WeaponType.Excalibur, 0, 5, 20);
+    public Excalibur_Main(GamePlayer player) {
+        super(WeaponType.Excalibur,player);
     }
+    int attack_count = 0;
 
-
-    private void onMeleeAttack(GamePlayer player)
+    private void onMeleeAttack()
     {
-        if(player.weapondata[0] == 0)
+        if(attack_count == 0)
         {
             player.playAnimation(ANIMATION_LC);
             Location locz = player.getMinecraftPlayer().getLocation();
@@ -45,21 +46,21 @@ public class Excalibur_Main extends WeaponListener {
 
             }, 5L);
         }
-        player.weapondata[0] = (player.weapondata[0] + 1) % 2;
+        attack_count = (attack_count + 1) % 2;
 
 
     }
 
 
     @Override
-    public void LC(GamePlayer player) {
-        onMeleeAttack(player);
+    public void LC() {
+        onMeleeAttack();
     }
 
     @Override
-    public void RC(GamePlayer player) {
+    public void RC() {
         player.playAnimation(ANIMATION_RC);
-        player.ChangeMana(-rc_mana);
+        player.ChangeMana(-type.rc_mana);
         Location locz = player.getMinecraftPlayer().getLocation();
 
         player.MINECRAFT_PLAYER.getWorld().playSound(Sound.sound(Key.key("minecraft:entity.player.attack.sweep"),Sound.Source.PLAYER,1.0f,0.5f),locz.getX(),locz.getY(),locz.getZ());
@@ -86,9 +87,9 @@ public class Excalibur_Main extends WeaponListener {
     }
 
     @Override
-    public void FC(GamePlayer player) {
+    public void FC() {
         player.playAnimation(ANIMATION_FC);
-        player.ChangeMana(-fc_mana);
+        player.ChangeMana(-type.fc_mana);
         Location locz = player.MINECRAFT_PLAYER.getLocation();
         double grav = player.MINECRAFT_PLAYER.getAttribute(Attribute.GRAVITY).getValue();
         player.MINECRAFT_PLAYER.getAttribute(Attribute.GRAVITY).setBaseValue(-0.01);

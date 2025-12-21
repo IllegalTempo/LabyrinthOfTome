@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.yourfault.system.LabyrinthCreature;
+import com.yourfault.weapon.WeaponAttachment;
 import net.kyori.adventure.text.SelectorComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -70,6 +71,7 @@ public class GamePlayer extends LabyrinthCreature
     public final TabManager PLAYER_TAB;
 
     public WeaponType SELECTED_WEAPON = null;
+    public WeaponAttachment weaponObject;
     private int coins = 0;
     private int level = 1;
     private int experience = 0;
@@ -84,7 +86,6 @@ public class GamePlayer extends LabyrinthCreature
     private BukkitTask ReviveTask;
 
 
-    public int[] weapondata = new int[10];
 
 
     public GamePlayer(Player minecraftplayer)
@@ -101,6 +102,7 @@ public class GamePlayer extends LabyrinthCreature
     public void onPlayerSelectWeapon(WeaponType type)
     {
         this.SELECTED_WEAPON = type;
+        this.weaponObject = type.createAttachmentInstance(this);
         this.MAX_HEALTH = SELECTED_WEAPON.Health;
         this.MAX_MANA = SELECTED_WEAPON.Mana;
         this.HEALTH = MAX_HEALTH;
