@@ -52,7 +52,11 @@ public class ChainWardenEnemy extends Enemy implements Listener {
                     Player p1 = Main.plugin.getServer().getPlayer(chainedPlayers.get(0));
                     Player p2 = Main.plugin.getServer().getPlayer(chainedPlayers.get(1));
                     if (p1 != null && p2 != null && p1.isOnline() && p2.isOnline()) {
-                        drawChain(p1.getLocation().add(0, 1, 0), p2.getLocation().add(0, 1, 0));
+                        if (p1.getWorld().equals(p2.getWorld()) && p1.getLocation().distanceSquared(p2.getLocation()) > 400) { // 20 blocks distance break
+                            breakChain();
+                        } else {
+                            drawChain(p1.getLocation().add(0, 1, 0), p2.getLocation().add(0, 1, 0));
+                        }
                     } else {
                         breakChain();
                     }
@@ -118,7 +122,7 @@ public class ChainWardenEnemy extends Enemy implements Listener {
         Vector direction = l2.toVector().subtract(l1.toVector());
         double distance = l1.distance(l2);
         direction.normalize();
-        for (double d = 0; d < distance; d += 0.5) {
+        for (double d = 0; d < distance; d += 0.2) {
             Location point = l1.clone().add(direction.clone().multiply(d));
             entity.getWorld().spawnParticle(Particle.DUST, point, 1, new Particle.DustOptions(Color.BLUE, 1));
         }
@@ -131,7 +135,7 @@ public class ChainWardenEnemy extends Enemy implements Listener {
         if (event.getCause() == EntityDamageEvent.DamageCause.CUSTOM) {
         }
     }
-    
+
     @EventHandler(ignoreCancelled = true)
     public void onDamageShared(EntityDamageEvent event) {
         if (chainedPlayers.isEmpty()) return;

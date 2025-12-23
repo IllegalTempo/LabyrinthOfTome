@@ -1,17 +1,28 @@
 package com.yourfault.Enemy.EnemyInstances;
 
-import com.yourfault.Enemy.Enemy;
-import com.yourfault.Enemy.EnemyTypes.CrystalSentinel_Type;
-import com.yourfault.Main;
-import com.yourfault.system.GeneralPlayer.GamePlayer;
-import com.yourfault.system.LabyrinthCreature;
-import com.yourfault.wave.WaveContext;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import org.bukkit.*;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
+
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.Particle;
+import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.entity.*;
+import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.EnderCrystal;
+import org.bukkit.entity.Mob;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Snowball;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
@@ -24,13 +35,22 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
-import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
+import com.yourfault.Enemy.Enemy;
+import com.yourfault.Enemy.EnemyTypes.CrystalSentinel_Type;
+import com.yourfault.Main;
+import com.yourfault.system.GeneralPlayer.GamePlayer;
+import com.yourfault.system.LabyrinthCreature;
+import com.yourfault.wave.WaveContext;
+
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 
 public class CrystalSentinelEnemy extends Enemy implements Listener {
 
     private static final String CRYSTAL_NODE_TAG = "lot_crystal_sentinel_node";
+    private static final String PRISM_TAG = "lot_crystal_prism";
     private static final String SHARD_META = "lot_crystal_shard";
+    private static final int PRISM_HP = 2;
     private static final double PHASE_TWO_THRESHOLD = 0.75;
     private static final double PHASE_THREE_THRESHOLD = 0.45;
 
@@ -317,14 +337,15 @@ public class CrystalSentinelEnemy extends Enemy implements Listener {
         for (int i = 0; i < requirements.length; i++) {
             WeaponRequirement req = requirements[i];
             double angle = (Math.PI * 2 / requirements.length) * i;
-            Vector offset = new Vector(Math.cos(angle), 0.2, Math.sin(angle)).multiply(3);
+            Vector offset = new Vector(Math.cos(angle), 0.2, Math.sin(angle)).multiply(5);
             ArmorStand stand = origin.getWorld().spawn(origin.clone().add(offset), ArmorStand.class, as -> {
                 as.setInvisible(true);
-                as.setMarker(true);
+                as.setMarker(false); // allow hitting
                 as.setGravity(false);
                 if (as.getEquipment() != null) as.getEquipment().setHelmet(new ItemStack(req.helmet));
+                as.setMetadata(PRISM_TAG, new FixedMetadataValue(Main.plugin, true));
             });
-            prismShards.put(stand.getUniqueId(), new PrismShard(stand, req));
+            prismShards.put(stand.getUniqueId(), new PrismShard(stand, req, PRISM_HP));
         }
     }
 
@@ -357,19 +378,24 @@ public class CrystalSentinelEnemy extends Enemy implements Listener {
         }
         if (phase == 3 && !prismShards.isEmpty() && damageDealer instanceof GamePlayer gp) {
             WeaponRequirement matched = null;
-            for (PrismShard shard : prismShards.values()) {
+            // iterate entries so we can remove the completed shard from the map immediately
+            Iterator<Map.Entry<UUID, PrismShard>> it = prismShards.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry<UUID, PrismShard> entry = it.next();
+                PrismShard shard = entry.getValue();
                 if (!shard.completed && shard.requirement.matches(gp)) {
                     matched = shard.requirement;
                     shard.completed = true;
-                    shard.stand.remove();
+                    if (shard.stand != null) shard.stand.remove();
+                    it.remove();
                     break;
                 }
             }
             if (matched == null) {
                 gp.getMinecraftPlayer().sendMessage(Component.text("Your weapon fails to fracture the prism.", NamedTextColor.GRAY));
                 damage *= 0.1f;
-            } else if (prismShards.values().stream().allMatch(ps -> ps.completed)) {
-                prismShards.clear();
+            } else if (prismShards.isEmpty()) {
+                // all shards cleared
                 entity.getWorld().playSound(entity.getLocation(), Sound.BLOCK_GLASS_BREAK, 1.4f, 0.9f);
             }
         }
@@ -387,6 +413,29 @@ public class CrystalSentinelEnemy extends Enemy implements Listener {
                 break;
             }
         }
+    }
+
+    @EventHandler
+    public void onPrismHit(EntityDamageByEntityEvent event) {
+        if (!(event.getEntity() instanceof ArmorStand stand)) return;
+        if (!stand.hasMetadata(PRISM_TAG)) return;
+        PrismShard shard = prismShards.get(stand.getUniqueId());
+        if (shard == null) return;
+        // decrement shard HP and play feedback
+        try {
+            shard.hp--;
+            stand.getWorld().spawnParticle(Particle.CRIT, stand.getLocation().add(0, 0.5, 0), 8, 0.2, 0.2, 0.2, 0.02);
+            stand.getWorld().playSound(stand.getLocation(), Sound.BLOCK_AMETHYST_CLUSTER_HIT, 0.8f, 1.2f);
+            if (shard.hp <= 0) {
+                shard.completed = true;
+                if (shard.stand != null) shard.stand.remove();
+                prismShards.remove(stand.getUniqueId());
+                if (prismShards.isEmpty()) {
+                    entity.getWorld().playSound(entity.getLocation(), Sound.BLOCK_GLASS_BREAK, 1.4f, 0.9f);
+                }
+            }
+        } catch (Exception ignored) {}
+        event.setCancelled(true);
     }
 
     @EventHandler
@@ -605,43 +654,43 @@ public class CrystalSentinelEnemy extends Enemy implements Listener {
         MELEE(Material.DIAMOND_SWORD) {
             @Override
             boolean matches(GamePlayer gp) {
-                return gp.SELECTED_WEAPON != null && gp.SELECTED_WEAPON.name().toLowerCase(Locale.ROOT).contains("sword");
+                return matchesByPlayer(gp, "sword", EnumSet.of(Material.WOODEN_SWORD, Material.STONE_SWORD, Material.IRON_SWORD, Material.GOLDEN_SWORD, Material.DIAMOND_SWORD, Material.NETHERITE_SWORD), "excalibur", "blade");
             }
         },
         RANGED(Material.BOW) {
             @Override
             boolean matches(GamePlayer gp) {
-                return gp.SELECTED_WEAPON != null && gp.SELECTED_WEAPON.name().toLowerCase(Locale.ROOT).contains("bow");
+                return matchesByPlayer(gp, "bow", EnumSet.of(Material.BOW, Material.CROSSBOW));
             }
         },
         MAGIC(Material.ENCHANTED_BOOK) {
             @Override
             boolean matches(GamePlayer gp) {
-                return gp.SELECTED_WEAPON != null && gp.SELECTED_WEAPON.name().toLowerCase(Locale.ROOT).contains("staff");
+                return matchesByPlayer(gp, "staff", EnumSet.of(Material.ENCHANTED_BOOK));
             }
         },
         ARC(Material.BLAZE_ROD) {
             @Override
             boolean matches(GamePlayer gp) {
-                return gp.SELECTED_WEAPON != null && gp.SELECTED_WEAPON.name().toLowerCase(Locale.ROOT).contains("arc");
+                return matchesByPlayer(gp, "arc", EnumSet.of(Material.BLAZE_ROD, Material.STICK));
             }
         },
         LANCE(Material.TRIDENT) {
             @Override
             boolean matches(GamePlayer gp) {
-                return gp.SELECTED_WEAPON != null && gp.SELECTED_WEAPON.name().toLowerCase(Locale.ROOT).contains("lance");
+                return matchesByPlayer(gp, "lance", EnumSet.of(Material.TRIDENT));
             }
         },
         HAMMER(Material.NETHERITE_AXE) {
             @Override
             boolean matches(GamePlayer gp) {
-                return gp.SELECTED_WEAPON != null && gp.SELECTED_WEAPON.name().toLowerCase(Locale.ROOT).contains("hammer");
+                return matchesByPlayer(gp, "hammer", EnumSet.of(Material.WOODEN_AXE, Material.STONE_AXE, Material.IRON_AXE, Material.GOLDEN_AXE, Material.DIAMOND_AXE, Material.NETHERITE_AXE));
             }
         },
         DAGGER(Material.IRON_SWORD) {
             @Override
             boolean matches(GamePlayer gp) {
-                return gp.SELECTED_WEAPON != null && gp.SELECTED_WEAPON.name().toLowerCase(Locale.ROOT).contains("dagger");
+                return matchesByPlayer(gp, "dagger", EnumSet.of(Material.IRON_SWORD));
             }
         };
 
@@ -652,16 +701,53 @@ public class CrystalSentinelEnemy extends Enemy implements Listener {
         }
 
         abstract boolean matches(GamePlayer gp);
+
+        private static boolean matchesByPlayer(GamePlayer gp, String keyword, Set<Material> materials, String... aliases) {
+            if (gp == null) return false;
+            try {
+                // first try the selected weapon name (if present)
+                if (gp.SELECTED_WEAPON != null && gp.SELECTED_WEAPON.name().toLowerCase(Locale.ROOT).contains(keyword)) {
+                    return true;
+                }
+                Player p = gp.getMinecraftPlayer();
+                if (p == null) return false;
+                // check main hand item
+                ItemStack hand = p.getInventory().getItemInMainHand();
+                if (hand != null && hand.getType() != Material.AIR) {
+                    Material t = hand.getType();
+                    String tname = t.name().toLowerCase(Locale.ROOT);
+                    if (materials.contains(t)) return true;
+                    // match by material name (covers renamed/custom items that keep vanilla material)
+                    if (tname.contains(keyword)) return true;
+                    // special-case: lance maps to trident
+                    if ("lance".equals(keyword) && tname.contains("trident")) return true;
+                    // check display name for keywords or aliases (covers custom-named items like "Excalibur")
+                    if (hand.hasItemMeta() && hand.getItemMeta().hasDisplayName()) {
+                        String name = hand.getItemMeta().getDisplayName().toLowerCase(Locale.ROOT);
+                        if (name.contains(keyword)) return true;
+                        for (String a : aliases) {
+                            if (a != null && !a.isEmpty() && name.contains(a.toLowerCase(Locale.ROOT))) return true;
+                        }
+                    }
+                }
+                // check offhand as secondary fallback
+                ItemStack off = p.getInventory().getItemInOffHand();
+                if (off != null && off.getType() != Material.AIR && materials.contains(off.getType())) return true;
+            } catch (Exception ignored) {}
+            return false;
+        }
     }
 
     private static class PrismShard {
         private final ArmorStand stand;
         private final WeaponRequirement requirement;
         private boolean completed = false;
+        private int hp;
 
-        PrismShard(ArmorStand stand, WeaponRequirement requirement) {
+        PrismShard(ArmorStand stand, WeaponRequirement requirement, int hp) {
             this.stand = stand;
             this.requirement = requirement;
+            this.hp = hp;
         }
     }
 }

@@ -22,12 +22,18 @@ public class CreeperlingSwarmerEnemy extends Enemy {
     public CreeperlingSwarmerEnemy(Mob entity, WaveContext context, CreeperlingSwarmer_Type type) {
         super(entity,context,2L,type);
         entity.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, Integer.MAX_VALUE, 1));
+        if (entity instanceof Creeper) {
+            ((Creeper) entity).setMaxFuseTicks(60);
+        }
     }
 
     @Override
     public void update() {
         if (entity == null || !entity.isValid()) return;
         if (!(entity instanceof Creeper)) return;
+
+        if (entity.getTicksLived() < 20) return;
+
         Creeper creeper = (Creeper) entity;
         int maxFuse = creeper.getMaxFuseTicks();
         int currentFuse = creeper.getFuseTicks();

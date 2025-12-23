@@ -555,6 +555,13 @@ public class GamePlayer extends LabyrinthCreature
             SndPerson = null;
         }
     }
+    public void OnNumKeyPress(int key)
+    {
+        if(key > 0 && key < 4)
+        {
+            PLAYER_PERKS.selectPerk(key-1);
+        }
+    }
     public void died()
     {
         CurrentState = SurvivalState.DEAD;

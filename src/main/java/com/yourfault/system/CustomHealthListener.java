@@ -1,6 +1,7 @@
 package com.yourfault.system;
 
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -10,8 +11,8 @@ import org.bukkit.event.entity.EntityDamageEvent;
 
 import com.yourfault.Enemy.Enemy;
 import static com.yourfault.Main.plugin;
-import com.yourfault.system.GeneralPlayer.GamePlayer;
 import com.yourfault.listener.ChainLinkManager;
+import com.yourfault.system.GeneralPlayer.GamePlayer;
 
 /**
  * Redirects vanilla damage into the custom GamePlayer health pool.
@@ -42,19 +43,22 @@ public class CustomHealthListener implements Listener {
         if (damage <= 0) {
             return;
         }
-        if(game.ENEMY_LIST.containsKey(event.getEntity().getUniqueId()))
-        {
+        Entity causingEntity = null;
+        if (event.getDamageSource() != null) {
+            causingEntity = event.getDamageSource().getCausingEntity();
+        }
+
+        if (game.ENEMY_LIST.containsKey(event.getEntity().getUniqueId())) {
             Enemy enemy = game.ENEMY_LIST.get(event.getEntity().getUniqueId());
-            if(event.getCause() == EntityDamageEvent.DamageCause.ENTITY_ATTACK)
-            {
-                LabyrinthCreature damageDealer = game.CREATURE_LIST.get(event.getDamageSource().getCausingEntity().getUniqueId());
-                Bukkit.getScheduler().runTaskLater(plugin,()-> {
-                    enemy.applyDamage((float) damage,damageDealer,false);//todo check
+            if (event.getCause() == EntityDamageEvent.DamageCause.ENTITY_ATTACK) {
+                LabyrinthCreature damageDealer = (causingEntity != null) ? game.CREATURE_LIST.get(causingEntity.getUniqueId()) : null;
+                Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                    enemy.applyDamage((float) damage, damageDealer, false);
 
-                },5L);
+                }, 5L);
 
-            }else {
-                enemy.applyDamage((float) damage,null,false); //todo check
+            } else {
+                enemy.applyDamage((float) damage, null, false);
 
             }
             event.setCancelled(true);
@@ -63,7 +67,8 @@ public class CustomHealthListener implements Listener {
             GamePlayer gamePlayer = game.GetPlayer(player);
             if (gamePlayer != null) {
                 event.setDamage(0);
-                gamePlayer.applyDamage((float) damage,game.CREATURE_LIST.getOrDefault(event.getDamageSource().getCausingEntity().getUniqueId(),null),false); //todo check
+                LabyrinthCreature damageDealer = (causingEntity != null) ? game.CREATURE_LIST.getOrDefault(causingEntity.getUniqueId(), null) : null;
+                gamePlayer.applyDamage((float) damage, damageDealer, false);
             }
         }
 

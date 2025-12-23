@@ -45,7 +45,7 @@ public class BoneMonarchEnemy extends Enemy implements Listener {
     private boolean fusionConsumed = false;
 
     private final List<GraveMark> graveMarks = new ArrayList<>();
-    private final Map<UUID, Integer> cageHitsRemaining = new HashMap<>();
+    private final List<PrisonCage> prisons = new ArrayList<>();
 
     public BoneMonarchEnemy(Mob entity, WaveContext context, BoneMonarch_Type type) {
         super(entity, context, 5L, type);
@@ -331,19 +331,11 @@ public class BoneMonarchEnemy extends Enemy implements Listener {
 
     private void createBonePrison(Player target) {
         Location base = target.getLocation().getBlock().getLocation();
-        ArmorStand cage = base.getWorld().spawn(base.add(0.5, 0, 0.5), ArmorStand.class, as -> {
-            as.setInvisible(true);
-            as.setInvulnerable(false);
-            as.setMarker(false);
-            as.setCustomNameVisible(true);
-            as.setCustomName("§7Bone Cage [5]");
-            as.getEquipment().setHelmet(new ItemStack(Material.BONE_BLOCK));
-            as.setMetadata(PRISON_TAG, new FixedMetadataValue(Main.plugin, true));
-        });
-        cage.getWorld().playSound(cage.getLocation(), Sound.BLOCK_BONE_BLOCK_PLACE, 1.0f, 0.8f);
-        cageHitsRemaining.put(cage.getUniqueId(), 5);
+        PrisonCage cage = new PrisonCage(target.getUniqueId(), base);
+        prisons.add(cage);
+
         target.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 200, 6));
-        target.addPotionEffect(new PotionEffect(PotionEffectType.JUMP_BOOST, 200, 128));
+        target.sendMessage("§cYou are trapped in a Bone Prison! Left-click the glass to escape!");
     }
 
     private void performFusionIfNeeded() {
@@ -406,21 +398,24 @@ public class BoneMonarchEnemy extends Enemy implements Listener {
     }
 
     @EventHandler
-    public void onPrisonDamaged(EntityDamageByEntityEvent event) {
-        if (!(event.getEntity() instanceof ArmorStand stand)) return;
-        if (!stand.hasMetadata(PRISON_TAG)) return;
-        UUID id = stand.getUniqueId();
-        int remaining = cageHitsRemaining.getOrDefault(id, 0) - 1;
-        if (remaining <= 0) {
-            cageHitsRemaining.remove(id);
-            stand.getWorld().playSound(stand.getLocation(), Sound.BLOCK_BONE_BLOCK_BREAK, 1.0f, 0.7f);
-            stand.remove();
-        } else {
-            cageHitsRemaining.put(id, remaining);
-            stand.setCustomName("§7Bone Cage [" + remaining + "]");
-            stand.getWorld().playSound(stand.getLocation(), Sound.ITEM_SHIELD_BLOCK, 1.0f, 1.2f);
+    public void onPrisonInteract(org.bukkit.event.player.PlayerInteractEvent event) {
+        if (event.getAction() != org.bukkit.event.block.Action.LEFT_CLICK_BLOCK) return;
+        Block clicked = event.getClickedBlock();
+        if (clicked == null || clicked.getType() != Material.WHITE_STAINED_GLASS) return;
+
+        Iterator<PrisonCage> it = prisons.iterator();
+        while (it.hasNext()) {
+            PrisonCage cage = it.next();
+            if (cage.contains(clicked)) {
+                cage.damage(event.getPlayer());
+                if (cage.isBroken()) {
+                    cage.restore();
+                    it.remove();
+                }
+                event.setCancelled(true);
+                return;
+            }
         }
-        event.setCancelled(true);
     }
 
     @Override
@@ -430,6 +425,10 @@ public class BoneMonarchEnemy extends Enemy implements Listener {
             mark.restore();
         }
         graveMarks.clear();
+        for (PrisonCage cage : prisons) {
+            cage.restore();
+        }
+        prisons.clear();
         super.Destroy();
     }
 
@@ -460,6 +459,48 @@ public class BoneMonarchEnemy extends Enemy implements Listener {
             boneBlock.setBlockData(original, false);
             if (marker != null && !marker.isDead()) {
                 marker.remove();
+            }
+        }
+    }
+
+    private class PrisonCage {
+        UUID victimId;
+        List<Block> blocks = new ArrayList<>();
+        List<BlockData> originalData = new ArrayList<>();
+        int health = 10;
+
+        PrisonCage(UUID victimId, Location base) {
+            this.victimId = victimId;
+            createBlock(base);
+            createBlock(base.clone().add(0, 1, 0));
+        }
+
+        void createBlock(Location loc) {
+            Block b = loc.getBlock();
+            blocks.add(b);
+            originalData.add(b.getBlockData().clone());
+            b.setType(Material.WHITE_STAINED_GLASS);
+        }
+
+        boolean contains(Block b) {
+            return blocks.contains(b);
+        }
+
+        void damage(Player attacker) {
+            health--;
+            attacker.playSound(attacker.getLocation(), Sound.BLOCK_GLASS_HIT, 1.0f, 1.0f);
+            if (health <= 0) {
+                attacker.playSound(attacker.getLocation(), Sound.BLOCK_GLASS_BREAK, 1.0f, 1.0f);
+            }
+        }
+
+        boolean isBroken() {
+            return health <= 0;
+        }
+
+        void restore() {
+            for (int i = 0; i < blocks.size(); i++) {
+                blocks.get(i).setBlockData(originalData.get(i));
             }
         }
     }

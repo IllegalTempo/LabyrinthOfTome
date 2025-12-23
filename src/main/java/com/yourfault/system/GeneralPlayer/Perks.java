@@ -41,7 +41,7 @@ public class Perks {
 
         }
         availablePerks.add(addingPerks);
-        DisplayPerksInTitle(availablePerks.getFirst());
+        DisplayPerksInTitle(addingPerks);
     }
     public boolean applyPerkSelection(PerkType perkType) {
         boolean added = addPerk(perkType);
@@ -104,7 +104,7 @@ public class Perks {
         for (PerkType perk : perks) {
             perkNames.append(perk.perkimage);
         }
-        bukkitPlayer.sendTitlePart(TitlePart.TITLE,Component.text(perkNames.toString()).font(Key.key("minecraft:font/perks")));
+        bukkitPlayer.sendTitlePart(TitlePart.TITLE,Component.text(perkNames.toString()).font(Key.key("minecraft:perks")));
     }
     public boolean addPerk(PerkType perk)
     {
@@ -114,6 +114,7 @@ public class Perks {
             return true;
         }
         perks.add(new PerkObject(perk, gamePlayer));
+        gamePlayer.MINECRAFT_PLAYER.sendMessage(Component.text("" + ChatColor.GREEN + "Perk Acquired: " + perk.displayName));
         gamePlayer.PLAYER_TAB.updatePerkTabDisplay();
 
         return true;

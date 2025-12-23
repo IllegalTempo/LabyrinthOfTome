@@ -36,7 +36,7 @@ tasks {
         dependsOn(named("jar"))
         val jarName = "${project.name}-${project.version}.jar"
         from(layout.buildDirectory.file("libs/$jarName"))
-        into(file("C:/ProjectFC/Server/plugins")) //C:\Users\user\Desktop\localhost\plugins
+        into(file("C:\\server\\LOTserver\\plugins")) //C:\Users\user\Desktop\localhost\plugins
         rename("(.*)", "LOT.jar")
     }
 

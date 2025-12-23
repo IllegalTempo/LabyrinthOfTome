@@ -93,6 +93,7 @@ public class Main extends JavaPlugin {
         this.getCommand("spawnmob").setExecutor(new SpawnMobCommand(game));
         this.getCommand("playgame").setExecutor(new PlayGameCommand(game));
         this.getCommand("ready").setExecutor(new ReadyCommand(game));
+        this.getCommand("levelup").setExecutor(new levelup());
 
     }
     private void RegisterPlayerActivity()
