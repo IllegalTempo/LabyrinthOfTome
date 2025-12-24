@@ -13,6 +13,8 @@ public abstract class WeaponAttachment {
         this.player = player;
 
     }
+    public abstract void onSwitchorRemoveWeapon();
+
     public abstract void LC();
     public abstract void RC();
     public abstract void FC();

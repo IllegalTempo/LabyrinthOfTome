@@ -14,6 +14,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 
+import com.yourfault.system.LabyrinthCreature;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -592,13 +593,17 @@ public class WaveManager {
         rewardPlayer(attacker, instance.enemyType.hitCoins, instance.enemyType.hitXp, false);
     }
 
-    public void handleEnemyDeath(UUID enemyId, GamePlayer killer) {
+    public void handleEnemyDeath(UUID enemyId, LabyrinthCreature killer) {
         Enemy instance = activeWaveEnemies.remove(enemyId);
         activeWaveEnemyIds.remove(enemyId);
         if (!active || instance == null) {
             return;
         }
-        rewardPlayer(killer, instance.enemyType.killCoins, instance.enemyType.killXp, true);
+        if(killer instanceof GamePlayer playerkiller)
+        {
+            rewardPlayer(playerkiller, instance.enemyType.killCoins, instance.enemyType.killXp, true);
+
+        }
         checkWaveCompletion();
     }
 

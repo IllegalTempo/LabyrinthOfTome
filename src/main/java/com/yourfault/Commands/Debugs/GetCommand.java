@@ -1,6 +1,9 @@
 package com.yourfault.Commands.Debugs;
 
 import com.yourfault.Items.weapons;
+import com.yourfault.Main;
+import com.yourfault.system.GeneralPlayer.GamePlayer;
+import com.yourfault.weapon.WeaponType;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -25,6 +28,19 @@ public class GetCommand implements CommandExecutor {
         if (item != null) {
             player.getInventory().addItem(item.clone());
             player.sendMessage("You have been given " + itemName + "!");
+
+            // Auto-select weapon if it matches a WeaponType
+            GamePlayer gamePlayer = Main.game.GetPlayer(player.getUniqueId());
+            if (gamePlayer != null) {
+                for (WeaponType type : WeaponType.values()) {
+                    if (type.weaponNBT.equals(itemName)) {
+                        gamePlayer.onPlayerSelectWeapon(type);
+                        player.sendMessage("Weapon " + type.name() + " selected!");
+                        break;
+                    }
+                }
+            }
+
             return true;
         }
         player.sendMessage("Unknown item. Available: " + String.join(", ", weapons.ITEM_MAP.keySet()));

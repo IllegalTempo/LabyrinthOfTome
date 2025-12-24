@@ -116,7 +116,6 @@ public class TimeDilatorEnemy extends Enemy {
     public void OnDealDamage() {
     }
 
-    @Override
     public void Destroy(GamePlayer killer) {
         TimeBubbleManager.removeBubblesOwnedBy(entity.getUniqueId());
         super.Destroy(killer);

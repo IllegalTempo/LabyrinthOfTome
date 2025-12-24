@@ -29,6 +29,9 @@ public abstract class Projectile {
     protected LabyrinthCreature owner;
     protected boolean pierce = false;
 
+    protected LabyrinthCreature missileTarget = null;
+    protected float homingStrength = 0.2f;
+
     public Projectile(Location eyeLocation,float speed, float damage, float radius, boolean UseGravity, float LastFor, LabyrinthCreature owner)
     {
         this(eyeLocation,speed,damage,radius,UseGravity,new ItemStack(Material.AIR),LastFor,owner);
@@ -82,12 +85,21 @@ public abstract class Projectile {
             Main.game.PROJECTILE_LIST.put(e.getUniqueId(),this);
 
         });
-
+        if(owner.homingStrength > 0)
+        {
+            setMissile(findNearestTarget(),owner.homingStrength);
+        }
 
         Update();
 
     }
+    public void setMissile(LabyrinthCreature target,float homingStrength)
+    {
+        this.homingStrength = homingStrength;
+        this.missileTarget = target;
 
+
+    }
     protected Location getDisplayedLocation()
     {
         return entity.getLocation().add(0,1,0);
@@ -117,6 +129,17 @@ public abstract class Projectile {
                 age += 1;
                 if(UseGravity) travel.subtract(Main.game.Gravity);
                 Location newloc = entity.getLocation().add(travel);
+                if(missileTarget != null)
+                {
+                    Vector toTarget = missileTarget.minecraftEntity.getLocation().add(0,1,0).toVector().subtract(entity.getLocation().toVector()).normalize();
+                    Vector currentDir = entity.getEyeLocation().getDirection().normalize();
+                    double pitch = Math.asin(-currentDir.getY());
+
+                    Vector newDir = currentDir.add(toTarget.subtract(currentDir).multiply(homingStrength)).normalize();
+                    newloc.setDirection(newDir);
+                    entity.setHeadPose(new EulerAngle(pitch, 0, 0));
+                    onHoming();
+                }
                 entity.teleport(newloc);
                 if (entity.getLocation().getBlock().getType().isSolid()) {
                     onObstacle(newloc.clone());
@@ -141,6 +164,10 @@ public abstract class Projectile {
         };
         UpdateTask.runTaskTimer(Main.plugin, 0L, 1L);
     }
+    protected void onHoming()
+    {
+
+    }
     public void Projectile_OnHit()
     {
         Destroy();
@@ -149,6 +176,22 @@ public abstract class Projectile {
     {
 
 
+    }
+    private LabyrinthCreature findNearestTarget()
+    {
+        LabyrinthCreature nearest = null;
+        double nearestDist = Double.MAX_VALUE;
+        for(LabyrinthCreature c : Main.game.CREATURE_LIST.values())
+        {
+            if(c.team == owner.team) continue;
+            double dist = c.minecraftEntity.getLocation().distanceSquared(entity.getLocation());
+            if(dist < nearestDist)
+            {
+                nearestDist = dist;
+                nearest = c;
+            }
+        }
+        return nearest;
     }
     public void Destroy()
     {

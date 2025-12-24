@@ -15,7 +15,8 @@ import java.util.Map;
 public class weapons {
     public static final Map<String, ItemStack> ITEM_MAP = Map.of(
             "excalibur", EXCALIBUR(),
-            "thouserhand", THOUSER()
+            "thouserhand", THOUSER(),
+            "flower_of_truth", FLOWER_OF_TRUTH()
     );
     public static ItemStack EXCALIBUR()
     {
@@ -57,6 +58,27 @@ public class weapons {
             meta.setUnbreakable(true);
             CustomModelDataComponent component = meta.getCustomModelDataComponent();
             component.setStrings(List.of("thouserhand","idle"));
+            meta.setCustomModelDataComponent(component);
+
+            result.setItemMeta(meta);
+        }
+        return result;
+    }
+
+    public static ItemStack FLOWER_OF_TRUTH()
+    {
+        ItemStack result = new ItemStack(Material.POPPY);
+        ItemMeta meta = result.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName("§dFlower of Truth");
+            List<String> lore = Arrays.asList(
+                    "§7A beautiful flower that",
+                    "§7reveals the truth of the world."
+            );
+            meta.setLore(lore);
+            meta.setUnbreakable(true);
+            CustomModelDataComponent component = meta.getCustomModelDataComponent();
+            component.setStrings(List.of("flower_of_truth","idle"));
             meta.setCustomModelDataComponent(component);
 
             result.setItemMeta(meta);

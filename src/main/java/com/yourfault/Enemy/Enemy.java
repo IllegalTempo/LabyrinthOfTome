@@ -115,19 +115,15 @@ public abstract class Enemy extends LabyrinthCreature {
         updateDisplay();
         entity.getWorld().spawnParticle(Particle.BLOCK, entity.getLocation().add(0,1,0),50,0.3,0.6,0.3,0, BlockType.REDSTONE_BLOCK.createBlockData() );
 
-        if(damageDealer != null && damageDealer instanceof GamePlayer)
+        if(damageDealer instanceof GamePlayer playerdamager)
         {
-            ((GamePlayer)damageDealer).onDoDamage(this,damage);
-            if(HEALTH <= 0)
-            {
-                Destroy((GamePlayer) damageDealer);
-            }
+            playerdamager.onDoDamage(this,damage);
 
-        } else {
-            if(HEALTH <= 0)
-            {
-                Destroy();
-            }
+
+        }
+        if(HEALTH <= 0)
+        {
+            Destroy(damageDealer);
         }
 
 
@@ -138,9 +134,11 @@ public abstract class Enemy extends LabyrinthCreature {
     {
         Destroy(null);
     }
-    public void Destroy(GamePlayer killer)
+    public void Destroy(LabyrinthCreature killer)
     {
+        onClearAttachment();
         Main.game.ENEMY_LIST.remove(entity.getUniqueId());
+
         if (Main.game.getWaveManager() != null) {
             Main.game.getWaveManager().handleEnemyDeath(entity.getUniqueId(), killer);
         }

@@ -90,7 +90,7 @@ public class GamePlayer extends LabyrinthCreature
 
     public GamePlayer(Player minecraftplayer)
     {
-        super(minecraftplayer,100,100,100,50,0);
+        super(minecraftplayer,100,100,100,100,0);
         this.MINECRAFT_PLAYER = minecraftplayer;
         onPlayerSelectWeapon(GetSelectedWeapon_From_Scoreboardtag());
         PLAYER_PERKS = new Perks(this);
@@ -101,6 +101,16 @@ public class GamePlayer extends LabyrinthCreature
     }
     public void onPlayerSelectWeapon(WeaponType type)
     {
+        if(weaponObject != null)
+        {
+            weaponObject.onSwitchorRemoveWeapon();
+        }
+        for (String tag : new ArrayList<>(MINECRAFT_PLAYER.getScoreboardTags())) {
+            if (tag.startsWith("SelectedWeapon_")) {
+                MINECRAFT_PLAYER.removeScoreboardTag(tag);
+            }
+        }
+        MINECRAFT_PLAYER.addScoreboardTag("SelectedWeapon_" + type.name());
         this.SELECTED_WEAPON = type;
         this.weaponObject = type.createAttachmentInstance(this);
         this.MAX_HEALTH = SELECTED_WEAPON.Health;
@@ -162,38 +172,7 @@ public class GamePlayer extends LabyrinthCreature
 
 
 
-    public Location getLocationRelativeToPlayer(Vector offset)
-    {
-        // Convert a local offset (x = right, y = up, z = forward) into world coordinates
-        Location eye = MINECRAFT_PLAYER.getEyeLocation();
 
-        // Full forward vector (includes pitch)
-        Vector forward = eye.getDirection().clone();
-        if (forward.lengthSquared() < 1e-6) {
-            // Fallback if direction is somehow zero
-            forward = new Vector(0, 0, -1);
-        } else {
-            forward.normalize();
-        }
-
-        // Up is world up
-        Vector up = new Vector(0, 1, 0);
-
-        // Right = forward x up. If forward is nearly parallel to up (looking straight up/down)
-        // the cross product will be very small; in that case use the horizontal forward to compute right
-        Vector right = forward.clone().crossProduct(up);
-
-        right.normalize();
-
-
-        // Compose world offset: forward * z + right * x + up * y
-        Vector worldOffset = forward.multiply(offset.getZ())
-                .add(right.multiply(offset.getX()))
-                .add(up.multiply(offset.getY()));
-
-        // Return a new Location (don't mutate the player's eye location)
-        return eye.clone().add(worldOffset);
-    }
     public void onGameStart()
     {
 

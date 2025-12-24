@@ -5,9 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="18b9d33a-a1ab-4c7e-badb-df567bdbf954" name="Changes" comment="idk">
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Commands/Debugs/levelup.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Attachments/AbstractAnimatedAttachment.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Attachments/AbstractAttachment.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Attachments/Godhand.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/perks/perkType/Omniscience.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/checksums/checksums.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/checksums/checksums.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/checksums/md5-checksums.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/checksums/md5-checksums.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/checksums/sha1-checksums.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/checksums/sha1-checksums.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/executionHistory/executionHistory.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/executionHistory/executionHistory.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/executionHistory/executionHistory.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/executionHistory/executionHistory.lock" afterDir="false" />
@@ -15,27 +17,26 @@
       <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/fileHashes/fileHashes.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/fileHashes/fileHashes.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/9.0.0/fileHashes/resourceHashesCache.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/9.0.0/fileHashes/resourceHashesCache.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/caches/paperweight/taskCache/mappedServerJar.jar" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/caches/paperweight/taskCache/mappedServerJar.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/caches/paperweight/taskCache/reobfMappings.tiny" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/caches/paperweight/taskCache/reobfMappings.tiny" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle.kts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/Enemy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/Enemy.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/BleedoutManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/BleedoutManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/projectiles/Projectile.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/projectiles/Projectile.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/GamePlayer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/GamePlayer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/Perks.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/Perks.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/PlayerActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/PlayerActivity.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/plugin.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/plugin.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/LabyrinthCreature.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/LabyrinthCreature.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/wave/WaveManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/wave/WaveManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/Excalibur/Excalibur_Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/Excalibur/Excalibur_Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/ThouserHand/Thouser_Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/ThouserHand/Thouser_Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/WeaponAttachment.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/WeaponAttachment.java" afterDir="false" />
     </list>
     <list id="2f4080a5-7227-4fae-9fa6-28b60a3aa71c" name="Changes by user" comment="">
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/BoneMonarchEnemy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/BoneMonarchEnemy.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/ChainWardenEnemy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/ChainWardenEnemy.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/CreeperlingSwarmerEnemy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/CreeperlingSwarmerEnemy.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/CrystalSentinelEnemy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/CrystalSentinelEnemy.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/CustomHealthListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/CustomHealthListener.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Commands/Debugs/GetCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Commands/Debugs/GetCommand.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/ChainBinderEnemy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/ChainBinderEnemy.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/NexusEnemy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/NexusEnemy.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/TimeDilatorEnemy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Enemy/EnemyInstances/TimeDilatorEnemy.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/Items/weapons.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/Items/weapons.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/GamePlayer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/GamePlayer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/WeaponType.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/yourfault/weapon/WeaponType.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -123,9 +124,19 @@
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
     &quot;url&quot;: &quot;https://github.com/IllegalTempo/LabyrinthOfTome.git&quot;,
-    &quot;accountId&quot;: &quot;112ddd4e-714d-4256-9e6c-ae35ccb9cbbe&quot;
+    &quot;accountId&quot;: &quot;728a93c8-cd90-498b-8a02-e5fe3794e648&quot;
   }
 }</component>
+  <component name="LineStatusTrackerManager">
+    <file path="$PROJECT_DIR$/src/main/java/com/yourfault/system/GeneralPlayer/GamePlayer.java">
+      <ranges>
+        <range start1="92" end1="93" start2="92" end2="93" changelist="2f4080a5-7227-4fae-9fa6-28b60a3aa71c" />
+        <range start1="103" end1="103" start2="103" end2="113" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="164" end1="186" start2="174" end2="174" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+        <range start1="187" end1="196" start2="175" end2="175" changelist="18b9d33a-a1ab-4c7e-badb-df567bdbf954" />
+      </ranges>
+    </file>
+  </component>
   <component name="ProblemsViewState">
     <option name="selectedTabId" value="CurrentFile" />
   </component>

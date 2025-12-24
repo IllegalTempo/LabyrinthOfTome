@@ -53,6 +53,11 @@ public class Excalibur_Main extends WeaponAttachment {
 
 
     @Override
+    public void onSwitchorRemoveWeapon() {
+
+    }
+
+    @Override
     public void LC() {
         onMeleeAttack();
     }

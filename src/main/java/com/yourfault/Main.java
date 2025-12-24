@@ -123,6 +123,7 @@ public class Main extends JavaPlugin {
         //remove all fakeplayers
         for (GamePlayer player : game.PLAYER_LIST.values()) {
             player.PLAYER_TAB.removeAllFakePlayer();
+            player.weaponObject.onSwitchorRemoveWeapon();
         }
 
     }

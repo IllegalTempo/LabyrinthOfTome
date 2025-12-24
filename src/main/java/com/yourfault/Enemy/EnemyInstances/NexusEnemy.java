@@ -178,7 +178,6 @@ public class NexusEnemy extends Enemy {
         }
     }
 
-    @Override
     public void Destroy(GamePlayer killer) {
         removeShields();
         super.Destroy(killer);

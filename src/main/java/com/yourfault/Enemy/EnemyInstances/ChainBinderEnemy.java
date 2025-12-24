@@ -90,7 +90,6 @@ public class ChainBinderEnemy extends Enemy {
     @Override
     public void OnDealDamage() {}
 
-    @Override
     public void Destroy(GamePlayer killer) {
         ChainLinkManager.breakLinksOwnedBy(entity.getUniqueId());
         super.Destroy(killer);
